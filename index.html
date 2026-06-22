@@ -1,0 +1,2075 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    window.onerror = function (message, url, lineNo, colNo, error) {
+      alert("Error de JS detectado:\n" + message + "\nEn: " + url + "\nLínea: " + lineNo + " Col: " + colNo + "\nStack: " + (error ? error.stack : "N/A"));
+      return false;
+    };
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Evaluación de Infraestructura v2 — UniNorte</title>
+  <meta name="description" content="Formulario digital con captura fotográfica para evaluar espacios físicos e infraestructura universitaria.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+/* ==========================================================
+   styles.css — UniNorte Evaluation Form v2 (with Photos)
+   Dark theme, glassmorphism, mobile-first
+   ========================================================== */
+
+:root {
+  --bg-primary: #0a0e1a;
+  --bg-secondary: #111827;
+  --bg-card: rgba(17, 24, 39, 0.7);
+  --bg-glass: rgba(255, 255, 255, 0.04);
+  --border: rgba(255, 255, 255, 0.08);
+  --border-active: rgba(14, 165, 233, 0.4);
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --accent-start: #0ea5e9;
+  --accent-end: #06b6d4;
+  --accent: #0ea5e9;
+  --green: #22c55e;
+  --blue: #3b82f6;
+  --yellow: #eab308;
+  --orange: #f97316;
+  --red: #ef4444;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+  --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme="light"] {
+  --bg-primary: #f1f5f9;
+  --bg-secondary: #ffffff;
+  --bg-card: rgba(255, 255, 255, 0.85);
+  --bg-glass: rgba(0, 0, 0, 0.03);
+  --border: rgba(0, 0, 0, 0.1);
+  --border-active: rgba(14, 165, 233, 0.5);
+  --text-primary: #1e293b;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+}
+
+/* Theme Toggle */
+.btn-theme {
+  background: var(--bg-glass); border: 1px solid var(--border);
+  color: var(--text-secondary); width: 36px; height: 36px;
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all var(--transition); font-size: 1.1rem; line-height: 1;
+}
+.btn-theme:hover { border-color: var(--accent); color: var(--accent); }
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 15px; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100dvh;
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+/* ===== Header ===== */
+.app-header {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(10, 14, 26, 0.85);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+
+.header-inner {
+  max-width: 720px; margin: 0 auto; padding: 14px 16px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+
+.header-brand { display: flex; align-items: center; gap: 12px; }
+.header-icon { font-size: 1.8rem; line-height: 1; }
+
+.header-brand h1 {
+  font-size: 1.05rem; font-weight: 700;
+  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  line-height: 1.3;
+}
+
+.header-brand p { font-size: 0.72rem; color: var(--text-muted); }
+
+.header-actions { display: flex; align-items: center; gap: 8px; position: relative; }
+
+/* Storage Indicator */
+.storage-indicator {
+  display: flex; align-items: center; gap: 5px;
+}
+
+.storage-bar {
+  width: 36px; height: 6px;
+  background: var(--bg-glass);
+  border-radius: 3px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.storage-fill {
+  height: 100%; width: 0%;
+  background: var(--green);
+  border-radius: 3px;
+  transition: width 0.5s ease, background 0.5s ease;
+}
+
+.storage-fill.warn { background: var(--yellow); }
+.storage-fill.danger { background: var(--red); }
+
+.storage-text {
+  font-size: 0.6rem; color: var(--text-muted); font-weight: 600;
+  min-width: 24px;
+}
+
+.btn-icon {
+  background: var(--bg-glass); border: 1px solid var(--border);
+  color: var(--text-secondary); width: 40px; height: 40px;
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all var(--transition);
+}
+
+.btn-icon:hover { background: rgba(14, 165, 233, 0.15); color: var(--accent); border-color: var(--border-active); }
+
+.eval-badge {
+  position: absolute; top: -4px; right: -4px;
+  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+  color: white; font-size: 0.65rem; font-weight: 700;
+  min-width: 20px; height: 20px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center; padding: 0 5px;
+}
+
+/* ===== Main ===== */
+.main-content { max-width: 720px; margin: 0 auto; padding: 16px; padding-bottom: 100px; }
+
+/* ===== Form Sections ===== */
+.form-section {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px; margin-bottom: 16px;
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  animation: fadeInUp 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.section-header {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid var(--border);
+}
+
+.section-icon { font-size: 1.3rem; }
+.section-header h2 { font-size: 0.95rem; font-weight: 600; }
+
+.photo-hint {
+  font-size: 0.75rem; color: var(--text-muted); margin-bottom: 16px;
+  padding: 8px 12px; background: rgba(14, 165, 233, 0.06);
+  border-radius: var(--radius-sm); border-left: 3px solid var(--accent);
+}
+
+/* ===== Form Grid ===== */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-group.full-width { grid-column: 1 / -1; }
+
+label { font-size: 0.78rem; font-weight: 500; color: var(--text-secondary); letter-spacing: 0.01em; }
+.required { color: var(--red); }
+.label-warning { color: var(--orange) !important; font-weight: 600 !important; }
+
+input, select, textarea {
+  background: var(--bg-glass); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--text-primary);
+  font-family: inherit; font-size: 0.9rem; padding: 10px 12px;
+  transition: all var(--transition); width: 100%;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
+}
+
+select {
+  cursor: pointer; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px;
+}
+
+textarea { resize: vertical; min-height: 70px; }
+
+/* ===== Dimension Cards ===== */
+.dimension-card {
+  background: var(--bg-glass); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px; margin-bottom: 12px;
+  transition: border-color var(--transition);
+}
+
+.dimension-card.scored { border-color: var(--border-active); }
+.dimension-card.warning { border-color: rgba(249, 115, 22, 0.5); background: rgba(249, 115, 22, 0.04); }
+
+.dim-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.dim-name { font-size: 0.88rem; font-weight: 600; }
+
+.dim-score-badge {
+  font-size: 0.75rem; font-weight: 700; padding: 3px 10px;
+  border-radius: 20px; background: var(--bg-glass); color: var(--text-muted);
+  transition: all var(--transition);
+}
+
+/* Score Radio Group */
+.score-group { display: flex; gap: 6px; flex-wrap: wrap; }
+.score-option { position: relative; }
+.score-option input { position: absolute; opacity: 0; width: 0; height: 0; }
+
+.score-label {
+  display: flex; align-items: center; justify-content: center;
+  width: 44px; height: 40px; border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border); background: var(--bg-glass);
+  font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);
+  cursor: pointer; transition: all var(--transition); user-select: none;
+}
+
+.score-label:hover { border-color: var(--text-muted); background: rgba(255, 255, 255, 0.06); }
+.score-option input:checked + .score-label { transform: scale(1.05); box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3); }
+
+.score-option input[value="5"]:checked + .score-label { background: rgba(34, 197, 94, 0.2); border-color: var(--green); color: var(--green); }
+.score-option input[value="4"]:checked + .score-label { background: rgba(59, 130, 246, 0.2); border-color: var(--blue); color: var(--blue); }
+.score-option input[value="3"]:checked + .score-label { background: rgba(234, 179, 8, 0.2); border-color: var(--yellow); color: var(--yellow); }
+.score-option input[value="2"]:checked + .score-label { background: rgba(249, 115, 22, 0.2); border-color: var(--orange); color: var(--orange); }
+.score-option input[value="1"]:checked + .score-label { background: rgba(239, 68, 68, 0.2); border-color: var(--red); color: var(--red); }
+.score-option input[value="na"]:checked + .score-label { background: rgba(100, 116, 139, 0.2); border-color: var(--text-muted); color: var(--text-muted); }
+
+.score-label.na-label { font-size: 0.7rem; letter-spacing: 0.03em; }
+
+/* ===== Photo Section per Dimension ===== */
+.dim-photo-row {
+  display: flex; align-items: center; gap: 8px; margin-top: 10px; flex-wrap: wrap;
+}
+
+.btn-photo {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 6px 12px; border-radius: var(--radius-sm);
+  border: 1.5px dashed var(--border); background: transparent;
+  color: var(--text-muted); font-family: inherit; font-size: 0.72rem; font-weight: 500;
+  cursor: pointer; transition: all var(--transition);
+}
+
+.btn-photo:hover { border-color: var(--accent); color: var(--accent); background: rgba(14, 165, 233, 0.06); }
+.btn-photo:disabled { opacity: 0.3; cursor: not-allowed; }
+.btn-photo:disabled:hover { border-color: var(--border); color: var(--text-muted); background: transparent; }
+
+.photo-thumb-wrap {
+  position: relative; display: inline-block;
+}
+
+.photo-thumb {
+  width: 48px; height: 48px; border-radius: var(--radius-sm);
+  object-fit: cover; border: 1.5px solid var(--border);
+  cursor: pointer; transition: all var(--transition);
+}
+
+.photo-thumb:hover { border-color: var(--accent); transform: scale(1.08); }
+
+.photo-remove {
+  position: absolute; top: -6px; right: -6px;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--red); color: white; border: 2px solid var(--bg-primary);
+  font-size: 0.6rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: transform var(--transition);
+  line-height: 1;
+}
+
+.photo-remove:hover { transform: scale(1.2); }
+
+.photo-count {
+  font-size: 0.68rem; color: var(--text-muted); font-weight: 500;
+}
+
+/* ===== Lightbox ===== */
+.lightbox {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(0, 0, 0, 0.92);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; visibility: hidden; transition: all 0.3s ease;
+}
+
+.lightbox.open { opacity: 1; visibility: visible; }
+
+.lightbox img {
+  max-width: 92vw; max-height: 88vh;
+  border-radius: var(--radius); object-fit: contain;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+}
+
+.lightbox-close {
+  position: absolute; top: 16px; right: 16px;
+  background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white; width: 40px; height: 40px; border-radius: 50%;
+  font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background var(--transition);
+}
+
+.lightbox-close:hover { background: rgba(255, 255, 255, 0.2); }
+
+/* ===== Descriptor Accordion ===== */
+.dim-descriptors-toggle {
+  display: inline-flex; align-items: center; gap: 4px; margin-top: 10px;
+  font-size: 0.72rem; color: var(--text-muted); cursor: pointer;
+  background: none; border: none; padding: 4px 0; transition: color var(--transition);
+}
+
+.dim-descriptors-toggle:hover { color: var(--accent); }
+.dim-descriptors-toggle .arrow { transition: transform var(--transition); font-size: 0.6rem; }
+.dim-descriptors-toggle.open .arrow { transform: rotate(90deg); }
+
+.dim-descriptors {
+  display: none; margin-top: 10px; padding: 10px 12px;
+  background: rgba(0, 0, 0, 0.2); border-radius: var(--radius-sm);
+  font-size: 0.75rem; line-height: 1.6;
+}
+
+.dim-descriptors.open { display: block; animation: fadeInUp 0.2s ease-out; }
+
+.desc-item { display: flex; gap: 8px; padding: 5px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.04); }
+.desc-item:last-child { border-bottom: none; }
+.desc-score { font-weight: 700; min-width: 18px; flex-shrink: 0; }
+.desc-score.s5 { color: var(--green); } .desc-score.s4 { color: var(--blue); }
+.desc-score.s3 { color: var(--yellow); } .desc-score.s2 { color: var(--orange); }
+.desc-score.s1 { color: var(--red); }
+.desc-text { color: var(--text-secondary); }
+
+/* ===== Result ===== */
+.result-card {
+  display: flex; align-items: center; gap: 20px; padding: 20px;
+  border-radius: var(--radius); background: var(--bg-glass);
+  border: 1px solid var(--border); transition: all 0.4s ease;
+}
+
+.result-score { display: flex; flex-direction: column; align-items: center; min-width: 80px; }
+
+.score-value { font-size: 2.4rem; font-weight: 800; line-height: 1; transition: color 0.4s ease; }
+.score-label { font-size: 0.7rem; color: var(--text-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.08em; }
+
+.result-details { flex: 1; }
+
+.result-badge {
+  display: inline-block; padding: 5px 16px; border-radius: 20px;
+  font-size: 0.85rem; font-weight: 700; background: var(--bg-glass);
+  color: var(--text-muted); transition: all 0.4s ease;
+}
+
+.result-action { font-size: 0.78rem; color: var(--text-secondary); margin-top: 8px; }
+
+/* ===== Buttons ===== */
+.form-actions { display: flex; gap: 12px; margin-top: 8px; padding-bottom: 20px; }
+
+.btn-primary {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 14px 24px; border: none; border-radius: var(--radius);
+  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+  color: white; font-family: inherit; font-size: 0.95rem; font-weight: 600;
+  cursor: pointer; transition: all var(--transition);
+  box-shadow: 0 4px 16px rgba(14, 165, 233, 0.3);
+}
+
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(14, 165, 233, 0.4); }
+.btn-primary:active { transform: translateY(0); }
+
+.btn-secondary {
+  padding: 14px 20px; border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--bg-glass); color: var(--text-secondary);
+  font-family: inherit; font-size: 0.88rem; font-weight: 500;
+  cursor: pointer; transition: all var(--transition);
+}
+
+.btn-secondary:hover { border-color: var(--text-muted); color: var(--text-primary); }
+
+.btn-sm {
+  padding: 8px 14px; border-radius: var(--radius-sm); font-size: 0.78rem; font-weight: 500;
+  cursor: pointer; transition: all var(--transition); font-family: inherit;
+}
+
+.btn-outline { background: var(--bg-glass); border: 1px solid var(--border); color: var(--text-secondary); }
+.btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+.btn-danger { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: var(--red); }
+.btn-danger:hover { background: rgba(239, 68, 68, 0.2); }
+
+/* ===== Empty State ===== */
+.empty-state { text-align: center; padding: 48px 20px; color: var(--text-muted); }
+.empty-icon { font-size: 3rem; margin-bottom: 16px; animation: bounce 2s infinite; }
+@keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+.empty-state p { font-size: 0.9rem; max-width: 280px; margin: 0 auto; }
+
+/* ===== Drawer ===== */
+.drawer-overlay {
+  position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); z-index: 200;
+  opacity: 0; visibility: hidden; transition: all 0.3s ease;
+}
+
+.drawer-overlay.open { opacity: 1; visibility: visible; }
+
+.drawer {
+  position: fixed; top: 0; right: -100%; width: min(400px, 90vw); height: 100dvh;
+  background: var(--bg-secondary); border-left: 1px solid var(--border); z-index: 201;
+  display: flex; flex-direction: column;
+  transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden;
+}
+
+.drawer.open { right: 0; }
+
+.drawer-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
+
+.drawer-header h2 { font-size: 1rem; font-weight: 600; }
+
+.drawer-actions {
+  display: flex; gap: 8px; padding: 12px 20px; border-bottom: 1px solid var(--border);
+  flex-wrap: wrap; flex-shrink: 0;
+}
+
+.drawer-stats {
+  padding: 12px 20px; font-size: 0.78rem; color: var(--text-muted);
+  border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
+
+.drawer-list { flex: 1; overflow-y: auto; padding: 12px 20px; }
+
+.history-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px; margin-bottom: 8px;
+  border-radius: var(--radius-sm); background: var(--bg-glass);
+  border: 1px solid var(--border); border-left: 4px solid var(--text-muted);
+  transition: all var(--transition);
+}
+
+.history-item:hover { background: rgba(255, 255, 255, 0.06); }
+.history-info { flex: 1; min-width: 0; }
+.history-name { font-size: 0.85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.history-meta { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+.history-photos { font-size: 0.65rem; color: var(--accent); margin-top: 1px; }
+.history-score { font-size: 1.1rem; font-weight: 800; min-width: 36px; text-align: center; }
+
+.history-delete {
+  background: none; border: none; color: var(--text-muted);
+  cursor: pointer; padding: 4px; font-size: 1rem; transition: color var(--transition); flex-shrink: 0;
+}
+
+.history-delete:hover { color: var(--red); }
+.history-empty { text-align: center; padding: 40px 0; color: var(--text-muted); font-size: 0.85rem; }
+
+/* ===== Toast ===== */
+.toast {
+  position: fixed; bottom: -80px; left: 50%; transform: translateX(-50%);
+  background: var(--bg-secondary); border: 1px solid var(--border);
+  color: var(--text-primary); padding: 12px 24px; border-radius: var(--radius);
+  font-size: 0.85rem; font-weight: 500; z-index: 300; box-shadow: var(--shadow);
+  transition: bottom 0.4s cubic-bezier(0.4, 0, 0.2, 1); white-space: nowrap;
+  max-width: 90vw; overflow: hidden; text-overflow: ellipsis;
+}
+
+.toast.show { bottom: 24px; }
+
+/* ===== Responsive ===== */
+@media (max-width: 500px) {
+  html { font-size: 14px; }
+  .form-grid { grid-template-columns: 1fr; }
+  .result-card { flex-direction: column; text-align: center; }
+  .form-actions { flex-direction: column; }
+  .score-label { width: 40px; height: 36px; font-size: 0.8rem; }
+  .header-brand h1 { font-size: 0.92rem; }
+  .photo-thumb { width: 42px; height: 42px; }
+}
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="header-brand">
+        <div class="header-icon">🏛️</div>
+        <div>
+          <h1>Evaluación de Infraestructura</h1>
+          <p>Universidad del Norte — Barranquilla</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="btnTheme" class="btn-theme" title="Cambiar tema">🌙</button>
+        <div class="storage-indicator" id="storageIndicator" title="Uso de almacenamiento">
+          <div class="storage-bar"><div class="storage-fill" id="storageFill"></div></div>
+          <span class="storage-text" id="storageText">0%</span>
+        </div>
+        <button id="btnHistory" class="btn-icon" title="Historial">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg>
+        </button>
+        <span id="evalCount" class="eval-badge">0</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Form -->
+  <main class="main-content">
+    <form id="evalForm" autocomplete="off">
+      <!-- Section: General Data -->
+      <section class="form-section">
+        <div class="section-header">
+          <span class="section-icon">📋</span>
+          <h2>Datos Generales</h2>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="codigo">Código del espacio</label>
+            <input type="text" id="codigo" placeholder="Ej: SAL-BK01-201" />
+          </div>
+          <div class="form-group">
+            <label for="nombre">Nombre del espacio <span class="required">*</span></label>
+            <input type="text" id="nombre" placeholder="Ej: Salón 201" required />
+          </div>
+          <div class="form-group full-width">
+            <label for="categoria">Categoría <span class="required">*</span></label>
+            <select id="categoria" required>
+              <option value="">— Seleccionar categoría —</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="edificio">Edificio / Bloque</label>
+            <input type="text" id="edificio" placeholder="Ej: Bloque K1" />
+          </div>
+          <div class="form-group">
+            <label for="piso">Piso / Nivel</label>
+            <input type="text" id="piso" placeholder="Ej: 2" />
+          </div>
+          <div class="form-group">
+            <label for="fecha">Fecha</label>
+            <input type="date" id="fecha" />
+          </div>
+          <div class="form-group">
+            <label for="hora">Hora</label>
+            <input type="time" id="hora" />
+          </div>
+          <div class="form-group">
+            <label for="evaluador">Evaluador <span class="required">*</span></label>
+            <input type="text" id="evaluador" placeholder="Nombre completo" required />
+          </div>
+          <div class="form-group">
+            <label for="cargo">Cargo</label>
+            <input type="text" id="cargo" placeholder="Ej: Coord. Planta Física" />
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Dimensions (Dynamic) -->
+      <section class="form-section" id="dimensionsSection" style="display:none;">
+        <div class="section-header">
+          <span class="section-icon" id="catIcon">📐</span>
+          <h2 id="catTitle">Dimensiones de Evaluación</h2>
+        </div>
+        <p class="photo-hint">📷 Puede adjuntar hasta 2 fotos por dimensión como evidencia.</p>
+        <div id="dimensionsContainer"></div>
+      </section>
+
+      <!-- Live Result -->
+      <section class="form-section result-section" id="resultSection" style="display:none;">
+        <div class="section-header">
+          <span class="section-icon">📊</span>
+          <h2>Resultado</h2>
+        </div>
+        <div class="result-card" id="resultCard">
+          <div class="result-score">
+            <span class="score-value" id="scoreValue">—</span>
+            <span class="score-label">Promedio</span>
+          </div>
+          <div class="result-details">
+            <div class="result-badge" id="resultBadge">Sin evaluar</div>
+            <div class="result-action" id="resultAction"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Observations -->
+      <section class="form-section" id="obsSection" style="display:none;">
+        <div class="section-header">
+          <span class="section-icon">📝</span>
+          <h2>Observaciones</h2>
+        </div>
+        <div class="form-group full-width">
+          <label for="observaciones">Observaciones generales</label>
+          <textarea id="observaciones" rows="3" placeholder="Describa hallazgos relevantes..."></textarea>
+        </div>
+        <div class="form-group full-width" id="accionesGroup" style="display:none;">
+          <label for="acciones" class="label-warning">⚠️ Acciones inmediatas requeridas (puntaje ≤ 2 detectado)</label>
+          <textarea id="acciones" rows="3" placeholder="Describa las acciones inmediatas necesarias..."></textarea>
+        </div>
+      </section>
+
+      <!-- Submit -->
+      <div class="form-actions" id="formActions" style="display:none;">
+        <button type="submit" class="btn-primary" id="btnSave">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Guardar Evaluación
+        </button>
+        <button type="reset" class="btn-secondary" id="btnReset">Limpiar formulario</button>
+      </div>
+    </form>
+
+    <!-- Empty state -->
+    <div class="empty-state" id="emptyState">
+      <div class="empty-icon">👆</div>
+      <p>Seleccione una <strong>categoría</strong> para comenzar la evaluación de las dimensiones.</p>
+    </div>
+  </main>
+
+  <!-- Hidden file input for photo capture -->
+  <input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none;" />
+
+  <!-- Photo Lightbox -->
+  <div class="lightbox" id="lightbox">
+    <button class="lightbox-close" id="lightboxClose">✕</button>
+    <img id="lightboxImg" src="" alt="Evidencia fotográfica" />
+  </div>
+
+  <!-- History Drawer -->
+  <div class="drawer-overlay" id="drawerOverlay"></div>
+  <aside class="drawer" id="historyDrawer">
+    <div class="drawer-header">
+      <h2>Historial de Evaluaciones</h2>
+      <button class="btn-icon" id="btnCloseDrawer">✕</button>
+    </div>
+    <div class="drawer-actions">
+      <button class="btn-sm btn-outline" id="btnExportCSV">📥 CSV (datos)</button>
+      <button class="btn-sm btn-outline" id="btnExportJSON">📦 JSON (con fotos)</button>
+      <button class="btn-sm btn-outline" id="btnImportTrigger">📤 Importar</button>
+      <input type="file" id="btnImport" accept=".csv,.json" style="display:none;" />
+      <button class="btn-sm btn-danger" id="btnClearAll">🗑️ Limpiar todo</button>
+    </div>
+    <div class="drawer-stats" id="drawerStats"></div>
+    <div class="drawer-list" id="historyList"></div>
+  </aside>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <!-- Rúbrica data.js -->
+  <script>
+// ============================================================
+// data.js — Datos de la rúbrica de infraestructura UniNorte
+// 14 categorías con dimensiones y descriptores por nivel
+// ============================================================
+
+const CATEGORIES = [
+  {
+    id: "salon", name: "Salón de Clases", icon: "🏫",
+    dimensions: [
+      { id: "estructura", name: "Estructura y Acabados", descriptors: {
+        5: "Paredes, piso y techo en perfecto estado. Pintura uniforme, sin manchas ni grietas. Piso nivelado y limpio.",
+        4: "Paredes y piso en buen estado general. Marcas menores de uso. Pintura con desgaste mínimo.",
+        3: "Pintura desgastada en algunas áreas. Grietas superficiales visibles. Piso con desgaste moderado.",
+        2: "Humedad visible, descascaramiento de pintura o grietas notorias. Piso deteriorado.",
+        1: "Daño estructural evidente (infiltraciones activas, grietas profundas, techo con riesgo). Piso inestable."
+      }},
+      { id: "mobiliario", name: "Mobiliario", descriptors: {
+        5: "Todo el mobiliario en excelente estado, completo y funcional. Sillas ergonómicas, mesas estables, tableros limpios.",
+        4: "Mobiliario en buen estado. Desgaste menor por uso normal. Todos los puestos funcionales.",
+        3: "Algunos mobiliario con desgaste visible. 90%+ de los puestos funcionales.",
+        2: "Mobiliario deteriorado: sillas rotas, mesas inestables, tableros dañados. 70-89% funcional.",
+        1: "Más del 30% del mobiliario inutilizable. Impide el desarrollo normal de la clase."
+      }},
+      { id: "iluminacion", name: "Iluminación", descriptors: {
+        5: "Iluminación uniforme y suficiente (≥300 lux). Todas las luminarias funcionando.",
+        4: "Iluminación adecuada. Máximo 1-2 luminarias fundidas sin afectar significativamente.",
+        3: "Iluminación desigual. Algunas zonas oscuras. 10-20% de luminarias sin funcionar.",
+        2: "Iluminación insuficiente que dificulta lectura. >20% luminarias sin funcionar.",
+        1: "Sin iluminación artificial funcional o extremadamente deficiente."
+      }},
+      { id: "ventilacion", name: "Ventilación y Climatización", descriptors: {
+        5: "AC funcionando óptimamente. Temperatura 22-24°C. Sin ruidos excesivos. Filtros limpios.",
+        4: "Climatización funcional con variaciones menores. Ruido leve.",
+        3: "AC funciona con deficiencias (enfría irregularmente, gotea levemente, ruido moderado).",
+        2: "Climatización deficiente: no enfría adecuadamente, goteo constante, ruido excesivo.",
+        1: "Sin AC funcional en espacio cerrado. >30°C interior."
+      }},
+      { id: "tecnologia", name: "Equipos Tecnológicos", descriptors: {
+        5: "Video beam, sonido, tomas eléctricas y conectividad WiFi/ethernet perfectos.",
+        4: "Equipos funcionales con detalles menores (cables a la vista, control remoto gastado).",
+        3: "Algún equipo intermitente. Al menos video beam y tomas funcionan.",
+        2: "Equipos principales sin funcionar (video beam dañado). Tomas dañadas.",
+        1: "Sin equipos tecnológicos funcionales. Sin tomas eléctricas. Sin conectividad."
+      }},
+      { id: "limpieza", name: "Limpieza e Higiene", descriptors: {
+        5: "Espacio impecable. Sin basura, polvo o manchas. Papelera disponible y vacía.",
+        4: "Limpio en general. Mínimo polvo. Papelera disponible.",
+        3: "Limpieza aceptable con acumulación menor de polvo o basura.",
+        2: "Suciedad visible en pisos, mesas o sillas. Papelera desbordada o ausente.",
+        1: "Espacio sucio. Malos olores, plagas o residuos orgánicos."
+      }},
+      { id: "senalizacion", name: "Señalización y Accesibilidad", descriptors: {
+        5: "Número de sala visible. Señalización de emergencia completa. Acceso para movilidad reducida. Ruta evacuación clara.",
+        4: "Señalización presente y legible. Ruta de evacuación visible. Acceso adecuado.",
+        3: "Señalización parcial (falta número de sala o señalización incompleta).",
+        2: "Señalización ausente o ilegible. Sin ruta de evacuación visible. Obstáculos.",
+        1: "Sin señalización. Barreras de accesibilidad significativas. Salidas bloqueadas."
+      }}
+    ]
+  },
+  {
+    id: "laboratorio", name: "Laboratorio", icon: "🔬",
+    dimensions: [
+      { id: "estructura", name: "Estructura y Acabados", descriptors: {
+        5: "Pisos antideslizantes en perfecto estado. Paredes lavables sin daños. Mesones íntegros. Instalaciones de agua/gas seguras.",
+        4: "Estructura en buen estado. Desgaste mínimo en superficies. Instalaciones funcionales con mantenimiento al día.",
+        3: "Superficies con desgaste moderado (manchas, rayones). Instalaciones funcionales con goteos menores.",
+        2: "Mesones deteriorados o inestables. Pisos resbalosos. Instalaciones con fugas visibles.",
+        1: "Daño estructural que compromete la seguridad. Instalaciones de agua/gas con riesgo de accidente."
+      }},
+      { id: "equipos", name: "Equipos y Dotación", descriptors: {
+        5: "Equipos completos, calibrados y en perfecto funcionamiento. Inventario actualizado. Insumos suficientes.",
+        4: "Equipos funcionales con mantenimiento preventivo al día. Insumos disponibles.",
+        3: "Algunos equipos requieren calibración o reparación menor. Insumos limitados pero suficientes.",
+        2: "Equipos clave fuera de servicio. Insumos insuficientes. Prácticas afectadas.",
+        1: "Mayoría de equipos inoperativos o ausentes. Imposibilidad de realizar prácticas."
+      }},
+      { id: "seguridad", name: "Seguridad", descriptors: {
+        5: "Ducha de emergencia y lavaojos funcionales. Extintores vigentes. Botiquín completo. EPP disponible. Hojas SDS actualizadas.",
+        4: "Elementos de seguridad presentes y funcionales. Fechas vigentes. EPP disponible con desgaste menor.",
+        3: "Elementos presentes pero con deficiencias menores (botiquín incompleto, EPP desgastado).",
+        2: "Faltan elementos críticos (sin extintor, ducha bloqueada). EPP insuficiente o deteriorado.",
+        1: "Sin elementos de seguridad funcionales. Riesgo inminente. Sustancias peligrosas sin control."
+      }},
+      { id: "ventilacion", name: "Ventilación y Extracción", descriptors: {
+        5: "Sistema de extracción/campanas funcionando óptimamente. Ventilación adecuada. Sin olores químicos residuales.",
+        4: "Sistemas funcionales con mantenimiento al día. Extracción efectiva con ruido leve.",
+        3: "Ventilación funcional pero insuficiente en alta demanda. Olores químicos leves ocasionales.",
+        2: "Campanas deficientes o parcialmente inoperativas. Olores químicos persistentes.",
+        1: "Sin sistema de extracción funcional. Riesgo de exposición a vapores tóxicos."
+      }},
+      { id: "limpieza_senal", name: "Limpieza, Iluminación y Señalización", descriptors: {
+        5: "Limpieza impecable. Iluminación ≥500 lux. Señalización de riesgos completa (pictogramas GHS, rutas, normas).",
+        4: "Limpio y bien iluminado. Señalización presente y legible.",
+        3: "Limpieza aceptable. Iluminación adecuada con zonas de penumbra. Señalización parcial.",
+        2: "Residuos químicos sin limpiar. Iluminación deficiente. Señalización incompleta.",
+        1: "Condiciones antihigiénicas. Sin iluminación adecuada. Sin señalización de riesgos."
+      }}
+    ]
+  },
+  {
+    id: "sala_pc", name: "Sala de Computadores", icon: "💻",
+    dimensions: [
+      { id: "mobiliario", name: "Mobiliario y Ergonomía", descriptors: {
+        5: "Mesas amplias y estables. Sillas ergonómicas ajustables. Monitores a altura adecuada. Cableado canalizado.",
+        4: "Mobiliario en buen estado. Ergonomía aceptable. Cableado mayormente organizado.",
+        3: "Mobiliario funcional con desgaste. Algunos cables expuestos. Espacio algo reducido entre puestos.",
+        2: "Mobiliario deteriorado. Cables desordenados (riesgo de tropiezo). Hacinamiento.",
+        1: "Mobiliario inservible. Cableado peligroso. Impide el uso adecuado."
+      }},
+      { id: "equipos_computo", name: "Equipos de Cómputo", descriptors: {
+        5: "100% equipos funcionales. Hardware actualizado (máx 5 años). Rendimiento fluido. Periféricos completos.",
+        4: "95%+ equipos funcionales. Hardware adecuado. Periféricos completos.",
+        3: "85-94% equipos funcionales. Rendimiento lento pero utilizable. Algunos periféricos faltantes.",
+        2: "70-84% equipos funcionales. Equipos obsoletos o muy lentos. Periféricos incompletos.",
+        1: "<70% equipos funcionales. Equipos inoperativos o extremadamente obsoletos."
+      }},
+      { id: "software", name: "Software y Conectividad", descriptors: {
+        5: "Software académico licenciado e instalado. SO actualizado. WiFi y ethernet rápidos y estables.",
+        4: "Software necesario instalado y funcional. Conectividad estable con velocidad adecuada.",
+        3: "Software parcialmente actualizado. Conectividad intermitente o lenta en horas pico.",
+        2: "Software desactualizado o faltante. Conectividad deficiente.",
+        1: "Sin software académico necesario. Sin conectividad. Equipos sin SO funcional."
+      }},
+      { id: "clima_ilum", name: "Climatización, Iluminación y Limpieza", descriptors: {
+        5: "AC óptimo (20-24°C). Iluminación antireflejos. Espacio limpio y sin polvo en equipos.",
+        4: "Climatización adecuada. Iluminación correcta. Limpieza general buena.",
+        3: "Climatización funcional con variaciones. Reflejos ocasionales. Polvo acumulado en algunos equipos.",
+        2: "Temperatura >26°C (riesgo para equipos). Iluminación que genera fatiga visual. Polvo excesivo.",
+        1: "Sin climatización. Iluminación deficiente. Suciedad generalizada."
+      }}
+    ]
+  },
+  {
+    id: "fachada", name: "Fachada de Edificio", icon: "🏢",
+    dimensions: [
+      { id: "pintura", name: "Pintura y Revestimiento", descriptors: {
+        5: "Pintura/revestimiento uniforme, sin descascaramiento ni decoloración. Colores institucionales definidos.",
+        4: "Pintura en buen estado con decoloración mínima por exposición solar. Sin descascaramiento.",
+        3: "Decoloración moderada. Zonas con pintura desgastada pero sin descascaramiento extenso.",
+        2: "Descascaramiento visible. Manchas de humedad notorias. Pérdida de color institucional.",
+        1: "Fachada severamente deteriorada. Descascaramiento extenso, grafitis sin remover."
+      }},
+      { id: "integridad", name: "Integridad Estructural Visible", descriptors: {
+        5: "Sin grietas, fisuras ni desprendimientos. Juntas y sellos en perfecto estado.",
+        4: "Microfisuras superficiales sin implicación estructural. Juntas en buen estado.",
+        3: "Grietas superficiales visibles. Algunos sellos deteriorados. Sin riesgo estructural aparente.",
+        2: "Grietas significativas. Elementos decorativos desprendidos. Requiere evaluación estructural.",
+        1: "Grietas estructurales evidentes. Riesgo de desprendimiento. Peligro para transeúntes."
+      }},
+      { id: "ventaneria", name: "Ventanería y Elementos Exteriores", descriptors: {
+        5: "Ventanas limpias, sellos intactos, vidrios completos. Canaletas funcionales. Sin corrosión.",
+        4: "Ventanas en buen estado con suciedad menor. Canaletas funcionales. Oxidación mínima.",
+        3: "Ventanas con sellos deteriorados. Canaletas con obstrucciones parciales. Oxidación visible.",
+        2: "Vidrios rotos o faltantes. Canaletas dañadas que generan humedades. Corrosión avanzada.",
+        1: "Ventanería severamente dañada. Drenaje inoperante. Elementos con riesgo de desprendimiento."
+      }},
+      { id: "aspecto", name: "Limpieza y Aspecto General", descriptors: {
+        5: "Fachada impecable. Sin telarañas, nidos ni manchas de agua. Aspecto institucional impecable.",
+        4: "Fachada limpia con suciedad menor en zonas poco visibles.",
+        3: "Suciedad acumulada visible. Telarañas en esquinas. Manchas de agua en zonas bajas.",
+        2: "Fachada visiblemente sucia. Moho o algas en zonas húmedas. Aspecto descuidado.",
+        1: "Fachada extremadamente sucia. Crecimiento vegetal invasivo. Impacto negativo en imagen."
+      }}
+    ]
+  },
+  {
+    id: "cancha", name: "Cancha Deportiva", icon: "⚽",
+    dimensions: [
+      { id: "superficie", name: "Superficie de Juego", descriptors: {
+        5: "Superficie en excelente estado. Demarcación completa y visible. Nivelación perfecta.",
+        4: "Superficie en buen estado. Desgaste menor en zonas de alto tráfico. Demarcación legible.",
+        3: "Desgaste moderado. Parches irregulares o fisuras menores. Demarcación parcialmente borrada.",
+        2: "Superficie deteriorada (huecos, grietas extensas). Demarcación ilegible. Charcos tras lluvia.",
+        1: "Superficie inutilizable. Riesgo de lesiones por irregularidades graves. Sin demarcación."
+      }},
+      { id: "equipamiento", name: "Equipamiento Deportivo", descriptors: {
+        5: "Arcos, mallas, tableros y postes completos, firmes y en excelente estado. Graderías seguras.",
+        4: "Equipamiento completo y funcional con desgaste menor. Graderías en buen estado.",
+        3: "Equipamiento funcional con detalles (mallas rotas parcialmente, tableros desgastados).",
+        2: "Equipamiento incompleto o dañado (arcos sin malla, tableros rotos). Graderías con daños.",
+        1: "Sin equipamiento o completamente inservible. Graderías inseguras."
+      }},
+      { id: "ilum_drenaje", name: "Iluminación, Drenaje y Servicios", descriptors: {
+        5: "Iluminación nocturna completa. Drenaje eficiente. Bebederos y baños cercanos.",
+        4: "Iluminación funcional. Drenaje adecuado. Servicios complementarios disponibles.",
+        3: "Iluminación parcial. Drenaje lento pero funcional. Servicios limitados.",
+        2: "Iluminación insuficiente para uso nocturno. Encharcamientos frecuentes. Sin servicios.",
+        1: "Sin iluminación. Sin drenaje (inundación frecuente). Sin servicios."
+      }},
+      { id: "seguridad_cerr", name: "Seguridad y Cerramientos", descriptors: {
+        5: "Cerramientos/mallas perimetrales completos e íntegros. Superficie libre de objetos peligrosos.",
+        4: "Cerramientos en buen estado con reparaciones menores. Espacio seguro.",
+        3: "Cerramientos con daños parciales (huecos en mallas). Algunos objetos por retirar.",
+        2: "Cerramientos significativamente dañados. Elementos peligrosos cerca del área de juego.",
+        1: "Sin cerramientos donde se requieren. Riesgo alto de lesiones."
+      }}
+    ]
+  },
+  {
+    id: "jardin", name: "Jardín / Zona Verde", icon: "🌳",
+    dimensions: [
+      { id: "vegetacion", name: "Estado de la Vegetación", descriptors: {
+        5: "Grama cortada uniformemente. Árboles y arbustos podados. Plantas ornamentales saludables.",
+        4: "Vegetación cuidada con mantenimiento reciente. Grama uniforme. Árboles saludables.",
+        3: "Grama irregular (requiere corte). Arbustos con crecimiento excesivo. Estrés hídrico.",
+        2: "Grama muy crecida o con zonas secas extensas. Ramas secas sin podar. Plantas muertas.",
+        1: "Vegetación abandonada. Maleza invasiva. Árboles con riesgo de caída. Descuido total."
+      }},
+      { id: "mobiliario_ext", name: "Mobiliario Exterior and Senderos", descriptors: {
+        5: "Bancas y mesas en excelente estado. Senderos bien pavimentados y nivelados. Pérgolas funcionales.",
+        4: "Mobiliario en buen estado con desgaste menor. Senderos transitables sin obstáculos.",
+        3: "Algunos muebles deteriorados. Senderos con irregularidades menores (baldosas sueltas).",
+        2: "Mobiliario roto o vandalizado. Senderos con huecos o adoquines levantados. Riesgo de tropiezo.",
+        1: "Sin mobiliario funcional. Senderos intransitables. Charcos permanentes."
+      }},
+      { id: "limpieza_riego", name: "Limpieza y Riego", descriptors: {
+        5: "Espacios limpios. Sin basura. Papeleras disponibles y vacías. Riego funcional y programado.",
+        4: "Limpieza adecuada. Papeleras disponibles. Riego regular.",
+        3: "Basura ocasional. Papeleras llenas. Riego irregular.",
+        2: "Basura acumulada. Papeleras desbordadas o ausente. Zonas secas por falta de riego.",
+        1: "Espacio usado como basurero informal. Sin papeleras. Vegetación muerta por falta de riego."
+      }},
+      { id: "ilum_seg", name: "Iluminación y Seguridad", descriptors: {
+        5: "Iluminación peatonal completa. Cámaras de seguridad visibles. Senderos delimitados.",
+        4: "Iluminación adecuada en rutas principales. Seguridad visible.",
+        3: "Iluminación parcial (zonas oscuras en senderos secundarios). Seguridad variable.",
+        2: "Iluminación insuficiente. Zonas aisladas sin vigilancia. Sensación de inseguridad.",
+        1: "Sin iluminación funcional. Zona percibida como insegura."
+      }}
+    ]
+  },
+  {
+    id: "acceso", name: "Entrada / Salida / Acceso", icon: "🚪",
+    dimensions: [
+      { id: "estado_fisico", name: "Estado Físico de la Infraestructura", descriptors: {
+        5: "Puertas, portones, torniquetes y barreras en perfecto estado. Pisos antideslizantes. Techado adecuado.",
+        4: "Infraestructura en buen estado. Desgaste menor en elementos de alto uso.",
+        3: "Elementos funcionales con desgaste visible. Techado parcial. Pisos con irregularidades menores.",
+        2: "Puertas/portones con dificultad de operación. Torniquetes averiados. Pisos resbalosos.",
+        1: "Infraestructura severamente dañada o inoperable. Riesgo de caídas o atrapamiento."
+      }},
+      { id: "control_acceso", name: "Control de Acceso y Seguridad", descriptors: {
+        5: "Sistema electrónico funcional (carnet, biometría). Personal de seguridad. Cámaras operativas.",
+        4: "Control funcional con fallas esporádicas. Seguridad en horarios principales.",
+        3: "Control intermitente. Cobertura parcial. Cámaras con ángulos limitados.",
+        2: "Control frecuentemente inoperante. Seguridad insuficiente. Acceso sin verificación.",
+        1: "Sin control de acceso funcional. Sin seguridad. Acceso libre e incontrolado."
+      }},
+      { id: "senalizacion_flujo", name: "Señalización y Flujo", descriptors: {
+        5: "Señalización clara de entrada/salida vehicular y peatonal. Reductores funcionales.",
+        4: "Señalización adecuada. Separación clara de flujos.",
+        3: "Señalización parcial. Conflictos menores entre peatones y vehículos.",
+        2: "Señalización confusa o ausente. Conflictos frecuentes peatón-vehículo.",
+        1: "Sin señalización. Mezcla peligrosa de flujos. Riesgo de accidentes."
+      }},
+      { id: "accesibilidad", name: "Accesibilidad Universal", descriptors: {
+        5: "Rampas ≤8%. Pisos podotáctiles. Ancho para sillas de ruedas. Señalización inclusiva.",
+        4: "Accesibilidad adecuada con detalles menores.",
+        3: "Rampas presentes pero con pendiente pronunciada o desgaste. Accesibilidad parcial.",
+        2: "Accesibilidad limitada. Rampas insuficientes. Barreras para personas con discapacidad.",
+        1: "Sin consideraciones de accesibilidad. Imposible el acceso para movilidad reducida."
+      }}
+    ]
+  },
+  {
+    id: "parqueadero", name: "Parqueadero", icon: "🅿️",
+    dimensions: [
+      { id: "superficie_dem", name: "Superficie y Demarcación", descriptors: {
+        5: "Pavimento excelente. Demarcación completa y visible. Topes presentes.",
+        4: "Pavimento en buen estado. Demarcación legible con desgaste menor.",
+        3: "Pavimento con fisuras menores. Demarcación parcialmente borrada.",
+        2: "Pavimento deteriorado con huecos. Demarcación ilegible. Charcos frecuentes.",
+        1: "Pavimento severamente dañado. Sin demarcación. Riesgo de daño a vehículos."
+      }},
+      { id: "ilum_seg", name: "Iluminación y Seguridad", descriptors: {
+        5: "Iluminación completa. Cámaras con cobertura total. Personal de vigilancia.",
+        4: "Iluminación adecuada. Cámaras funcionales. Vigilancia regular.",
+        3: "Iluminación parcial. Cámaras con cobertura limitada. Vigilancia intermitente.",
+        2: "Iluminación deficiente. Pocas cámaras. Sin vigilancia regular.",
+        1: "Sin iluminación nocturna. Sin cámaras ni vigilancia. Zona de alto riesgo."
+      }},
+      { id: "senal_circ", name: "Señalización y Circulación", descriptors: {
+        5: "Señales de dirección, velocidad y pasos peatonales claros. Reductores de velocidad.",
+        4: "Señalización funcional. Circulación organizada. Pasos peatonales visibles.",
+        3: "Señalización parcial. Circulación funcional con confusión.",
+        2: "Señalización insuficiente. Circulación confusa. Conflictos peatón-vehículo.",
+        1: "Sin señalización. Circulación caótica. Riesgo elevado de accidentes."
+      }},
+      { id: "techado_dren", name: "Techado, Drenaje y Servicios", descriptors: {
+        5: "Techos sin goteras. Drenaje eficiente. Bicicleteros seguros. Zonas accesibles señalizadas.",
+        4: "Techado funcional. Drenaje adecuado. Servicios disponibles.",
+        3: "Techado con goteras menores. Drenaje lento. Bicicleteros insuficientes.",
+        2: "Techado dañado. Encharcamientos frecuentes. Sin bicicleteros.",
+        1: "Techado colapsado. Inundaciones recurrentes. Sin servicios ni accesibilidad."
+      }}
+    ]
+  },
+  {
+    id: "bano", name: "Baño", icon: "🚻",
+    dimensions: [
+      { id: "aparatos", name: "Aparatos Sanitarios", descriptors: {
+        5: "Sanitarios, lavamanos y orinales completos y funcionando. Sin fugas. Grifería perfecta.",
+        4: "Aparatos funcionales con desgaste menor. Sin fugas significativas.",
+        3: "Algunos aparatos intermitentes. Un aparato fuera de servicio.",
+        2: "Varios aparatos fuera de servicio. Fugas visibles. Grifería deteriorada.",
+        1: "Mayoría inoperativos. Fugas graves. Condiciones insalubres."
+      }},
+      { id: "limpieza_hig", name: "Limpieza e Higiene", descriptors: {
+        5: "Impecable. Olor neutro. Pisos secos. Jabón, papel higiénico y papel manos llenos.",
+        4: "Limpio. Olor aceptable. Suministros disponibles (>50%).",
+        3: "Limpieza aceptable. Olor leve. Dispensadores parcialmente vacíos.",
+        2: "Suciedad visible. Mal olor. Dispensadores vacíos. Pisos mojados.",
+        1: "Condiciones antihigiénicas. Olor nauseabundo. Sin suministros. Plagas."
+      }},
+      { id: "infraestructura", name: "Infraestructura y Acabados", descriptors: {
+        5: "Divisiones íntegras con cerraduras funcionales. Pisos y paredes perfectos. Ventilación adecuada.",
+        4: "Divisiones y cerraduras funcionales. Acabados en buen estado.",
+        3: "Algunas cerraduras dañadas. Desgaste en paredes. Ventilación limitada.",
+        2: "Divisiones dañadas. Varias cerraduras rotas. Humedad en paredes.",
+        1: "Divisiones destruidas. Sin privacidad. Daño severo. Moho visible."
+      }},
+      { id: "accesibilidad", name: "Accesibilidad", descriptors: {
+        5: "Baño accesible con barras de apoyo, espacio para silla de ruedas, lavamanos adaptado.",
+        4: "Baño accesible funcional con detalles menores.",
+        3: "Baño accesible con deficiencias (barras flojas, espacio reducido).",
+        2: "Baño accesible inoperativo o con barreras significativas.",
+        1: "Sin baño accesible disponible. Incumplimiento normativo."
+      }}
+    ]
+  },
+  {
+    id: "pasillo", name: "Pasillo / Escalera / Área Común", icon: "🏛️",
+    dimensions: [
+      { id: "pisos", name: "Pisos y Superficies", descriptors: {
+        5: "Pisos impecables, nivelados y antideslizantes. Escaleras con cintas. Barandas firmes.",
+        4: "Pisos en buen estado. Escaleras seguras. Barandas funcionales.",
+        3: "Pisos con desgaste. Baldosas sueltas. Cintas antideslizantes desgastadas.",
+        2: "Pisos resbalosos o con huecos. Escaleras sin cintas. Barandas flojas.",
+        1: "Pisos peligrosos. Escaleras inseguras (escalones rotos, sin baranda)."
+      }},
+      { id: "ilum_vent", name: "Iluminación y Ventilación", descriptors: {
+        5: "Iluminación uniforme. Ventilación adecuada. Luces de emergencia funcionales.",
+        4: "Iluminación adecuada. Ventilación aceptable. Luces de emergencia presentes.",
+        3: "Iluminación parcial (zonas oscuras). Ventilación limitada.",
+        2: "Iluminación deficiente. Escaleras oscuras. Mala ventilación.",
+        1: "Sin iluminación en zonas de tránsito. Sin ventilación. Sin luces de emergencia."
+      }},
+      { id: "senal_emerg", name: "Señalización y Emergencias", descriptors: {
+        5: "Rutas de evacuación completas e iluminadas. Extintores vigentes. Mapas de evacuación.",
+        4: "Señalización de emergencia presente y legible. Extintores vigentes.",
+        3: "Señalización parcial. Algunos extintores vencidos.",
+        2: "Señalización ausente o ilegible. Extintores vencidos u obstruidos.",
+        1: "Sin señalización de emergencia. Sin extintores. Rutas bloqueadas."
+      }},
+      { id: "ascensores", name: "Ascensores (si aplica)", descriptors: {
+        5: "Ascensores funcionales, limpios, certificación vigente. Botones en braille.",
+        4: "Ascensores funcionales con desgaste menor. Certificación vigente.",
+        3: "Ascensores con fallas ocasionales. Cabina desgastada. Tiempos largos.",
+        2: "Ascensores frecuentemente fuera de servicio. Certificación vencida.",
+        1: "Ascensores inoperativos. Sin alternativa accesible."
+      }}
+    ]
+  },
+  {
+    id: "cafeteria", name: "Cafetería / Zona de Alimentación", icon: "🍽️",
+    dimensions: [
+      { id: "infraestructura", name: "Infraestructura y Mobiliario", descriptors: {
+        5: "Mesas y sillas excelentes, suficientes para la demanda. Pisos antideslizantes. Zonas diferenciadas.",
+        4: "Mobiliario en buen estado con desgaste menor. Distribución funcional.",
+        3: "Mobiliario con desgaste visible. Espacio ajustado en horas pico.",
+        2: "Mobiliario dañado. Hacinamiento. Pisos resbalosos o deteriorados.",
+        1: "Mobiliario inutilizable. Infraestructura riesgosa. Inaceptable para consumo de alimentos."
+      }},
+      { id: "higiene", name: "Higiene y Manipulación de Alimentos", descriptors: {
+        5: "Manipuladores con dotación completa. Superficies impecables. Temperaturas adecuadas. Certificados visibles.",
+        4: "Buenas prácticas observadas. Higiene adecuada. Certificados vigentes.",
+        3: "Manipulación aceptable con falencias menores. Superficies con desgaste.",
+        2: "Deficiencias notorias en manipulación. Superficies sucias. Alimentos sin protección.",
+        1: "Condiciones antihigiénicas graves. Riesgo de ETA. Sin certificados."
+      }},
+      { id: "equipos_serv", name: "Equipos y Servicios", descriptors: {
+        5: "Lavamanos con jabón y papel. Refrigeración/cocción perfectos. Punto de reciclaje visible.",
+        4: "Equipos funcionales. Lavamanos disponible. Servicios presentes.",
+        3: "Lavamanos sin suministros completos. Equipos con deficiencias menores.",
+        2: "Sin lavamanos o inoperante. Equipos con fallas.",
+        1: "Equipos inoperativos o peligrosos. Sin servicios. Incumple normativa."
+      }},
+      { id: "ventilacion_plagas", name: "Ventilación y Control de Plagas", descriptors: {
+        5: "Ventilación adecuada sin olores. Control de plagas documentado y al día. Mallas protectoras.",
+        4: "Ventilación funcional. Control de plagas con certificaciones al día.",
+        3: "Ventilación limitada (olores en horas pico). Control vigente pero evidencia menor de insectos.",
+        2: "Ventilación deficiente (olores persistentes). Insectos visibles. Control vencido.",
+        1: "Sin ventilación. Presencia de roedores o infestación. Riesgo sanitario grave."
+      }}
+    ]
+  },
+  {
+    id: "biblioteca", name: "Biblioteca / Sala de Estudio", icon: "📚",
+    dimensions: [
+      { id: "infraestructura", name: "Infraestructura y Mobiliario", descriptors: {
+        5: "Mobiliario ergonómico excelente. Estantería sólida. Espacios diferenciados.",
+        4: "Mobiliario en buen estado. Distribución funcional. Desgaste menor.",
+        3: "Mobiliario funcional con desgaste. Estantería con deformaciones menores.",
+        2: "Mobiliario deteriorado. Estanterías inestables. Insuficiente para la demanda.",
+        1: "Mobiliario roto o inutilizable. Estantería con riesgo de colapso."
+      }},
+      { id: "colecciones", name: "Colecciones y Recursos", descriptors: {
+        5: "Colección física y digital actualizada. Catálogo en línea funcional. Bases de datos accesibles.",
+        4: "Colección adecuada con actualizaciones regulares. Catálogo funcional.",
+        3: "Colección parcialmente desactualizada. Catálogo con inconsistencias.",
+        2: "Colección desactualizada. Libros dañados o extraviados. Organización deficiente.",
+        1: "Colección obsoleta. Sin catálogo funcional. Sin acceso a bases de datos."
+      }},
+      { id: "tecnologia", name: "Tecnología y Conectividad", descriptors: {
+        5: "Computadores funcionales. WiFi rápido. Tomas eléctricas suficientes. Escáner e impresora.",
+        4: "Tecnología funcional. Conectividad estable. Tomas adecuadas.",
+        3: "Algunos computadores lentos. WiFi intermitente. Tomas insuficientes.",
+        2: "Computadores obsoletos. WiFi deficiente. Pocas tomas funcionales.",
+        1: "Sin computadores. Sin WiFi. Sin tomas eléctricas."
+      }},
+      { id: "ambiente", name: "Ambiente de Estudio", descriptors: {
+        5: "Iluminación ≥500 lux. Climatización 22-24°C. Control acústico efectivo.",
+        4: "Iluminación y climatización adecuadas. Ruido aceptable.",
+        3: "Iluminación desigual. Climatización con variaciones. Ruido intermitente.",
+        2: "Iluminación insuficiente. Climatización deficiente. Ruido constante.",
+        1: "Condiciones ambientales inaceptables para estudio."
+      }},
+      { id: "senalizacion", name: "Señalización y Accesibilidad", descriptors: {
+        5: "Señalización clara de secciones, normas y evacuación. Acceso universal. Horarios visibles.",
+        4: "Señalización funcional. Accesibilidad adecuada con detalles menores.",
+        3: "Señalización parcial. Accesibilidad limitada en algunas zonas.",
+        2: "Señalización confusa o ausente. Barreras de accesibilidad significativas.",
+        1: "Sin señalización. Sin accesibilidad para personas con discapacidad."
+      }}
+    ]
+  },
+  {
+    id: "auditorio", name: "Auditorio / Sala de Eventos", icon: "🎭",
+    dimensions: [
+      { id: "estructura_asientos", name: "Estructura y Asientos", descriptors: {
+        5: "Silletería excelente (tapizado íntegro, plegado funcional, numeración visible). Escenario sin daños.",
+        4: "Silletería en buen estado con desgaste menor. Escenario funcional.",
+        3: "Asientos con tapizado desgastado. Escenario con marcas de uso.",
+        2: "Silletería dañada (asientos rotos, respaldos sueltos). Escenario con daños.",
+        1: "Silletería inutilizable (>20%). Pisos peligrosos. Escenario escenario seguro."
+      }},
+      { id: "audiovisual", name: "Equipos Audiovisuales y Acústica", descriptors: {
+        5: "Sonido profesional. Pantalla alta resolución. Micrófonos funcionales. Acústica tratada.",
+        4: "Equipos funcionales con calidad adecuada. Acústica aceptable.",
+        3: "Equipos con deficiencias menores (micrófono con ruido, brillo reducido). Eco leve.",
+        2: "Equipos con fallas significativas (sonido distorsionado). Acústica deficiente.",
+        1: "Equipos inoperativos. Acústica inaceptable. No apto para eventos."
+      }},
+      { id: "iluminacion", name: "Iluminación Escénica y General", descriptors: {
+        5: "Iluminación regulable (dimmer). Iluminación escénica completa. Luces de emergencia. Control centralizado.",
+        4: "Iluminación funcional con regulación. Luces de emergencia presentes.",
+        3: "Iluminación general sin regulación. Escénica básica.",
+        2: "Iluminación insuficiente o sin regulación. Sin escénica.",
+        1: "Iluminación deficiente que impide eventos. Sin luces de emergencia."
+      }},
+      { id: "clima_servicios", name: "Climatización y Servicios", descriptors: {
+        5: "Climatización silenciosa para aforo completo. Baños cercanos. Accesibilidad completa.",
+        4: "Climatización adecuada. Servicios disponibles. Accesibilidad funcional.",
+        3: "Climatización insuficiente con aforo completo. Baños distantes.",
+        2: "Climatización deficiente o ruidosa. Servicios limitados.",
+        1: "Sin climatización. Sin servicios. Sin accesibilidad."
+      }}
+    ]
+  },
+  {
+    id: "cuarto_tecnico", name: "Cuarto Técnico / Área de Servicio", icon: "⚙️",
+    dimensions: [
+      { id: "orden", name: "Orden y Organización", descriptors: {
+        5: "Espacio ordenado y limpio. Equipos inventariados. Circulación libre. Estantería rotulada.",
+        4: "Orden adecuado. Materiales organizados. Circulación libre.",
+        3: "Orden parcial. Algunos materiales sin organizar. Circulación con restricciones.",
+        2: "Desorden significativo. Materiales acumulados sin criterio. Circulación difícil.",
+        1: "Completamente desordenado. Imposible circular. Acumulación riesgosa."
+      }},
+      { id: "seguridad_elec", name: "Seguridad e Instalaciones Eléctricas", descriptors: {
+        5: "Tableros cerrados y rotulados con diagramas unifilares. Puesta a tierra funcional. Extintor adecuado.",
+        4: "Instalaciones en buen estado y rotuladas. Seguridad vigente.",
+        3: "Tableros cerrados pero rotulación incompleta. Extintor próximo a vencer.",
+        2: "Tableros abiertos o sin tapa. Cables expuestos. Extintor vencido o ausente.",
+        1: "Instalaciones peligrosas. Riesgo de electrocución/incendio. Sin extintor."
+      }},
+      { id: "ventilacion_ctrl", name: "Ventilación y Control Ambiental", descriptors: {
+        5: "Ventilación adecuada. Temperatura controlada. Sin humedad excesiva. Detección de incendios funcional.",
+        4: "Ventilación funcional. Temperatura aceptable. Detectores presentes.",
+        3: "Ventilación limitada. Temperatura elevada sin riesgo inmediato.",
+        2: "Ventilación insuficiente. Humedad que afecta equipos. Detectores inoperativos.",
+        1: "Sin ventilación. Temperatura extrema. Moho activo. Sin detección de incendios."
+      }},
+      { id: "senal_acceso", name: "Señalización y Acceso Restringido", descriptors: {
+        5: "Puerta con cerradura/control de acceso. Señalización de peligro visible. Registro de ingreso.",
+        4: "Acceso controlado. Señalización presente. Registro funcional.",
+        3: "Puerta con cerradura pero sin registro. Señalización parcial.",
+        2: "Puerta sin cerradura o frecuentemente abierta. Sin señalización.",
+        1: "Acceso libre a zona de alto riesgo. Sin señalización. Sin controles."
+      }}
+    ]
+  }
+];
+
+const CLASSIFICATIONS = [
+  { min: 4.5, max: 5.0, label: "Excelente", color: "#22c55e", emoji: "🟢", action: "Mantener mantenimiento preventivo." },
+  { min: 3.5, max: 4.49, label: "Bueno", color: "#3b82f6", emoji: "🔵", action: "Programar mantenimiento preventivo." },
+  { min: 2.5, max: 3.49, label: "Aceptable", color: "#eab308", emoji: "🟡", action: "Mantenimiento correctivo (1-3 meses)." },
+  { min: 1.5, max: 2.49, label: "Deficiente", color: "#f97316", emoji: "🟠", action: "Intervención prioritaria (1-4 semanas)." },
+  { min: 1.0, max: 1.49, label: "Crítico", color: "#ef4444", emoji: "🔴", action: "Intervención inmediata (1-7 días)." }
+];
+
+function getClassification(score) {
+  if (score === null || isNaN(score)) return null;
+  for (const c of CLASSIFICATIONS) {
+    if (score >= c.min && score <= c.max) return c;
+  }
+  return CLASSIFICATIONS[CLASSIFICATIONS.length - 1];
+}
+  </script>
+
+  <!-- Lógica app.js -->
+  <script>
+// ============================================================
+// app.js — UniNorte Evaluation Form v2 (with Photo Support)
+// ============================================================
+
+// Backup in-memory storage if appStorage is blocked (e.g. local files in iOS)
+let memoryStore = {};
+const appStorage = {
+  getItem(key) {
+    try {
+      return window.localStorage.getItem(key);
+    } catch (e) {
+      console.warn("appStorage.getItem falló, usando memoria temporal:", e);
+      return memoryStore[key] || null;
+    }
+  },
+  setItem(key, value) {
+    try {
+      window.localStorage.setItem(key, value);
+      return true;
+    } catch (e) {
+      console.warn("appStorage.setItem falló, usando memoria temporal:", e);
+      memoryStore[key] = String(value);
+      return true;
+    }
+  },
+  removeItem(key) {
+    try {
+      window.localStorage.removeItem(key);
+      return true;
+    } catch (e) {
+      console.warn("appStorage.removeItem falló, usando memoria temporal:", e);
+      delete memoryStore[key];
+      return true;
+    }
+  }
+};
+
+const STORAGE_KEY = "uninorte_evaluaciones_v2";
+const MAX_PHOTOS_PER_DIM = 2;
+const PHOTO_MAX_SIZE = 1024;   // Max dimension in pixels
+const PHOTO_QUALITY = 0.5;     // JPEG quality (0-1)
+const STORAGE_WARN_PCT = 80;   // Warn when storage is X% full
+
+// In-memory photo store for current evaluation (dimId -> [base64, ...])
+let currentPhotos = {};
+// Track which dimension is requesting a photo
+let activePhotoDimId = null;
+
+// ===== DOM Elements =====
+const form = document.getElementById("evalForm");
+const categoriaSelect = document.getElementById("categoria");
+const dimensionsSection = document.getElementById("dimensionsSection");
+const dimensionsContainer = document.getElementById("dimensionsContainer");
+const catIcon = document.getElementById("catIcon");
+const catTitle = document.getElementById("catTitle");
+const resultSection = document.getElementById("resultSection");
+const scoreValue = document.getElementById("scoreValue");
+const resultBadge = document.getElementById("resultBadge");
+const resultAction = document.getElementById("resultAction");
+const resultCard = document.getElementById("resultCard");
+const obsSection = document.getElementById("obsSection");
+const formActions = document.getElementById("formActions");
+const emptyState = document.getElementById("emptyState");
+const accionesGroup = document.getElementById("accionesGroup");
+const evalCount = document.getElementById("evalCount");
+const toast = document.getElementById("toast");
+const photoInput = document.getElementById("photoInput");
+const lightbox = document.getElementById("lightbox");
+const lightboxImg = document.getElementById("lightboxImg");
+const storageFill = document.getElementById("storageFill");
+const storageText = document.getElementById("storageText");
+
+// Drawer
+const historyDrawer = document.getElementById("historyDrawer");
+const drawerOverlay = document.getElementById("drawerOverlay");
+const historyList = document.getElementById("historyList");
+const drawerStats = document.getElementById("drawerStats");
+
+// ===== Init =====
+function initApp() {
+  try {
+    initTheme();
+    populateCategories();
+    setDefaults();
+    updateBadgeCount();
+    updateStorageIndicator();
+    bindEvents();
+  } catch (err) {
+    alert("Error durante initApp: " + err.message + "\nStack: " + err.stack);
+  }
+}
+
+if (document.readyState === "interactive" || document.readyState === "complete") {
+  initApp();
+} else {
+  document.addEventListener("DOMContentLoaded", initApp);
+}
+
+function initTheme() {
+  const saved = appStorage.getItem("uninorte_theme");
+  if (saved === "light") document.documentElement.setAttribute("data-theme", "light");
+  updateThemeIcon();
+}
+
+function toggleTheme() {
+  const isLight = document.documentElement.getAttribute("data-theme") === "light";
+  if (isLight) {
+    document.documentElement.removeAttribute("data-theme");
+    appStorage.setItem("uninorte_theme", "dark");
+  } else {
+    document.documentElement.setAttribute("data-theme", "light");
+    appStorage.setItem("uninorte_theme", "light");
+  }
+  updateThemeIcon();
+}
+
+function updateThemeIcon() {
+  const btn = document.getElementById("btnTheme");
+  if (btn) btn.textContent = document.documentElement.getAttribute("data-theme") === "light" ? "☀️" : "🌙";
+}
+
+function populateCategories() {
+  CATEGORIES.forEach(cat => {
+    const opt = document.createElement("option");
+    opt.value = cat.id;
+    opt.textContent = `${cat.icon} ${cat.name}`;
+    categoriaSelect.appendChild(opt);
+  });
+}
+
+function setDefaults() {
+  const now = new Date();
+  document.getElementById("fecha").value = now.toISOString().split("T")[0];
+  document.getElementById("hora").value = now.toTimeString().slice(0, 5);
+}
+
+// ===== Event Bindings =====
+function bindEvents() {
+  categoriaSelect.addEventListener("change", onCategoryChange);
+  form.addEventListener("submit", onSubmit);
+  form.addEventListener("reset", onReset);
+
+  // Theme toggle
+  document.getElementById("btnTheme").addEventListener("click", toggleTheme);
+
+  // Photo input
+  photoInput.addEventListener("change", onPhotoSelected);
+
+  // Lightbox
+  document.getElementById("lightboxClose").addEventListener("click", closeLightbox);
+  lightbox.addEventListener("click", (e) => { if (e.target === lightbox) closeLightbox(); });
+
+  // Drawer
+  document.getElementById("btnHistory").addEventListener("click", openDrawer);
+  document.getElementById("btnCloseDrawer").addEventListener("click", closeDrawer);
+  drawerOverlay.addEventListener("click", closeDrawer);
+
+  // Export/Import
+  document.getElementById("btnExportCSV").addEventListener("click", exportCSV);
+  document.getElementById("btnExportJSON").addEventListener("click", exportJSON);
+  document.getElementById("btnImportTrigger").addEventListener("click", () => {
+    document.getElementById("btnImport").click();
+  });
+  document.getElementById("btnImport").addEventListener("change", importFile);
+  document.getElementById("btnClearAll").addEventListener("click", clearAll);
+}
+
+// ===== Category Change =====
+function onCategoryChange() {
+  const catId = categoriaSelect.value;
+  currentPhotos = {}; // Reset photos when category changes
+
+  if (!catId) {
+    dimensionsSection.style.display = "none";
+    resultSection.style.display = "none";
+    obsSection.style.display = "none";
+    formActions.style.display = "none";
+    emptyState.style.display = "block";
+    return;
+  }
+
+  const cat = CATEGORIES.find(c => c.id === catId);
+  if (!cat) return;
+
+  emptyState.style.display = "none";
+  dimensionsSection.style.display = "block";
+  resultSection.style.display = "block";
+  obsSection.style.display = "block";
+  formActions.style.display = "flex";
+
+  catIcon.textContent = cat.icon;
+  catTitle.textContent = cat.name;
+
+  renderDimensions(cat);
+  updateResult();
+}
+
+// ===== Render Dimensions =====
+function renderDimensions(cat) {
+  dimensionsContainer.innerHTML = "";
+
+  cat.dimensions.forEach((dim, idx) => {
+    const card = document.createElement("div");
+    card.className = "dimension-card";
+    card.dataset.dimId = dim.id;
+
+    const dimNum = idx + 1;
+    const radioName = `dim_${dim.id}`;
+
+    card.innerHTML = `
+      <div class="dim-header">
+        <span class="dim-name">D${dimNum}. ${dim.name}</span>
+        <span class="dim-score-badge" id="badge_${dim.id}">—</span>
+      </div>
+      <div class="score-group">
+        ${[1,2,3,4,5].map(v => `
+          <div class="score-option">
+            <input type="radio" name="${radioName}" id="${radioName}_${v}" value="${v}" />
+            <label class="score-label" for="${radioName}_${v}">${v}</label>
+          </div>
+        `).join("")}
+        <div class="score-option">
+          <input type="radio" name="${radioName}" id="${radioName}_na" value="na" />
+          <label class="score-label na-label" for="${radioName}_na">N/A</label>
+        </div>
+      </div>
+      <div class="dim-photo-row" id="photoRow_${dim.id}">
+        <button type="button" class="btn-photo" id="btnPhoto_${dim.id}" onclick="triggerPhoto('${dim.id}')">
+          📷 Agregar foto
+        </button>
+        <span class="photo-count" id="photoCount_${dim.id}"></span>
+      </div>
+      <button type="button" class="dim-descriptors-toggle" onclick="toggleDescriptors(this)">
+        <span class="arrow">▶</span> Ver descriptores
+      </button>
+      <div class="dim-descriptors">
+        ${[5,4,3,2,1].map(v => `
+          <div class="desc-item">
+            <span class="desc-score s${v}">${v}</span>
+            <span class="desc-text">${dim.descriptors[v]}</span>
+          </div>
+        `).join("")}
+      </div>
+    `;
+
+    dimensionsContainer.appendChild(card);
+
+    // Bind radio events
+    card.querySelectorAll(`input[name="${radioName}"]`).forEach(radio => {
+      radio.addEventListener("change", () => {
+        const val = radio.value;
+        const badge = document.getElementById(`badge_${dim.id}`);
+
+        if (val === "na") {
+          badge.textContent = "N/A";
+          badge.style.background = "var(--bg-glass)";
+          badge.style.color = "var(--text-muted)";
+          card.className = "dimension-card scored";
+        } else {
+          const numVal = parseInt(val);
+          const cls = getClassification(numVal);
+          badge.textContent = `${cls.emoji} ${numVal}`;
+          badge.style.background = cls.color + "22";
+          badge.style.color = cls.color;
+          card.className = numVal <= 2 ? "dimension-card scored warning" : "dimension-card scored";
+        }
+
+        updateResult();
+      });
+    });
+  });
+}
+
+// ===== Photo Handling =====
+function triggerPhoto(dimId) {
+  const photos = currentPhotos[dimId] || [];
+  if (photos.length >= MAX_PHOTOS_PER_DIM) {
+    showToast(`⚠️ Máximo ${MAX_PHOTOS_PER_DIM} fotos por dimensión`);
+    return;
+  }
+  activePhotoDimId = dimId;
+  photoInput.value = "";
+  photoInput.click();
+}
+
+function onPhotoSelected(e) {
+  const file = e.target.files[0];
+  if (!file || !activePhotoDimId) return;
+
+  if (!file.type.startsWith("image/")) {
+    showToast("⚠️ El archivo seleccionado no es una imagen");
+    return;
+  }
+
+  compressImage(file, (base64) => {
+    if (!currentPhotos[activePhotoDimId]) {
+      currentPhotos[activePhotoDimId] = [];
+    }
+    currentPhotos[activePhotoDimId].push(base64);
+    renderPhotoThumbs(activePhotoDimId);
+    activePhotoDimId = null;
+  });
+}
+
+function compressImage(file, callback) {
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    const img = new Image();
+    img.onload = function () {
+      const canvas = document.createElement("canvas");
+      let w = img.width;
+      let h = img.height;
+
+      // Resize if larger than max
+      if (w > PHOTO_MAX_SIZE || h > PHOTO_MAX_SIZE) {
+        if (w > h) {
+          h = Math.round(h * PHOTO_MAX_SIZE / w);
+          w = PHOTO_MAX_SIZE;
+        } else {
+          w = Math.round(w * PHOTO_MAX_SIZE / h);
+          h = PHOTO_MAX_SIZE;
+        }
+      }
+
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, w, h);
+
+      const base64 = canvas.toDataURL("image/jpeg", PHOTO_QUALITY);
+      callback(base64);
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function renderPhotoThumbs(dimId) {
+  const row = document.getElementById(`photoRow_${dimId}`);
+  const btn = document.getElementById(`btnPhoto_${dimId}`);
+  const countEl = document.getElementById(`photoCount_${dimId}`);
+  const photos = currentPhotos[dimId] || [];
+
+  // Remove existing thumbs
+  row.querySelectorAll(".photo-thumb-wrap").forEach(el => el.remove());
+
+  // Add thumbs
+  photos.forEach((base64, idx) => {
+    const wrap = document.createElement("div");
+    wrap.className = "photo-thumb-wrap";
+    wrap.innerHTML = `
+      <img class="photo-thumb" src="${base64}" alt="Foto ${idx + 1}" onclick="openLightbox('${dimId}', ${idx})" />
+      <button type="button" class="photo-remove" onclick="removePhoto('${dimId}', ${idx})">✕</button>
+    `;
+    row.insertBefore(wrap, btn);
+  });
+
+  // Update button state
+  if (photos.length >= MAX_PHOTOS_PER_DIM) {
+    btn.disabled = true;
+    btn.textContent = "📷 Máximo alcanzado";
+  } else {
+    btn.disabled = false;
+    btn.textContent = "📷 Agregar foto";
+  }
+
+  countEl.textContent = photos.length > 0 ? `${photos.length}/${MAX_PHOTOS_PER_DIM}` : "";
+}
+
+function removePhoto(dimId, idx) {
+  if (currentPhotos[dimId]) {
+    currentPhotos[dimId].splice(idx, 1);
+    if (currentPhotos[dimId].length === 0) delete currentPhotos[dimId];
+  }
+  renderPhotoThumbs(dimId);
+}
+
+// ===== Lightbox =====
+function openLightbox(dimId, idx) {
+  const photos = currentPhotos[dimId];
+  if (!photos || !photos[idx]) return;
+  lightboxImg.src = photos[idx];
+  lightbox.classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+
+// Global for history lightbox
+function openLightboxSrc(src) {
+  lightboxImg.src = src;
+  lightbox.classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+
+function closeLightbox() {
+  lightbox.classList.remove("open");
+  document.body.style.overflow = "";
+}
+
+// ===== Toggle Descriptors =====
+function toggleDescriptors(btn) {
+  btn.classList.toggle("open");
+  const panel = btn.nextElementSibling;
+  panel.classList.toggle("open");
+  btn.querySelector(".arrow").textContent = panel.classList.contains("open") ? "▼" : "▶";
+}
+
+// ===== Update Result =====
+function updateResult() {
+  const catId = categoriaSelect.value;
+  if (!catId) return;
+
+  const cat = CATEGORIES.find(c => c.id === catId);
+  let sum = 0, count = 0, hasWarning = false;
+
+  cat.dimensions.forEach(dim => {
+    const radio = document.querySelector(`input[name="dim_${dim.id}"]:checked`);
+    if (radio && radio.value !== "na") {
+      const v = parseInt(radio.value);
+      sum += v;
+      count++;
+      if (v <= 2) hasWarning = true;
+    }
+  });
+
+  accionesGroup.style.display = hasWarning ? "block" : "none";
+
+  if (count === 0) {
+    scoreValue.textContent = "—";
+    scoreValue.style.color = "var(--text-muted)";
+    resultBadge.textContent = "Sin evaluar";
+    resultBadge.style.background = "var(--bg-glass)";
+    resultBadge.style.color = "var(--text-muted)";
+    resultAction.textContent = "";
+    resultCard.style.borderColor = "var(--border)";
+    return;
+  }
+
+  const avg = sum / count;
+  const cls = getClassification(avg);
+
+  scoreValue.textContent = avg.toFixed(2);
+  scoreValue.style.color = cls.color;
+  resultBadge.textContent = `${cls.emoji} ${cls.label}`;
+  resultBadge.style.background = cls.color + "22";
+  resultBadge.style.color = cls.color;
+  resultAction.textContent = cls.action;
+  resultCard.style.borderColor = cls.color + "66";
+}
+
+// ===== Submit =====
+function onSubmit(e) {
+  e.preventDefault();
+
+  const catId = categoriaSelect.value;
+  if (!catId) { showToast("⚠️ Seleccione una categoría"); return; }
+
+  const nombre = document.getElementById("nombre").value.trim();
+  const evaluador = document.getElementById("evaluador").value.trim();
+  if (!nombre) { showToast("⚠️ Ingrese el nombre del espacio"); return; }
+  if (!evaluador) { showToast("⚠️ Ingrese el nombre del evaluador"); return; }
+
+  const cat = CATEGORIES.find(c => c.id === catId);
+  const scores = {};
+  let hasScore = false;
+
+  cat.dimensions.forEach(dim => {
+    const radio = document.querySelector(`input[name="dim_${dim.id}"]:checked`);
+    if (radio) {
+      scores[dim.id] = radio.value === "na" ? "N/A" : parseInt(radio.value);
+      if (radio.value !== "na") hasScore = true;
+    }
+  });
+
+  if (!hasScore) { showToast("⚠️ Evalúe al menos una dimensión (1-5)"); return; }
+
+  const numScores = Object.values(scores).filter(v => typeof v === "number");
+  const avg = numScores.reduce((a, b) => a + b, 0) / numScores.length;
+  const cls = getClassification(avg);
+
+  // Count total photos
+  let totalPhotos = 0;
+  Object.values(currentPhotos).forEach(arr => totalPhotos += arr.length);
+
+  const evaluation = {
+    id: Date.now().toString(36) + Math.random().toString(36).substr(2, 5),
+    codigo: document.getElementById("codigo").value.trim(),
+    nombre,
+    categoria: catId,
+    categoriaName: cat.name,
+    categoriaIcon: cat.icon,
+    edificio: document.getElementById("edificio").value.trim(),
+    piso: document.getElementById("piso").value.trim(),
+    fecha: document.getElementById("fecha").value,
+    hora: document.getElementById("hora").value,
+    evaluador,
+    cargo: document.getElementById("cargo").value.trim(),
+    scores,
+    photos: Object.keys(currentPhotos).length > 0 ? { ...currentPhotos } : {},
+    photoCount: totalPhotos,
+    promedio: parseFloat(avg.toFixed(2)),
+    clasificacion: cls.label,
+    color: cls.color,
+    observaciones: document.getElementById("observaciones").value.trim(),
+    acciones: document.getElementById("acciones").value.trim(),
+    timestamp: new Date().toISOString()
+  };
+
+  // Try to save
+  const data = getStoredData();
+  data.unshift(evaluation);
+
+  try {
+    appStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch (err) {
+    // Storage full - try without photos
+    showToast("⚠️ Almacenamiento lleno. Guardando sin fotos...");
+    evaluation.photos = {};
+    evaluation.photoCount = 0;
+    data[0] = evaluation;
+    try {
+      appStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    } catch (err2) {
+      showToast("❌ No se pudo guardar. Exporte y limpie el historial.");
+      return;
+    }
+  }
+
+  currentPhotos = {};
+  updateBadgeCount();
+  updateStorageIndicator();
+
+  const photoMsg = totalPhotos > 0 ? ` (${totalPhotos} foto${totalPhotos > 1 ? 's' : ''})` : '';
+  showToast(`✅ Guardado: ${nombre} — ${cls.emoji} ${cls.label} (${avg.toFixed(2)})${photoMsg}`);
+
+  form.reset();
+  setDefaults();
+  dimensionsSection.style.display = "none";
+  resultSection.style.display = "none";
+  obsSection.style.display = "none";
+  formActions.style.display = "none";
+  emptyState.style.display = "block";
+}
+
+function onReset() {
+  currentPhotos = {};
+  setTimeout(() => {
+    setDefaults();
+    dimensionsSection.style.display = "none";
+    resultSection.style.display = "none";
+    obsSection.style.display = "none";
+    formActions.style.display = "none";
+    emptyState.style.display = "block";
+  }, 10);
+}
+
+// ===== Storage =====
+function getStoredData() {
+  try { return JSON.parse(appStorage.getItem(STORAGE_KEY)) || []; }
+  catch { return []; }
+}
+
+function updateBadgeCount() {
+  const data = getStoredData();
+  evalCount.textContent = data.length;
+  evalCount.style.display = data.length > 0 ? "flex" : "none";
+}
+
+function updateStorageIndicator() {
+  try {
+    const used = new Blob([appStorage.getItem(STORAGE_KEY) || ""]).size;
+    const total = 5 * 1024 * 1024; // Estimate 5MB
+    const pct = Math.min(100, Math.round((used / total) * 100));
+
+    storageFill.style.width = pct + "%";
+    storageText.textContent = pct + "%";
+
+    storageFill.classList.remove("warn", "danger");
+    if (pct >= 90) {
+      storageFill.classList.add("danger");
+    } else if (pct >= STORAGE_WARN_PCT) {
+      storageFill.classList.add("warn");
+    }
+  } catch { /* ignore */ }
+}
+
+// ===== Drawer =====
+function openDrawer() {
+  renderHistory();
+  historyDrawer.classList.add("open");
+  drawerOverlay.classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+
+// Global for deleting from outside
+window.deleteEvaluation = deleteEvaluation;
+
+function closeDrawer() {
+  historyDrawer.classList.remove("open");
+  drawerOverlay.classList.remove("open");
+  document.body.style.overflow = "";
+}
+
+function renderHistory() {
+  const data = getStoredData();
+
+  if (data.length === 0) {
+    drawerStats.innerHTML = "No hay evaluaciones registradas.";
+    historyList.innerHTML = `<div class="history-empty">📋 Las evaluaciones guardadas aparecerán aquí.</div>`;
+    return;
+  }
+
+  const totalAvg = data.reduce((s, d) => s + d.promedio, 0) / data.length;
+  const critical = data.filter(d => d.promedio < 2.5).length;
+  const good = data.filter(d => d.promedio >= 3.5).length;
+  const totalPhotos = data.reduce((s, d) => s + (d.photoCount || 0), 0);
+
+  drawerStats.innerHTML = `
+    <strong>${data.length}</strong> evaluaciones · 
+    Promedio: <strong>${totalAvg.toFixed(2)}</strong> · 
+    <span style="color:var(--red)">${critical} crít/def</span> · 
+    <span style="color:var(--green)">${good} bueno/exc</span>
+    ${totalPhotos > 0 ? ` · 📷 ${totalPhotos} fotos` : ''}
+  `;
+
+  historyList.innerHTML = data.map(ev => {
+    const cls = getClassification(ev.promedio);
+    const photoInfo = ev.photoCount ? `<div class="history-photos">📷 ${ev.photoCount} foto${ev.photoCount > 1 ? 's' : ''}</div>` : '';
+    return `
+      <div class="history-item" style="border-left-color: ${cls.color}">
+        <div class="history-info">
+          <div class="history-name">${ev.categoriaIcon || ""} ${ev.nombre}</div>
+          <div class="history-meta">${ev.categoriaName || ev.categoria} · ${ev.edificio || "—"} · ${ev.fecha || "—"}</div>
+          ${photoInfo}
+        </div>
+        <div class="history-score" style="color: ${cls.color}">${ev.promedio.toFixed(1)}</div>
+        <button class="history-delete" onclick="deleteEvaluation('${ev.id}')" title="Eliminar">🗑️</button>
+      </div>
+    `;
+  }).join("");
+}
+
+function deleteEvaluation(id) {
+  if (!confirm("¿Eliminar esta evaluación?")) return;
+  const data = getStoredData().filter(e => e.id !== id);
+  appStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  updateBadgeCount();
+  updateStorageIndicator();
+  renderHistory();
+  showToast("🗑️ Evaluación eliminada");
+}
+
+// ===== Export CSV (data only, no photos) =====
+function exportCSV() {
+  const data = getStoredData();
+  if (data.length === 0) { showToast("No hay datos para exportar"); return; }
+
+  const headers = ["ID","Código","Nombre","Categoría","Edificio","Piso","Fecha","Hora","Evaluador","Cargo","Promedio","Clasificación","Fotos","Observaciones","Acciones"];
+
+  const allDimKeys = new Set();
+  data.forEach(ev => Object.keys(ev.scores || {}).forEach(k => allDimKeys.add(k)));
+  const dimKeys = [...allDimKeys];
+  const fullHeaders = [...headers, ...dimKeys.map(k => `D_${k}`)];
+
+  const rows = data.map(ev => {
+    const base = [
+      ev.id, ev.codigo, ev.nombre, ev.categoriaName || ev.categoria,
+      ev.edificio, ev.piso, ev.fecha, ev.hora, ev.evaluador, ev.cargo,
+      ev.promedio, ev.clasificacion, ev.photoCount || 0, ev.observaciones, ev.acciones
+    ];
+    const dims = dimKeys.map(k => ev.scores?.[k] ?? "");
+    return [...base, ...dims];
+  });
+
+  const csvContent = [fullHeaders, ...rows]
+    .map(row => row.map(cell => `"${String(cell || "").replace(/"/g, '""')}"`).join(","))
+    .join("\n");
+
+  downloadFile(
+    "\uFEFF" + csvContent,
+    `evaluaciones_uninorte_${new Date().toISOString().slice(0, 10)}.csv`,
+    "text/csv;charset=utf-8;"
+  );
+  showToast(`📥 ${data.length} evaluaciones exportadas (CSV sin fotos)`);
+}
+
+// ===== Export JSON (with photos) =====
+function exportJSON() {
+  const data = getStoredData();
+  if (data.length === 0) { showToast("No hay datos para exportar"); return; }
+
+  const totalPhotos = data.reduce((s, d) => s + (d.photoCount || 0), 0);
+
+  const exportObj = {
+    version: "2.0",
+    exportDate: new Date().toISOString(),
+    institution: "Universidad del Norte — Barranquilla",
+    totalEvaluations: data.length,
+    totalPhotos,
+    evaluations: data
+  };
+
+  const jsonStr = JSON.stringify(exportObj, null, 2);
+
+  downloadFile(
+    jsonStr,
+    `evaluaciones_uninorte_${new Date().toISOString().slice(0, 10)}.json`,
+    "application/json;charset=utf-8;"
+  );
+  showToast(`📦 ${data.length} evaluaciones exportadas con ${totalPhotos} fotos (JSON)`);
+}
+
+// Global functions for inline HTML event handlers (like onclick)
+window.triggerPhoto = triggerPhoto;
+window.toggleDescriptors = toggleDescriptors;
+window.openLightbox = openLightbox;
+window.removePhoto = removePhoto;
+
+function downloadFile(content, filename, type) {
+  const blob = new Blob([content], { type });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
+
+// ===== Import CSV or JSON =====
+function importFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function (ev) {
+    const content = ev.target.result;
+
+    if (file.name.endsWith(".json")) {
+      importJSON(content);
+    } else {
+      importCSV(content);
+    }
+  };
+  reader.readAsText(file, "UTF-8");
+  e.target.value = "";
+}
+
+function importJSON(content) {
+  try {
+    const obj = JSON.parse(content);
+    const evals = obj.evaluations || (Array.isArray(obj) ? obj : []);
+    if (evals.length === 0) { showToast("⚠️ No se encontraron evaluaciones"); return; }
+
+    const data = getStoredData();
+    let imported = 0;
+
+    evals.forEach((ev, i) => {
+      ev.id = Date.now().toString(36) + Math.random().toString(36).substr(2, 5) + i;
+      data.push(ev);
+      imported++;
+    });
+
+    try {
+      appStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      updateBadgeCount();
+      updateStorageIndicator();
+      renderHistory();
+      const totalPhotos = evals.reduce((s, d) => s + (d.photoCount || 0), 0);
+      showToast(`📤 ${imported} evaluaciones importadas${totalPhotos > 0 ? ` con ${totalPhotos} fotos` : ''}`);
+    } catch (err) {
+      showToast("⚠️ Almacenamiento insuficiente para importar con fotos");
+    }
+  } catch (err) {
+    showToast("⚠️ Error al procesar el archivo JSON");
+    console.error(err);
+  }
+}
+
+function importCSV(content) {
+  try {
+    const lines = content.split("\n").filter(l => l.trim());
+    if (lines.length < 2) { showToast("⚠️ Archivo CSV vacío"); return; }
+
+    const headers = parseCSVLine(lines[0]);
+    const data = getStoredData();
+    let imported = 0;
+
+    for (let i = 1; i < lines.length; i++) {
+      const values = parseCSVLine(lines[i]);
+      if (values.length < 11) continue;
+
+      const row = {};
+      headers.forEach((h, idx) => row[h] = values[idx] || "");
+
+      const scores = {};
+      headers.forEach((h, idx) => {
+        if (h.startsWith("D_")) {
+          const key = h.slice(2);
+          const val = values[idx];
+          scores[key] = val === "N/A" ? "N/A" : (isNaN(val) ? "" : parseFloat(val));
+        }
+      });
+
+      const promedio = parseFloat(row["Promedio"]) || 0;
+      const cls = getClassification(promedio);
+
+      data.unshift({
+        id: Date.now().toString(36) + Math.random().toString(36).substr(2, 5) + i,
+        codigo: row["Código"] || row["Codigo"] || "",
+        nombre: row["Nombre"] || `Importado ${i}`,
+        categoria: (row["Categoría"] || row["Categoria"] || "").toLowerCase().replace(/\s/g, "_"),
+        categoriaName: row["Categoría"] || row["Categoria"] || "",
+        categoriaIcon: "",
+        edificio: row["Edificio"] || "",
+        piso: row["Piso"] || "",
+        fecha: row["Fecha"] || "",
+        hora: row["Hora"] || "",
+        evaluador: row["Evaluador"] || "",
+        cargo: row["Cargo"] || "",
+        scores,
+        photos: {},
+        photoCount: 0,
+        promedio,
+        clasificacion: cls ? cls.label : "",
+        color: cls ? cls.color : "",
+        observaciones: row["Observaciones"] || "",
+        acciones: row["Acciones"] || "",
+        timestamp: new Date().toISOString()
+      });
+      imported++;
+    }
+
+    appStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    updateBadgeCount();
+    updateStorageIndicator();
+    renderHistory();
+    showToast(`📤 ${imported} evaluaciones importadas (CSV)`);
+  } catch (err) {
+    showToast("⚠️ Error al procesar el archivo CSV");
+    console.error(err);
+  }
+}
+
+function parseCSVLine(line) {
+  const result = [];
+  let current = "";
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') {
+      if (inQuotes && line[i + 1] === '"') { current += '"'; i++; }
+      else inQuotes = !inQuotes;
+    } else if (ch === "," && !inQuotes) {
+      result.push(current.trim());
+      current = "";
+    } else {
+      current += ch;
+    }
+  }
+  result.push(current.trim());
+  return result;
+}
+
+// ===== Clear All =====
+function clearAll() {
+  const data = getStoredData();
+  if (data.length === 0) { showToast("No hay datos para eliminar"); return; }
+  if (!confirm(`¿Eliminar TODAS las ${data.length} evaluaciones (incluyendo fotos)? Esta acción no se puede deshacer.`)) return;
+
+  appStorage.removeItem(STORAGE_KEY);
+  updateBadgeCount();
+  updateStorageIndicator();
+  renderHistory();
+  showToast("🗑️ Todos los datos eliminados");
+}
+
+// ===== Toast =====
+function showToast(message) {
+  toast.textContent = message;
+  toast.classList.add("show");
+  clearTimeout(toast._timeout);
+  toast._timeout = setTimeout(() => toast.classList.remove("show"), 3500);
+}
+  </script>
+</body>
+</html>

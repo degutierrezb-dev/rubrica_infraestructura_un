@@ -1,0 +1,45 @@
+{
+  "version": "2.0",
+  "exportDate": "2026-06-19T08:35:00Z",
+  "institution": "Universidad del Norte — Barranquilla",
+  "totalEvaluations": 4,
+  "totalPhotos": 0,
+  "evaluations": [
+    {
+      "id": "test001", "codigo": "SAL-K1-201", "nombre": "Salón 201", "categoria": "salon",
+      "categoriaName": "Salón de Clases", "categoriaIcon": "🏫",
+      "edificio": "Bloque K1", "piso": "2", "fecha": "2026-06-19", "hora": "09:00",
+      "evaluador": "María López", "cargo": "Coord. Planta Física",
+      "scores": {"estructura":4,"mobiliario":5,"iluminacion":4,"ventilacion":3,"tecnologia":4,"limpieza":5,"senalizacion":4},
+      "photos": {}, "photoCount": 0, "promedio": 4.14, "clasificacion": "Bueno", "color": "#3b82f6",
+      "observaciones": "Buen estado general. AC requiere mantenimiento preventivo.", "acciones": "", "timestamp": "2026-06-19T09:00:00Z"
+    },
+    {
+      "id": "test002", "codigo": "LAB-G2-101", "nombre": "Lab. Química Orgánica", "categoria": "laboratorio",
+      "categoriaName": "Laboratorio", "categoriaIcon": "🔬",
+      "edificio": "Bloque G2", "piso": "1", "fecha": "2026-06-19", "hora": "10:15",
+      "evaluador": "Carlos Pérez", "cargo": "Jefe de Laboratorios",
+      "scores": {"estructura":3,"equipos":2,"seguridad":2,"ventilacion":1,"limpieza_senal":3},
+      "photos": {}, "photoCount": 0, "promedio": 2.20, "clasificacion": "Deficiente", "color": "#f97316",
+      "observaciones": "Campana de extracción inoperativa. Ducha de emergencia bloqueada.", "acciones": "Reparar campana extractora y desbloquear ducha. Urgente.", "timestamp": "2026-06-19T10:15:00Z"
+    },
+    {
+      "id": "test003", "codigo": "PRQ-NORTE", "nombre": "Parqueadero Norte", "categoria": "parqueadero",
+      "categoriaName": "Parqueadero", "categoriaIcon": "🅿️",
+      "edificio": "Zona Norte", "piso": "Superficie", "fecha": "2026-06-19", "hora": "11:00",
+      "evaluador": "María López", "cargo": "Coord. Planta Física",
+      "scores": {"superficie_dem":3,"ilum_seg":3,"senal_circ":2,"techado_dren":3},
+      "photos": {}, "photoCount": 0, "promedio": 2.75, "clasificacion": "Aceptable", "color": "#eab308",
+      "observaciones": "Demarcación parcialmente borrada. Señalización de circulación confusa.", "acciones": "", "timestamp": "2026-06-19T11:00:00Z"
+    },
+    {
+      "id": "test004", "codigo": "BIB-CENTRAL", "nombre": "Biblioteca Karl C. Parrish", "categoria": "biblioteca",
+      "categoriaName": "Biblioteca / Sala de Estudio", "categoriaIcon": "📚",
+      "edificio": "Bloque Central", "piso": "1-3", "fecha": "2026-06-19", "hora": "14:30",
+      "evaluador": "Carlos Pérez", "cargo": "Jefe de Laboratorios",
+      "scores": {"infraestructura":5,"colecciones":5,"tecnologia":4,"ambiente":5,"senalizacion":5},
+      "photos": {}, "photoCount": 0, "promedio": 4.80, "clasificacion": "Excelente", "color": "#22c55e",
+      "observaciones": "Estado impecable. Referente institucional.", "acciones": "", "timestamp": "2026-06-19T14:30:00Z"
+    }
+  ]
+}
