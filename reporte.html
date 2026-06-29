@@ -283,6 +283,13 @@
         </div>
       </div>
 
+      <div class="charts-row">
+        <div class="chart-card" style="grid-column: 1 / -1;">
+          <h3>✨ Brecha Perceptual: Puntaje Técnico vs Percepción de Atractividad</h3>
+          <canvas id="chartPerception"></canvas>
+        </div>
+      </div>
+
       <!-- Table -->
       <div class="table-section">
         <div class="table-header">
@@ -312,6 +319,7 @@
                 <th onclick="sortTable('evaluador')">Evaluador</th>
                 <th onclick="sortTable('promedio')">Puntaje</th>
                 <th onclick="sortTable('clasificacion')">Estado</th>
+                <th onclick="sortTable('percepcion')">Percepción</th>
                 <th>Fotos</th>
                 <th class="no-print">Acción</th>
               </tr>
@@ -378,6 +386,8 @@
       "Excelente": "#22c55e", "Bueno": "#3b82f6", "Aceptable": "#eab308",
       "Deficiente": "#f97316", "Crítico": "#ef4444"
     };
+    const PERC_EMOJIS = { 5: '🤩', 4: '😊', 3: '😐', 2: '😕', 1: '😬' };
+    const PERC_LABELS = { 5: '¡Impresionante!', 4: 'Agradable', 3: 'Neutro', 2: 'Poco atractivo', 1: 'Desfavorable' };
 
     // ===== Theme =====
     function initTheme() {
@@ -481,6 +491,13 @@
       const photos = d.reduce((s, e) => s + (e.photoCount || 0), 0);
       const cls = getClass(avg);
 
+      // Perception stats
+      const percEvals = d.filter(e => e.percepcion != null && e.percepcion > 0);
+      const percAvg = percEvals.length > 0 ? percEvals.reduce((s, e) => s + e.percepcion, 0) / percEvals.length : null;
+      const percAvgRounded = percAvg !== null ? Math.round(percAvg) : null;
+      const percEmoji = percAvgRounded ? (PERC_EMOJIS[percAvgRounded] || '') : '';
+      const percLabel = percAvgRounded ? (PERC_LABELS[percAvgRounded] || '') : 'Sin datos';
+
       document.getElementById("summaryCards").innerHTML = `
         <div class="card">
           <div class="card-label">Total de Evaluaciones</div>
@@ -499,6 +516,12 @@
           <div class="card-value" style="color:var(--red)">${critical}</div>
           <div class="card-sub">${d.length > 0 ? ((critical/d.length)*100).toFixed(0) : 0}% del total — requieren intervención</div>
           <div class="card-accent" style="background:var(--red);"></div>
+        </div>
+        <div class="card">
+          <div class="card-label">✨ Percepción de Atractividad</div>
+          <div class="card-value">${percAvg !== null ? percAvg.toFixed(1) : '—'} ${percEmoji}</div>
+          <div class="card-sub">${percLabel}${percEvals.length > 0 ? ` (${percEvals.length} evaluaciones)` : ''}</div>
+          <div class="card-accent" style="background:var(--accent);"></div>
         </div>
         <div class="card">
           <div class="card-label">Espacios Buenos / Excelentes</div>
@@ -596,6 +619,53 @@
         },
         options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
       });
+
+      // 5. Perception vs Technical per Category
+      const percByCat = {};
+      allEvaluations.forEach(e => {
+        const name = e.categoriaName || e.categoria;
+        if (!percByCat[name]) percByCat[name] = { techSum: 0, techCount: 0, percSum: 0, percCount: 0 };
+        percByCat[name].techSum += e.promedio;
+        percByCat[name].techCount++;
+        if (e.percepcion != null && e.percepcion > 0) {
+          percByCat[name].percSum += e.percepcion;
+          percByCat[name].percCount++;
+        }
+      });
+      const percEntries = Object.entries(percByCat)
+        .filter(([, v]) => v.percCount > 0)
+        .map(([name, v]) => ({ name, tech: v.techSum / v.techCount, perc: v.percSum / v.percCount }))
+        .sort((a, b) => b.perc - a.perc);
+
+      if (percEntries.length > 0) {
+        charts.perception = new Chart(document.getElementById("chartPerception"), {
+          type: "bar",
+          data: {
+            labels: percEntries.map(e => e.name),
+            datasets: [
+              {
+                label: 'Puntaje Técnico',
+                data: percEntries.map(e => parseFloat(e.tech.toFixed(2))),
+                backgroundColor: 'rgba(14,165,233,0.35)',
+                borderColor: '#0ea5e9',
+                borderWidth: 1.5, borderRadius: 6
+              },
+              {
+                label: 'Percepción Atractividad',
+                data: percEntries.map(e => parseFloat(e.perc.toFixed(2))),
+                backgroundColor: 'rgba(168,85,247,0.35)',
+                borderColor: '#a855f7',
+                borderWidth: 1.5, borderRadius: 6
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            plugins: { legend: { position: 'top', labels: { usePointStyle: true, padding: 16 } } },
+            scales: { y: { min: 0, max: 5, ticks: { stepSize: 1 } } }
+          }
+        });
+      }
     }
 
     // ===== Filters =====
@@ -627,6 +697,8 @@
       document.getElementById("tableBody").innerHTML = data.map((ev, i) => {
         const cls = getClass(ev.promedio);
         const photos = ev.photoCount || 0;
+        const percVal = ev.percepcion;
+        const percDisplay = percVal ? `${PERC_EMOJIS[percVal] || ''} ${percVal}` : '<span style="color:var(--muted)">—</span>';
         return `
           <tr>
             <td><strong>${ev.nombre || "—"}</strong><br><span style="font-size:0.7rem;color:var(--muted)">${ev.codigo || ""}</span></td>
@@ -636,6 +708,7 @@
             <td>${ev.evaluador || "—"}</td>
             <td class="score-cell" style="color:${cls.color}">${ev.promedio.toFixed(2)}</td>
             <td><span class="badge" style="background:${cls.color}22;color:${cls.color}">${cls.emoji} ${cls.label}</span></td>
+            <td style="text-align:center;font-size:1.1rem;">${percDisplay}</td>
             <td>${photos > 0 ? `<span class="photos-link" onclick="openDetail(${i},'filtered')">📷 ${photos}</span>` : '—'}</td>
             <td class="no-print"><button class="btn btn-outline btn-sm" onclick="openDetail(${i},'filtered')">Ver</button></td>
           </tr>
@@ -707,6 +780,14 @@
         </div>
         ${ev.observaciones ? `<div class="detail-obs"><strong>Observaciones:</strong> ${ev.observaciones}</div>` : ''}
         ${ev.acciones ? `<div class="detail-obs" style="border-left:3px solid var(--orange);"><strong>⚠️ Acciones requeridas:</strong> ${ev.acciones}</div>` : ''}
+        ${ev.percepcion ? `<div class="detail-obs" style="border-left:3px solid var(--accent);margin-top:12px;">
+          <strong>✨ Percepción de Atractividad:</strong>
+          <span style="font-size:1.5rem;margin-left:8px;">${PERC_EMOJIS[ev.percepcion] || ''}</span>
+          <strong style="margin-left:4px;">${ev.percepcion}/5</strong> — ${PERC_LABELS[ev.percepcion] || ''}
+        </div>` : ''}
+        ${ev.mejoraria ? `<div class="detail-obs" style="border-left:3px solid #a855f7;">
+          <strong>💡 Sugerencia de mejora:</strong> ${ev.mejoraria}
+        </div>` : ''}
       `;
 
       document.getElementById("modalOverlay").classList.add("open");

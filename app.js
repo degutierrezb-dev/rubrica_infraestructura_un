@@ -830,7 +830,7 @@ function exportCSV() {
   const data = getStoredData();
   if (data.length === 0) { showToast("No hay datos para exportar"); return; }
 
-  const headers = ["ID","Código","Nombre","Categoría","Edificio","Piso","Fecha","Hora","Evaluador","Cargo","Promedio","Clasificación","Fotos","Observaciones","Acciones"];
+  const headers = ["ID","Código","Nombre","Categoría","Edificio","Piso","Fecha","Hora","Evaluador","Cargo","Promedio","Clasificación","Fotos","Observaciones","Acciones","Percepción","Mejoraría"];
 
   const allDimKeys = new Set();
   data.forEach(ev => Object.keys(ev.scores || {}).forEach(k => allDimKeys.add(k)));
@@ -841,7 +841,8 @@ function exportCSV() {
     const base = [
       ev.id, ev.codigo, ev.nombre, ev.categoriaName || ev.categoria,
       ev.edificio, ev.piso, ev.fecha, ev.hora, ev.evaluador, ev.cargo,
-      ev.promedio, ev.clasificacion, ev.photoCount || 0, ev.observaciones, ev.acciones
+      ev.promedio, ev.clasificacion, ev.photoCount || 0, ev.observaciones, ev.acciones,
+      ev.percepcion || "", ev.mejoraria || ""
     ];
     const dims = dimKeys.map(k => ev.scores?.[k] ?? "");
     return [...base, ...dims];
