@@ -1,5 +1,5 @@
 // ============================================================
-// app.js — UniNorte Evaluation Form v2 (with Photo Support)
+// app.js — UniNorte Evaluation Form v3 (Cascading Selects)
 // ============================================================
 
 const STORAGE_KEY = "uninorte_evaluaciones_v2";
@@ -7,6 +7,23 @@ const MAX_PHOTOS_PER_DIM = 2;
 const PHOTO_MAX_SIZE = 1024;   // Max dimension in pixels
 const PHOTO_QUALITY = 0.5;     // JPEG quality (0-1)
 const STORAGE_WARN_PCT = 80;   // Warn when storage is X% full
+
+// Safe storage wrapper (iOS WebKit blocks localStorage in some contexts)
+let memoryStore = {};
+const appStorage = {
+  getItem(key) {
+    try { return window.localStorage.getItem(key); }
+    catch (e) { return memoryStore[key] || null; }
+  },
+  setItem(key, val) {
+    try { window.localStorage.setItem(key, val); }
+    catch (e) { memoryStore[key] = val; }
+  },
+  removeItem(key) {
+    try { window.localStorage.removeItem(key); }
+    catch (e) { delete memoryStore[key]; }
+  }
+};
 
 // In-memory photo store for current evaluation (dimId -> [base64, ...])
 let currentPhotos = {};
@@ -16,6 +33,12 @@ let activePhotoDimId = null;
 // ===== DOM Elements =====
 const form = document.getElementById("evalForm");
 const categoriaSelect = document.getElementById("categoria");
+const edificioSelect = document.getElementById("edificio");
+const codigoSelect = document.getElementById("codigo");
+const pisoInput = document.getElementById("piso");
+const nombreInput = document.getElementById("nombre");
+const evaluadorInput = document.getElementById("evaluador");
+const cargoInput = document.getElementById("cargo");
 const dimensionsSection = document.getElementById("dimensionsSection");
 const dimensionsContainer = document.getElementById("dimensionsContainer");
 const catIcon = document.getElementById("catIcon");
@@ -43,11 +66,15 @@ const drawerOverlay = document.getElementById("drawerOverlay");
 const historyList = document.getElementById("historyList");
 const drawerStats = document.getElementById("drawerStats");
 
+// Track whether the current category has ESPACIOS data
+let currentCatHasEspacios = false;
+
 // ===== Init =====
 document.addEventListener("DOMContentLoaded", () => {
   initTheme();
   populateCategories();
   setDefaults();
+  loadEvaluadorData();
   updateBadgeCount();
   updateStorageIndicator();
   bindEvents();
@@ -91,9 +118,30 @@ function setDefaults() {
   document.getElementById("hora").value = now.toTimeString().slice(0, 5);
 }
 
+// ===== Evaluador Persistence =====
+function loadEvaluadorData() {
+  try {
+    const ev = appStorage.getItem("uninorte_evaluador");
+    const ca = appStorage.getItem("uninorte_cargo");
+    if (ev) evaluadorInput.value = ev;
+    if (ca) cargoInput.value = ca;
+  } catch (e) { /* ignore */ }
+}
+
+function saveEvaluadorData() {
+  try {
+    const ev = evaluadorInput.value.trim();
+    const ca = cargoInput.value.trim();
+    if (ev) appStorage.setItem("uninorte_evaluador", ev);
+    if (ca) appStorage.setItem("uninorte_cargo", ca);
+  } catch (e) { /* ignore */ }
+}
+
 // ===== Event Bindings =====
 function bindEvents() {
   categoriaSelect.addEventListener("change", onCategoryChange);
+  edificioSelect.addEventListener("change", onEdificioChange);
+  codigoSelect.addEventListener("change", onCodigoChange);
   form.addEventListener("submit", onSubmit);
   form.addEventListener("reset", onReset);
 
@@ -127,6 +175,9 @@ function onCategoryChange() {
   const catId = categoriaSelect.value;
   currentPhotos = {}; // Reset photos when category changes
 
+  // Reset cascaded fields
+  resetCascade();
+
   if (!catId) {
     dimensionsSection.style.display = "none";
     resultSection.style.display = "none";
@@ -139,6 +190,32 @@ function onCategoryChange() {
   const cat = CATEGORIES.find(c => c.id === catId);
   if (!cat) return;
 
+  // Populate edificio dropdown from ESPACIOS
+  const espaciosCat = (typeof ESPACIOS !== 'undefined') ? ESPACIOS.filter(e => e.cat === catId) : [];
+  currentCatHasEspacios = espaciosCat.length > 0;
+
+  if (currentCatHasEspacios) {
+    // Get unique edificios sorted
+    const edificios = [...new Set(espaciosCat.map(e => e.ed))].sort();
+    edificioSelect.innerHTML = '<option value="">— Seleccionar edificio —</option>';
+    edificios.forEach(ed => {
+      const opt = document.createElement("option");
+      opt.value = ed;
+      opt.textContent = ed;
+      edificioSelect.appendChild(opt);
+    });
+    edificioSelect.disabled = false;
+    codigoSelect.innerHTML = '<option value="">— Seleccione edificio primero —</option>';
+    codigoSelect.disabled = true;
+  } else {
+    // Category without ESPACIOS data — convert to free text inputs
+    swapToTextInput('edificioGroup', 'edificio', 'Ej: Bloque K1');
+    swapToTextInput('codigoGroup', 'codigo', 'Ej: AUD-01');
+  }
+
+  pisoInput.value = '';
+  nombreInput.value = '';
+
   emptyState.style.display = "none";
   dimensionsSection.style.display = "block";
   resultSection.style.display = "block";
@@ -150,6 +227,104 @@ function onCategoryChange() {
 
   renderDimensions(cat);
   updateResult();
+}
+
+// ===== Edificio Change (cascade step 2) =====
+function onEdificioChange() {
+  const catId = categoriaSelect.value;
+  const edValue = edificioSelect.value;
+
+  // Reset downstream
+  pisoInput.value = '';
+  nombreInput.value = '';
+
+  if (!edValue || !currentCatHasEspacios) {
+    codigoSelect.innerHTML = '<option value="">— Seleccione edificio primero —</option>';
+    codigoSelect.disabled = true;
+    return;
+  }
+
+  // Filter ESPACIOS by cat + edificio
+  const matched = ESPACIOS.filter(e => e.cat === catId && e.ed === edValue);
+  const codigos = matched.sort((a, b) => a.cod.localeCompare(b.cod));
+
+  codigoSelect.innerHTML = '<option value="">— Seleccionar código —</option>';
+  codigos.forEach(esp => {
+    const opt = document.createElement("option");
+    opt.value = esp.cod;
+    opt.textContent = `${esp.cod} — ${esp.nom}`;
+    codigoSelect.appendChild(opt);
+  });
+  codigoSelect.disabled = false;
+}
+
+// ===== Codigo Change (cascade step 3 — auto-fill) =====
+function onCodigoChange() {
+  const catId = categoriaSelect.value;
+  const codValue = codigoSelect.value;
+
+  if (!codValue || !currentCatHasEspacios) {
+    pisoInput.value = '';
+    nombreInput.value = '';
+    return;
+  }
+
+  const esp = ESPACIOS.find(e => e.cat === catId && e.cod === codValue);
+  if (esp) {
+    pisoInput.value = esp.piso || '';
+    nombreInput.value = esp.nom || '';
+    // If piso is empty, hint user they can fill it manually
+    if (!esp.piso) {
+      pisoInput.placeholder = 'Diligenciar manualmente';
+    } else {
+      pisoInput.placeholder = 'Se auto-rellena';
+    }
+  }
+}
+
+// ===== Helper: Reset Cascade Fields =====
+function resetCascade() {
+  // Restore edificio and codigo as <select> if they were swapped to <input>
+  restoreSelect('edificioGroup', 'edificio', '— Seleccione categoría primero —');
+  restoreSelect('codigoGroup', 'codigo', '— Seleccione edificio primero —');
+  // Re-acquire references in case they were replaced
+  // (We use getElementById so these always point to the current element)
+  pisoInput.value = '';
+  nombreInput.value = '';
+}
+
+// Swap a <select> to a <input type="text"> inside its group
+function swapToTextInput(groupId, fieldId, placeholder) {
+  const group = document.getElementById(groupId);
+  const existing = document.getElementById(fieldId);
+  if (existing && existing.tagName === 'INPUT') return; // already swapped
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.id = fieldId;
+  input.placeholder = placeholder;
+  if (existing) existing.replaceWith(input);
+}
+
+// Restore a text <input> back to a <select>
+function restoreSelect(groupId, fieldId, defaultText) {
+  const existing = document.getElementById(fieldId);
+  if (existing && existing.tagName === 'SELECT') {
+    // Already a select, just reset it
+    existing.innerHTML = `<option value="">${defaultText}</option>`;
+    existing.disabled = true;
+    return;
+  }
+  const select = document.createElement('select');
+  select.id = fieldId;
+  select.disabled = true;
+  select.innerHTML = `<option value="">${defaultText}</option>`;
+  if (existing) existing.replaceWith(select);
+  // Re-bind event listener
+  if (fieldId === 'edificio') {
+    select.addEventListener('change', onEdificioChange);
+  } else if (fieldId === 'codigo') {
+    select.addEventListener('change', onCodigoChange);
+  }
 }
 
 // ===== Render Dimensions =====
@@ -438,14 +613,20 @@ function onSubmit(e) {
   let totalPhotos = 0;
   Object.values(currentPhotos).forEach(arr => totalPhotos += arr.length);
 
+  // Get values from either <select> or <input> elements
+  const codigoEl = document.getElementById("codigo");
+  const edificioEl = document.getElementById("edificio");
+  const codigoVal = codigoEl ? codigoEl.value.trim() : '';
+  const edificioVal = edificioEl ? edificioEl.value.trim() : '';
+
   const evaluation = {
     id: Date.now().toString(36) + Math.random().toString(36).substr(2, 5),
-    codigo: document.getElementById("codigo").value.trim(),
+    codigo: codigoVal,
     nombre,
     categoria: catId,
     categoriaName: cat.name,
     categoriaIcon: cat.icon,
-    edificio: document.getElementById("edificio").value.trim(),
+    edificio: edificioVal,
     piso: document.getElementById("piso").value.trim(),
     fecha: document.getElementById("fecha").value,
     hora: document.getElementById("hora").value,
@@ -485,12 +666,23 @@ function onSubmit(e) {
   currentPhotos = {};
   updateBadgeCount();
   updateStorageIndicator();
+  saveEvaluadorData();
 
   const photoMsg = totalPhotos > 0 ? ` (${totalPhotos} foto${totalPhotos > 1 ? 's' : ''})` : '';
   showToast(`✅ Guardado: ${nombre} — ${cls.emoji} ${cls.label} (${avg.toFixed(2)})${photoMsg}`);
 
+  // Preserve evaluator data across resets
+  const savedEvaluador = evaluadorInput.value;
+  const savedCargo = cargoInput.value;
+
   form.reset();
   setDefaults();
+  resetCascade();
+
+  // Restore evaluator
+  evaluadorInput.value = savedEvaluador;
+  cargoInput.value = savedCargo;
+
   dimensionsSection.style.display = "none";
   resultSection.style.display = "none";
   obsSection.style.display = "none";
@@ -500,8 +692,14 @@ function onSubmit(e) {
 
 function onReset() {
   currentPhotos = {};
+  const savedEvaluador = evaluadorInput.value;
+  const savedCargo = cargoInput.value;
   setTimeout(() => {
     setDefaults();
+    resetCascade();
+    // Restore evaluator (form.reset clears all inputs)
+    evaluadorInput.value = savedEvaluador;
+    cargoInput.value = savedCargo;
     dimensionsSection.style.display = "none";
     resultSection.style.display = "none";
     obsSection.style.display = "none";
