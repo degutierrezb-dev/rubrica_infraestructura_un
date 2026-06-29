@@ -52,6 +52,8 @@ const obsSection = document.getElementById("obsSection");
 const formActions = document.getElementById("formActions");
 const emptyState = document.getElementById("emptyState");
 const accionesGroup = document.getElementById("accionesGroup");
+const perceptionSection = document.getElementById("perceptionSection");
+const perceptionText = document.getElementById("perceptionText");
 const evalCount = document.getElementById("evalCount");
 const toast = document.getElementById("toast");
 const photoInput = document.getElementById("photoInput");
@@ -168,6 +170,20 @@ function bindEvents() {
   });
   document.getElementById("btnImport").addEventListener("change", importFile);
   document.getElementById("btnClearAll").addEventListener("click", clearAll);
+
+  // Perception emoji scale
+  const PERCEPTION_LABELS = {
+    "5": "🤩 ¡Impresionante! — Genera orgullo institucional",
+    "4": "😊 Agradable — Buena impresión, se ve profesional",
+    "3": "😐 Neutro — No genera sensación particular",
+    "2": "😕 Poco atractivo — Da mala impresión",
+    "1": "😬 Desfavorable — Afecta la imagen institucional"
+  };
+  document.querySelectorAll('input[name="percepcion"]').forEach(radio => {
+    radio.addEventListener('change', () => {
+      perceptionText.textContent = PERCEPTION_LABELS[radio.value] || '';
+    });
+  });
 }
 
 // ===== Category Change =====
@@ -182,6 +198,7 @@ function onCategoryChange() {
     dimensionsSection.style.display = "none";
     resultSection.style.display = "none";
     obsSection.style.display = "none";
+    perceptionSection.style.display = "none";
     formActions.style.display = "none";
     emptyState.style.display = "block";
     return;
@@ -220,6 +237,7 @@ function onCategoryChange() {
   dimensionsSection.style.display = "block";
   resultSection.style.display = "block";
   obsSection.style.display = "block";
+  perceptionSection.style.display = "block";
   formActions.style.display = "flex";
 
   catIcon.textContent = cat.icon;
@@ -640,6 +658,8 @@ function onSubmit(e) {
     color: cls.color,
     observaciones: document.getElementById("observaciones").value.trim(),
     acciones: document.getElementById("acciones").value.trim(),
+    percepcion: (() => { const r = document.querySelector('input[name="percepcion"]:checked'); return r ? parseInt(r.value) : null; })(),
+    mejoraria: document.getElementById("mejoraria") ? document.getElementById("mejoraria").value.trim() : '',
     timestamp: new Date().toISOString()
   };
 
@@ -686,6 +706,8 @@ function onSubmit(e) {
   dimensionsSection.style.display = "none";
   resultSection.style.display = "none";
   obsSection.style.display = "none";
+  perceptionSection.style.display = "none";
+  perceptionText.textContent = '';
   formActions.style.display = "none";
   emptyState.style.display = "block";
 }
@@ -703,6 +725,8 @@ function onReset() {
     dimensionsSection.style.display = "none";
     resultSection.style.display = "none";
     obsSection.style.display = "none";
+    perceptionSection.style.display = "none";
+    perceptionText.textContent = '';
     formActions.style.display = "none";
     emptyState.style.display = "block";
   }, 10);

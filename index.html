@@ -489,6 +489,80 @@ textarea { resize: vertical; min-height: 70px; }
 
 .toast.show { bottom: 24px; }
 
+/* ===== Perception / Attractiveness Scale ===== */
+.perception-question {
+  font-size: 0.95rem; font-weight: 500; color: var(--text-secondary);
+  margin-bottom: 16px; line-height: 1.5; text-align: center;
+}
+
+.perception-scale {
+  display: flex; justify-content: center; gap: 10px;
+  flex-wrap: wrap; margin-bottom: 8px;
+}
+
+.perception-option {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  cursor: pointer; user-select: none; -webkit-user-select: none;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.perception-option input[type="radio"] {
+  position: absolute; opacity: 0; width: 0; height: 0;
+}
+
+.perception-emoji {
+  font-size: 2.8rem; line-height: 1;
+  width: 64px; height: 64px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: var(--bg-glass);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.perception-option:active .perception-emoji {
+  transform: scale(0.9);
+}
+
+.perception-option input:checked ~ .perception-emoji {
+  transform: scale(1.18);
+  border-color: var(--accent);
+  box-shadow: 0 0 20px rgba(14, 165, 233, 0.35), 0 0 40px rgba(14, 165, 233, 0.1);
+  background: rgba(14, 165, 233, 0.12);
+}
+
+.perception-label {
+  font-size: 0.7rem; font-weight: 600; color: var(--text-muted);
+  text-align: center; max-width: 72px; line-height: 1.2;
+  transition: color 0.2s;
+}
+
+.perception-option input:checked ~ .perception-label {
+  color: var(--accent);
+}
+
+.perception-selected-text {
+  text-align: center; font-size: 0.82rem; font-weight: 500;
+  color: var(--accent); min-height: 1.3em;
+  margin-top: 4px;
+  transition: opacity 0.3s;
+}
+
+/* Responsive: larger emojis on phones for easy tapping */
+@media (max-width: 500px) {
+  .perception-emoji {
+    font-size: 2.5rem; width: 58px; height: 58px;
+  }
+  .perception-scale { gap: 6px; }
+  .perception-label { font-size: 0.65rem; max-width: 62px; }
+}
+
+@media (min-width: 501px) {
+  .perception-emoji {
+    font-size: 3rem; width: 70px; height: 70px;
+  }
+}
+
 /* ===== Responsive ===== */
 @media (max-width: 500px) {
   html { font-size: 14px; }
@@ -626,6 +700,47 @@ textarea { resize: vertical; min-height: 70px; }
         <div class="form-group full-width" id="accionesGroup" style="display:none;">
           <label for="acciones" class="label-warning">⚠️ Acciones inmediatas requeridas (puntaje ≤ 2 detectado)</label>
           <textarea id="acciones" rows="3" placeholder="Describa las acciones inmediatas necesarias..."></textarea>
+        </div>
+      </section>
+
+      <!-- Perception / Attractiveness -->
+      <section class="form-section" id="perceptionSection" style="display:none;">
+        <div class="section-header">
+          <span class="section-icon">✨</span>
+          <h2>Percepción de Atractividad</h2>
+        </div>
+        <p class="perception-question">Si un visitante externo viera este espacio, ¿qué impresión se llevaría?</p>
+        <div class="perception-scale" id="perceptionScale">
+          <label class="perception-option">
+            <input type="radio" name="percepcion" value="5" />
+            <span class="perception-emoji">🤩</span>
+            <span class="perception-label">¡Impresionante!</span>
+          </label>
+          <label class="perception-option">
+            <input type="radio" name="percepcion" value="4" />
+            <span class="perception-emoji">😊</span>
+            <span class="perception-label">Agradable</span>
+          </label>
+          <label class="perception-option">
+            <input type="radio" name="percepcion" value="3" />
+            <span class="perception-emoji">😐</span>
+            <span class="perception-label">Neutro</span>
+          </label>
+          <label class="perception-option">
+            <input type="radio" name="percepcion" value="2" />
+            <span class="perception-emoji">😕</span>
+            <span class="perception-label">Poco atractivo</span>
+          </label>
+          <label class="perception-option">
+            <input type="radio" name="percepcion" value="1" />
+            <span class="perception-emoji">😬</span>
+            <span class="perception-label">Desfavorable</span>
+          </label>
+        </div>
+        <div class="perception-selected-text" id="perceptionText"></div>
+        <div class="form-group full-width" style="margin-top: 12px;">
+          <label for="mejoraria">💡 ¿Qué mejoraría para hacerlo más atractivo? <span style="color:var(--text-muted);font-weight:400;">(opcional)</span></label>
+          <textarea id="mejoraria" rows="2" placeholder="Ej: Pintar las paredes de un color más cálido, agregar plantas..."></textarea>
         </div>
       </section>
 
@@ -1671,6 +1786,8 @@ const obsSection = document.getElementById("obsSection");
 const formActions = document.getElementById("formActions");
 const emptyState = document.getElementById("emptyState");
 const accionesGroup = document.getElementById("accionesGroup");
+const perceptionSection = document.getElementById("perceptionSection");
+const perceptionText = document.getElementById("perceptionText");
 const evalCount = document.getElementById("evalCount");
 const toast = document.getElementById("toast");
 const photoInput = document.getElementById("photoInput");
@@ -1787,6 +1904,20 @@ function bindEvents() {
   });
   document.getElementById("btnImport").addEventListener("change", importFile);
   document.getElementById("btnClearAll").addEventListener("click", clearAll);
+
+  // Perception emoji scale
+  const PERCEPTION_LABELS = {
+    "5": "🤩 ¡Impresionante! — Genera orgullo institucional",
+    "4": "😊 Agradable — Buena impresión, se ve profesional",
+    "3": "😐 Neutro — No genera sensación particular",
+    "2": "😕 Poco atractivo — Da mala impresión",
+    "1": "😬 Desfavorable — Afecta la imagen institucional"
+  };
+  document.querySelectorAll('input[name="percepcion"]').forEach(radio => {
+    radio.addEventListener('change', () => {
+      perceptionText.textContent = PERCEPTION_LABELS[radio.value] || '';
+    });
+  });
 }
 
 // ===== Category Change =====
@@ -1801,6 +1932,7 @@ function onCategoryChange() {
     dimensionsSection.style.display = "none";
     resultSection.style.display = "none";
     obsSection.style.display = "none";
+    perceptionSection.style.display = "none";
     formActions.style.display = "none";
     emptyState.style.display = "block";
     return;
@@ -1839,6 +1971,7 @@ function onCategoryChange() {
   dimensionsSection.style.display = "block";
   resultSection.style.display = "block";
   obsSection.style.display = "block";
+  perceptionSection.style.display = "block";
   formActions.style.display = "flex";
 
   catIcon.textContent = cat.icon;
@@ -2259,6 +2392,8 @@ function onSubmit(e) {
     color: cls.color,
     observaciones: document.getElementById("observaciones").value.trim(),
     acciones: document.getElementById("acciones").value.trim(),
+    percepcion: (() => { const r = document.querySelector('input[name="percepcion"]:checked'); return r ? parseInt(r.value) : null; })(),
+    mejoraria: document.getElementById("mejoraria") ? document.getElementById("mejoraria").value.trim() : '',
     timestamp: new Date().toISOString()
   };
 
@@ -2305,6 +2440,8 @@ function onSubmit(e) {
   dimensionsSection.style.display = "none";
   resultSection.style.display = "none";
   obsSection.style.display = "none";
+  perceptionSection.style.display = "none";
+  perceptionText.textContent = '';
   formActions.style.display = "none";
   emptyState.style.display = "block";
 }
@@ -2322,6 +2459,8 @@ function onReset() {
     dimensionsSection.style.display = "none";
     resultSection.style.display = "none";
     obsSection.style.display = "none";
+    perceptionSection.style.display = "none";
+    perceptionText.textContent = '';
     formActions.style.display = "none";
     emptyState.style.display = "block";
   }, 10);
