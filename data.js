@@ -453,49 +453,49 @@ const CATEGORIES = [
     id: "salon", name: "Salón de Clases", icon: "🏫",
     dimensions: [
       { id: "estructura", name: "Estructura y Acabados", descriptors: {
-        5: "Paredes, piso y techo en perfecto estado. Pintura uniforme, sin manchas ni grietas. Piso nivelado y limpio.",
-        4: "Paredes y piso en buen estado general. Marcas menores de uso. Pintura con desgaste mínimo.",
+        5: "Paredes, puerta, piso y techo en excelentes condiciones. Pintura uniforme, sin manchas ni grietas. Piso limpio.",
+        4: "Paredes, puerta y piso en buen estado general. Marcas menores de uso. Pintura con desgaste mínimo.",
         3: "Pintura desgastada en algunas áreas. Grietas superficiales visibles. Piso con desgaste moderado.",
         2: "Humedad visible, descascaramiento de pintura o grietas notorias. Piso deteriorado.",
         1: "Daño estructural evidente (infiltraciones activas, grietas profundas, techo con riesgo). Piso inestable."
       }},
       { id: "mobiliario", name: "Mobiliario", descriptors: {
-        5: "Todo el mobiliario en excelente estado, completo y funcional. Sillas ergonómicas, mesas estables, tableros limpios.",
+        5: "Todo el mobiliario en excelente estado, completo y funcional. Sillas y mesas estables, tableros limpios.",
         4: "Mobiliario en buen estado. Desgaste menor por uso normal. Todos los puestos funcionales.",
         3: "Algunos muebles con desgaste visible. 90%+ de los puestos funcionales.",
         2: "Mobiliario deteriorado: sillas rotas, mesas inestables, tableros dañados. 70-89% funcional.",
         1: "Más del 30% del mobiliario inutilizable. Impide el desarrollo normal de la clase."
       }},
       { id: "iluminacion", name: "Iluminación", descriptors: {
-        5: "Iluminación uniforme y suficiente (≥300 lux). Todas las luminarias funcionando.",
+        5: "Iluminación uniforme y suficiente. Todas las luminarias funcionando. Blackouts y/o persianas funcionando correctamente",
         4: "Iluminación adecuada. Máximo 1-2 luminarias fundidas sin afectar significativamente.",
-        3: "Iluminación desigual. Algunas zonas oscuras. 10-20% de luminarias sin funcionar.",
-        2: "Iluminación insuficiente que dificulta lectura. >20% luminarias sin funcionar.",
+        3: "Iluminación desigual. Algunas zonas oscuras. 10-25% de luminarias sin funcionar.",
+        2: "Iluminación insuficiente que dificulta lectura. >25% luminarias sin funcionar.",
         1: "Sin iluminación artificial funcional o extremadamente deficiente."
       }},
       { id: "ventilacion", name: "Ventilación y Climatización", descriptors: {
-        5: "AC funcionando óptimamente. Temperatura 22-24°C. Sin ruidos excesivos. Filtros limpios.",
-        4: "Climatización funcional con variaciones menores. Ruido leve.",
+        5: "AC funcionando a temperatura confortable. Sin ruido.",
+        4: "Climatización funcional. Ruido leve.",
         3: "AC funciona con deficiencias (enfría irregularmente, gotea levemente, ruido moderado).",
         2: "Climatización deficiente: no enfría adecuadamente, goteo constante, ruido excesivo.",
-        1: "Sin AC funcional en espacio cerrado. >30°C interior."
+        1: "Sin AC funcional en espacio cerrado. Se siente caliente."
       }},
       { id: "tecnologia", name: "Equipos Tecnológicos", descriptors: {
-        5: "Video beam, sonido, tomas eléctricas y conectividad WiFi/ethernet perfectos.",
-        4: "Equipos funcionales con detalles menores (cables a la vista, control remoto gastado).",
-        3: "Algún equipo intermitente. Al menos video beam y tomas funcionan.",
-        2: "Equipos principales sin funcionar (video beam dañado). Tomas dañadas.",
+        5: "Computador, Video beam, sonido, tomas eléctricas y conectividad WiFi/ethernet perfectos.",
+        4: "Equipos funcionales con detalles menores (cables desordenados a la vista, teclado con letras desgastadas).",
+        3: "Algún equipo intermitente. Al menos computador y video beam funcionan.",
+        2: "Equipos principales sin funcionar (computador o video beam dañado). Tomas dañadas.",
         1: "Sin equipos tecnológicos funcionales. Sin tomas eléctricas. Sin conectividad."
       }},
       { id: "limpieza", name: "Limpieza e Higiene", descriptors: {
-        5: "Espacio impecable. Sin basura, polvo o manchas. Papelera disponible y vacía.",
+        5: "Espacio impecable. Sin basura, polvo o manchas. Papelera disponible.",
         4: "Limpio en general. Mínimo polvo. Papelera disponible.",
         3: "Limpieza aceptable con acumulación menor de polvo o basura.",
         2: "Suciedad visible en pisos, mesas o sillas. Papelera desbordada o ausente.",
         1: "Espacio sucio. Malos olores, plagas o residuos orgánicos."
       }},
       { id: "senalizacion", name: "Señalización y Accesibilidad", descriptors: {
-        5: "Número de sala visible. Señalización de emergencia completa. Acceso para movilidad reducida. Ruta evacuación clara.",
+        5: "Número de salón visible. Señalización de emergencia completa. Acceso para movilidad reducida. Ruta evacuación clara.",
         4: "Señalización presente y legible. Ruta de evacuación visible. Acceso adecuado.",
         3: "Señalización parcial (falta número de sala o señalización incompleta).",
         2: "Señalización ausente o ilegible. Sin ruta de evacuación visible. Obstáculos.",
@@ -507,9 +507,9 @@ const CATEGORIES = [
     id: "laboratorio", name: "Laboratorio", icon: "🔬",
     dimensions: [
       { id: "estructura", name: "Estructura y Acabados", descriptors: {
-        5: "Pisos antideslizantes en perfecto estado. Paredes lavables sin daños. Mesones íntegros. Instalaciones de agua/gas seguras.",
-        4: "Estructura en buen estado. Desgaste mínimo en superficies. Instalaciones funcionales con mantenimiento al día.",
-        3: "Superficies con desgaste moderado (manchas, rayones). Instalaciones funcionales con goteos menores.",
+        5: "Pisos en excelente estado. Paredes lavables sin daños. Mesones íntegros. Instalaciones de agua/gas seguras.",
+        4: "Estructura en buen estado. Desgaste mínimo en superficies. Instalaciones funcionales.",
+        3: "Superficies con desgaste moderado (manchas, rayones). Instalaciones funcionales con humedad o goteos menores.",
         2: "Mesones deteriorados o inestables. Pisos resbalosos. Instalaciones con fugas visibles.",
         1: "Daño estructural que compromete la seguridad. Instalaciones de agua/gas con riesgo de accidente."
       }},
@@ -521,11 +521,11 @@ const CATEGORIES = [
         1: "Mayoría de equipos inoperativos o ausentes. Imposibilidad de realizar prácticas."
       }},
       { id: "seguridad", name: "Seguridad", descriptors: {
-        5: "Ducha de emergencia y lavaojos funcionales. Extintores vigentes. Botiquín completo. EPP disponible. Hojas SDS actualizadas.",
-        4: "Elementos de seguridad presentes y funcionales. Fechas vigentes. EPP disponible con desgaste menor.",
-        3: "Elementos presentes pero con deficiencias menores (botiquín incompleto, EPP desgastado).",
-        2: "Faltan elementos críticos (sin extintor, ducha bloqueada). EPP insuficiente o deteriorado.",
-        1: "Sin elementos de seguridad funcionales. Riesgo inminente. Sustancias peligrosas sin control."
+        5: "Ducha de emergencia y lavaojos funcionales (si aplica). Extintores vigentes. Botiquín completo. EPP disponible. Hojas SDS actualizadas. Insumos correctamente almacenados.",
+        4: "Elementos de seguridad presentes y funcionales. EPP disponible con desgaste menor. Algunos insumos no están debidamente almacenados.",
+        3: "Elementos presentes pero con deficiencias menores (botiquín incompleto, EPP desgastado). Almacenamiento de insumos inadecuado o insuficiente.",
+        2: "Faltan elementos críticos (sin extintor, ducha bloqueada). EPP insuficiente o deteriorado. El mal almacenamiento de insumos genera riesgos.",
+        1: "Sin elementos de seguridad funcionales. Riesgo inminente. Sustancias peligrosas sin control. No hay almacenamiento de insumos."
       }},
       { id: "ventilacion", name: "Ventilación y Extracción", descriptors: {
         5: "Sistema de extracción/campanas funcionando óptimamente. Ventilación adecuada. Sin olores químicos residuales.",
@@ -535,10 +535,10 @@ const CATEGORIES = [
         1: "Sin sistema de extracción funcional. Riesgo de exposición a vapores tóxicos."
       }},
       { id: "limpieza_senal", name: "Limpieza, Iluminación y Señalización", descriptors: {
-        5: "Limpieza impecable. Iluminación ≥500 lux. Señalización de riesgos completa (pictogramas GHS, rutas, normas).",
+        5: "Limpieza impecable. Iluminación adecuada. Señalización de riesgos completa (pictogramas GHS, rutas, normas).",
         4: "Limpio y bien iluminado. Señalización presente y legible.",
         3: "Limpieza aceptable. Iluminación adecuada con zonas de penumbra. Señalización parcial.",
-        2: "Residuos químicos sin limpiar. Iluminación deficiente. Señalización incompleta.",
+        2: "Residuos químicos sin limpiar (si aplica). Iluminación deficiente. Señalización incompleta.",
         1: "Condiciones antihigiénicas. Sin iluminación adecuada. Sin señalización de riesgos."
       }}
     ]
@@ -547,31 +547,24 @@ const CATEGORIES = [
     id: "sala_pc", name: "Sala de Computadores", icon: "💻",
     dimensions: [
       { id: "mobiliario", name: "Mobiliario y Ergonomía", descriptors: {
-        5: "Mesas amplias y estables. Sillas ergonómicas ajustables. Monitores a altura adecuada. Cableado canalizado.",
+        5: "Mesas amplias y estables. Sillas ergonómicas. Monitores a altura adecuada. Cableado canalizado.",
         4: "Mobiliario en buen estado. Ergonomía aceptable. Cableado mayormente organizado.",
-        3: "Mobiliario funcional con desgaste. Algunos cables expuestos. Espacio algo reducido entre puestos.",
+        3: "Mobiliario funcional con desgaste. Algunos cables expuestos de manera desordenada. Espacio algo reducido entre puestos.",
         2: "Mobiliario deteriorado. Cables desordenados (riesgo de tropiezo). Hacinamiento.",
         1: "Mobiliario inservible. Cableado peligroso. Impide el uso adecuado."
       }},
       { id: "equipos_computo", name: "Equipos de Cómputo", descriptors: {
-        5: "100% equipos funcionales. Hardware actualizado (máx 5 años). Rendimiento fluido. Periféricos completos.",
+        5: "100% equipos funcionales. Periféricos completos.",
         4: "95%+ equipos funcionales. Hardware adecuado. Periféricos completos.",
         3: "85-94% equipos funcionales. Rendimiento lento pero utilizable. Algunos periféricos faltantes.",
-        2: "70-84% equipos funcionales. Equipos obsoletos o muy lentos. Periféricos incompletos.",
-        1: "<70% equipos funcionales. Equipos inoperativos o extremadamente obsoletos."
-      }},
-      { id: "software", name: "Software y Conectividad", descriptors: {
-        5: "Software académico licenciado e instalado. SO actualizado. WiFi y ethernet rápidos y estables.",
-        4: "Software necesario instalado y funcional. Conectividad estable con velocidad adecuada.",
-        3: "Software parcialmente actualizado. Conectividad intermitente o lenta en horas pico.",
-        2: "Software desactualizado o faltante. Conectividad deficiente.",
-        1: "Sin software académico necesario. Sin conectividad. Equipos sin SO funcional."
+        2: "70-84% equipos funcionales. Periféricos incompletos.",
+        1: "<70% equipos funcionales. Equipos inoperativos."
       }},
       { id: "clima_ilum", name: "Climatización, Iluminación y Limpieza", descriptors: {
-        5: "AC óptimo (20-24°C). Iluminación antireflejos. Espacio limpio y sin polvo en equipos.",
-        4: "Climatización adecuada. Iluminación correcta. Limpieza general buena.",
+        5: "AC funcionando a temperatura confortable. Sin ruido. Iluminación completa. Espacio limpio y sin polvo en equipos.",
+        4: "Climatización adecuada. Alguna luminarias sin funcionar pero no afectan significativamente. Limpieza general buena.",
         3: "Climatización funcional con variaciones. Reflejos ocasionales. Polvo acumulado en algunos equipos.",
-        2: "Temperatura >26°C (riesgo para equipos). Iluminación que genera fatiga visual. Polvo excesivo.",
+        2: "Disconfort térmico. Iluminación que genera fatiga visual. Polvo excesivo.",
         1: "Sin climatización. Iluminación deficiente. Suciedad generalizada."
       }}
     ]
@@ -588,9 +581,9 @@ const CATEGORIES = [
       }},
       { id: "integridad", name: "Integridad Estructural Visible", descriptors: {
         5: "Sin grietas, fisuras ni desprendimientos. Juntas y sellos en perfecto estado.",
-        4: "Microfisuras superficiales sin implicación estructural. Juntas en buen estado.",
-        3: "Grietas superficiales visibles. Algunos sellos deteriorados. Sin riesgo estructural aparente.",
-        2: "Grietas significativas. Elementos decorativos desprendidos. Requiere evaluación estructural.",
+        4: "Fisuras superficiales sin implicación estructural. Juntas en buen estado.",
+        3: "Grietas superficiales visibles. Sin riesgo estructural aparente.",
+        2: "Grietas significativas. Elementos decorativos desprendidos.",
         1: "Grietas estructurales evidentes. Riesgo de desprendimiento. Peligro para transeúntes."
       }},
       { id: "ventaneria", name: "Ventanería y Elementos Exteriores", descriptors: {
@@ -610,10 +603,10 @@ const CATEGORIES = [
     ]
   },
   {
-    id: "cancha", name: "Cancha Deportiva", icon: "⚽",
+    id: "cancha", name: "Espacios Deportivos", icon: "⚽",
     dimensions: [
       { id: "superficie", name: "Superficie de Juego", descriptors: {
-        5: "Superficie en excelente estado. Demarcación completa y visible. Nivelación perfecta.",
+        5: "Superficie en excelente estado. Demarcación completa y visible. Está nivelado.",
         4: "Superficie en buen estado. Desgaste menor en zonas de alto tráfico. Demarcación legible.",
         3: "Desgaste moderado. Parches irregulares o fisuras menores. Demarcación parcialmente borrada.",
         2: "Superficie deteriorada (huecos, grietas extensas). Demarcación ilegible. Charcos tras lluvia.",
@@ -627,8 +620,8 @@ const CATEGORIES = [
         1: "Sin equipamiento o completamente inservible. Graderías inseguras."
       }},
       { id: "ilum_drenaje", name: "Iluminación, Drenaje y Servicios", descriptors: {
-        5: "Iluminación nocturna completa. Drenaje eficiente. Bebederos y baños cercanos.",
-        4: "Iluminación funcional. Drenaje adecuado. Servicios complementarios disponibles.",
+        5: "Iluminación nocturna completa. Drenaje no obstaculizado. Bebederos y baños cercanos.",
+        4: "Iluminación funcional. Drenaje adecuado. Servicios complementarios disponibles (lockers, disponible, graderías).",
         3: "Iluminación parcial. Drenaje lento pero funcional. Servicios limitados.",
         2: "Iluminación insuficiente para uso nocturno. Encharcamientos frecuentes. Sin servicios.",
         1: "Sin iluminación. Sin drenaje (inundación frecuente). Sin servicios."
@@ -646,32 +639,32 @@ const CATEGORIES = [
     id: "jardin", name: "Jardín / Zona Verde", icon: "🌳",
     dimensions: [
       { id: "vegetacion", name: "Estado de la Vegetación", descriptors: {
-        5: "Grama cortada uniformemente. Árboles y arbustos podados. Plantas ornamentales saludables.",
+        5: "Grama cortada uniformemente. Árboles y arbustos podados. Plantas ornamentales en buen estado.",
         4: "Vegetación cuidada con mantenimiento reciente. Grama uniforme. Árboles saludables.",
-        3: "Grama irregular (requiere corte). Arbustos con crecimiento excesivo. Estrés hídrico.",
+        3: "Grama irregular (requiere corte). Arbustos con crecimiento excesivo. Plantas o gramas visiblemente secas.",
         2: "Grama muy crecida o con zonas secas extensas. Ramas secas sin podar. Plantas muertas.",
         1: "Vegetación abandonada. Maleza invasiva. Árboles con riesgo de caída. Descuido total."
       }},
       { id: "mobiliario_ext", name: "Mobiliario Exterior y Senderos", descriptors: {
-        5: "Bancas y mesas en excelente estado. Senderos bien pavimentados y nivelados. Pérgolas funcionales.",
+        5: "Bancas, estatuas y mesas en excelente estado. Senderos bien pavimentados y nivelados. Pérgolas funcionales.",
         4: "Mobiliario en buen estado con desgaste menor. Senderos transitables sin obstáculos.",
         3: "Algunos muebles deteriorados. Senderos con irregularidades menores (baldosas sueltas).",
         2: "Mobiliario roto o vandalizado. Senderos con huecos o adoquines levantados. Riesgo de tropiezo.",
         1: "Sin mobiliario funcional. Senderos intransitables. Charcos permanentes."
       }},
       { id: "limpieza_riego", name: "Limpieza y Riego", descriptors: {
-        5: "Espacios limpios. Sin basura. Papeleras disponibles y vacías. Riego funcional y programado.",
+        5: "Espacios limpios. Sin basura. Papeleras disponibles y vacías.",
         4: "Limpieza adecuada. Papeleras disponibles. Riego regular.",
         3: "Basura ocasional. Papeleras llenas. Riego irregular.",
         2: "Basura acumulada. Papeleras desbordadas o ausentes. Zonas secas por falta de riego.",
         1: "Espacio usado como basurero informal. Sin papeleras. Vegetación muerta por falta de riego."
       }},
       { id: "ilum_seg", name: "Iluminación y Seguridad", descriptors: {
-        5: "Iluminación peatonal completa. Cámaras de seguridad visibles. Senderos delimitados.",
-        4: "Iluminación adecuada en rutas principales. Seguridad visible.",
-        3: "Iluminación parcial (zonas oscuras en senderos secundarios). Seguridad variable.",
-        2: "Iluminación insuficiente. Zonas aisladas sin vigilancia. Sensación de inseguridad.",
-        1: "Sin iluminación funcional. Zona percibida como insegura."
+        5: "Iluminación peatonal completa. Senderos delimitados.",
+        4: "Iluminación adecuada en rutas principales.",
+        3: "Iluminación parcial (zonas oscuras en senderos secundarios).",
+        2: "Iluminación insuficiente. Zonas aisladas sin vigilancia.",
+        1: "Sin iluminación funcional."
       }}
     ]
   },
@@ -679,17 +672,17 @@ const CATEGORIES = [
     id: "acceso", name: "Entrada / Salida / Acceso", icon: "🚪",
     dimensions: [
       { id: "estado_fisico", name: "Estado Físico de la Infraestructura", descriptors: {
-        5: "Puertas, portones, torniquetes y barreras en perfecto estado. Pisos antideslizantes. Techado adecuado.",
+        5: "Puertas, portones, torniquetes y barreras en excelente estado. Pisos antideslizantes. Techado adecuado.",
         4: "Infraestructura en buen estado. Desgaste menor en elementos de alto uso.",
         3: "Elementos funcionales con desgaste visible. Techado parcial. Pisos con irregularidades menores.",
         2: "Puertas/portones con dificultad de operación. Torniquetes averiados. Pisos resbalosos.",
         1: "Infraestructura severamente dañada o inoperable. Riesgo de caídas o atrapamiento."
       }},
       { id: "control_acceso", name: "Control de Acceso y Seguridad", descriptors: {
-        5: "Sistema electrónico funcional (carnet, biometría). Personal de seguridad. Cámaras operativas.",
+        5: "Sistema electrónico funcional (carnet). Personal de seguridad. Cámaras de seguridad visibles.",
         4: "Control funcional con fallas esporádicas. Seguridad en horarios principales.",
         3: "Control intermitente. Cobertura parcial. Cámaras con ángulos limitados.",
-        2: "Control frecuentemente inoperante. Seguridad insuficiente. Acceso sin verificación.",
+        2: "El control de acceso presenta fallas frecuentes. Seguridad insuficiente. Acceso sin verificación.",
         1: "Sin control de acceso funcional. Sin seguridad. Acceso libre e incontrolado."
       }},
       { id: "senalizacion_flujo", name: "Señalización y Flujo", descriptors: {
@@ -700,7 +693,7 @@ const CATEGORIES = [
         1: "Sin señalización. Mezcla peligrosa de flujos. Riesgo de accidentes."
       }},
       { id: "accesibilidad", name: "Accesibilidad Universal", descriptors: {
-        5: "Rampas ≤8%. Pisos podotáctiles. Ancho para sillas de ruedas. Señalización inclusiva.",
+        5: "Rampa con inclinación. Ancho para sillas de ruedas. Señalización inclusiva.",
         4: "Accesibilidad adecuada con detalles menores.",
         3: "Rampas presentes pero con pendiente pronunciada o desgaste. Accesibilidad parcial.",
         2: "Accesibilidad limitada. Rampas insuficientes. Barreras para personas con discapacidad.",
@@ -732,20 +725,13 @@ const CATEGORIES = [
         2: "Señalización insuficiente. Circulación confusa. Conflictos peatón-vehículo.",
         1: "Sin señalización. Circulación caótica. Riesgo elevado de accidentes."
       }},
-      { id: "techado_dren", name: "Techado, Drenaje y Servicios", descriptors: {
-        5: "Techos sin goteras. Drenaje eficiente. Bicicleteros seguros. Zonas accesibles señalizadas.",
-        4: "Techado funcional. Drenaje adecuado. Servicios disponibles.",
-        3: "Techado con goteras menores. Drenaje lento. Bicicleteros insuficientes.",
-        2: "Techado dañado. Encharcamientos frecuentes. Sin bicicleteros.",
-        1: "Techado colapsado. Inundaciones recurrentes. Sin servicios ni accesibilidad."
-      }}
-    ]
+         ]
   },
   {
     id: "bano", name: "Baño", icon: "🚻",
     dimensions: [
       { id: "aparatos", name: "Aparatos Sanitarios", descriptors: {
-        5: "Sanitarios, lavamanos y orinales completos y funcionando. Sin fugas. Grifería perfecta.",
+        5: "Sanitarios, lavamanos y orinales completos y funcionando. Sin fugas. Grifería en excelente estado.",
         4: "Aparatos funcionales con desgaste menor. Sin fugas significativas.",
         3: "Algunos aparatos intermitentes. Un aparato fuera de servicio.",
         2: "Varios aparatos fuera de servicio. Fugas visibles. Grifería deteriorada.",
@@ -759,9 +745,9 @@ const CATEGORIES = [
         1: "Condiciones antihigiénicas. Olor nauseabundo. Sin suministros. Plagas."
       }},
       { id: "infraestructura", name: "Infraestructura y Acabados", descriptors: {
-        5: "Divisiones íntegras con cerraduras funcionales. Pisos y paredes perfectos. Ventilación adecuada.",
+        5: "Divisiones íntegras con cerraduras funcionales. Pisos y paredes en excelente estado. Ventilación adecuada (ventanas o 	sistema de extracción.",
         4: "Divisiones y cerraduras funcionales. Acabados en buen estado.",
-        3: "Algunas cerraduras dañadas. Desgaste en paredes. Ventilación limitada.",
+        3: "Algunas cerraduras dañadas. Desgaste en paredes. Ventilación limitada o sin extractores.",
         2: "Divisiones dañadas. Varias cerraduras rotas. Humedad en paredes.",
         1: "Divisiones destruidas. Sin privacidad. Daño severo. Moho visible."
       }},
@@ -778,7 +764,7 @@ const CATEGORIES = [
     id: "pasillo", name: "Pasillo / Escalera / Área Común", icon: "🏛️",
     dimensions: [
       { id: "pisos", name: "Pisos y Superficies", descriptors: {
-        5: "Pisos impecables, nivelados y antideslizantes. Escaleras con cintas. Barandas firmes.",
+        5: "Pisos impecables y nivelados. Escaleras con cintas. Barandas firmes.",
         4: "Pisos en buen estado. Escaleras seguras. Barandas funcionales.",
         3: "Pisos con desgaste. Baldosas sueltas. Cintas antideslizantes desgastadas.",
         2: "Pisos resbalosos o con huecos. Escaleras sin cintas. Barandas flojas.",
@@ -792,17 +778,17 @@ const CATEGORIES = [
         1: "Sin iluminación en zonas de tránsito. Sin ventilación. Sin luces de emergencia."
       }},
       { id: "senal_emerg", name: "Señalización y Emergencias", descriptors: {
-        5: "Rutas de evacuación completas e iluminadas. Extintores vigentes. Mapas de evacuación.",
-        4: "Señalización de emergencia presente y legible. Extintores vigentes.",
-        3: "Señalización parcial. Algunos extintores vencidos.",
-        2: "Señalización ausente o ilegible. Extintores vencidos u obstruidos.",
+        5: "Rutas de evacuación completas e iluminadas. Extintores presentes. Mapas de evacuación.",
+        4: "Señalización de emergencia presente y legible.",
+        3: "Señalización parcial.",
+        2: "Señalización ausente o ilegible.",
         1: "Sin señalización de emergencia. Sin extintores. Rutas bloqueadas."
       }},
       { id: "ascensores", name: "Ascensores (si aplica)", descriptors: {
-        5: "Ascensores funcionales, limpios, certificación vigente. Botones en braille.",
-        4: "Ascensores funcionales con desgaste menor. Certificación vigente.",
+        5: "Ascensores funcionales y limpios. Botones en braille.",
+        4: "Ascensores funcionales con desgaste menor.",
         3: "Ascensores con fallas ocasionales. Cabina desgastada. Tiempos largos.",
-        2: "Ascensores frecuentemente fuera de servicio. Certificación vencida.",
+        2: "Ascensores frecuentemente fuera de servicio.",
         1: "Ascensores inoperativos. Sin alternativa accesible."
       }}
     ]
@@ -811,37 +797,30 @@ const CATEGORIES = [
     id: "cafeteria", name: "Cafetería / Zona de Alimentación", icon: "🍽️",
     dimensions: [
       { id: "infraestructura", name: "Infraestructura y Mobiliario", descriptors: {
-        5: "Mesas y sillas excelentes, suficientes para la demanda. Pisos antideslizantes. Zonas diferenciadas.",
+        5: "Mesas y sillas excelentes, suficientes para la demanda.",
         4: "Mobiliario en buen estado con desgaste menor. Distribución funcional.",
         3: "Mobiliario con desgaste visible. Espacio ajustado en horas pico.",
         2: "Mobiliario dañado. Hacinamiento. Pisos resbalosos o deteriorados.",
         1: "Mobiliario inutilizable. Infraestructura riesgosa. Inaceptable para consumo de alimentos."
       }},
       { id: "higiene", name: "Higiene y Manipulación de Alimentos", descriptors: {
-        5: "Manipuladores con dotación completa. Superficies impecables. Temperaturas adecuadas. Certificados visibles.",
-        4: "Buenas prácticas observadas. Higiene adecuada. Certificados vigentes.",
-        3: "Manipulación aceptable con falencias menores. Superficies con desgaste.",
-        2: "Deficiencias notorias en manipulación. Superficies sucias. Alimentos sin protección.",
-        1: "Condiciones antihigiénicas graves. Riesgo de ETA. Sin certificados."
-      }},
-      { id: "equipos_serv", name: "Equipos y Servicios", descriptors: {
-        5: "Lavamanos con jabón y papel. Refrigeración/cocción perfectos. Punto de reciclaje visible.",
-        4: "Equipos funcionales. Lavamanos disponible. Servicios presentes.",
-        3: "Lavamanos sin suministros completos. Equipos con deficiencias menores.",
-        2: "Sin lavamanos o inoperante. Equipos con fallas.",
-        1: "Equipos inoperativos o peligrosos. Sin servicios. Incumple normativa."
+        5: "Manipuladores con dotación completa. Superficies impecables. Bandejas y cubiertos higiénicos.",
+        4: "Buenas prácticas observadas. Higiene adecuada. Bandejas y cubiertos disponibles.",
+        3: "Manipulación aceptable con falencias menores. Superficies con desgaste. Bandejas y cubiertos en mal estado.",
+        2: "Deficiencias notorias en manipulación. Superficies sucias. Alimentos sin protección. Bandejas y cubiertos sucios.",
+        1: "Condiciones antihigiénicas graves. No hay bandejas ni cubiertos y/o no hay condiciones higiénicas."
       }},
       { id: "ventilacion_plagas", name: "Ventilación y Control de Plagas", descriptors: {
-        5: "Ventilación adecuada sin olores. Control de plagas documentado y al día. Mallas protectoras.",
-        4: "Ventilación funcional. Control de plagas con certificaciones al día.",
-        3: "Ventilación limitada (olores en horas pico). Control vigente pero evidencia menor de insectos.",
-        2: "Ventilación deficiente (olores persistentes). Insectos visibles. Control vencido.",
-        1: "Sin ventilación. Presencia de roedores o infestación. Riesgo sanitario grave."
+        5: "Ventilación adecuada sin olores. Climatización y temperatura confortable. No se observan plagas.",
+        4: "Ventilación funcional. El aire acondicionado funciona (si aplica).",
+        3: "Ventilación limitada (olores en horas pico). Temperatura con un poco de disconfort. Evidencia menor de insectos (telarañas, moscas).",
+        2: "Ventilación deficiente (olores persistentes). El aire acondicionado no sirve o no hay sombraInsectos visibles.",
+        1: "Sin ventilación. Presencia de roedores o infestación."
       }}
     ]
   },
   {
-    id: "biblioteca", name: "Biblioteca / Sala de Estudio", icon: "📚",
+    id: "biblioteca", name: "Biblioteca / Zona de Estudio", icon: "📚",
     dimensions: [
       { id: "infraestructura", name: "Infraestructura y Mobiliario", descriptors: {
         5: "Mobiliario ergonómico excelente. Estantería sólida. Espacios diferenciados.",
@@ -850,22 +829,15 @@ const CATEGORIES = [
         2: "Mobiliario deteriorado. Estanterías inestables. Insuficiente para la demanda.",
         1: "Mobiliario roto o inutilizable. Estantería con riesgo de colapso."
       }},
-      { id: "colecciones", name: "Colecciones y Recursos", descriptors: {
-        5: "Colección física y digital actualizada. Catálogo en línea funcional. Bases de datos accesibles.",
-        4: "Colección adecuada con actualizaciones regulares. Catálogo funcional.",
-        3: "Colección parcialmente desactualizada. Catálogo con inconsistencias.",
-        2: "Colección desactualizada. Libros dañados o extraviados. Organización deficiente.",
-        1: "Colección obsoleta. Sin catálogo funcional. Sin acceso a bases de datos."
-      }},
       { id: "tecnologia", name: "Tecnología y Conectividad", descriptors: {
-        5: "Computadores funcionales. WiFi rápido. Tomas eléctricas suficientes. Escáner e impresora.",
+        5: "Computadores funcionales. WiFi rápido. Tomas eléctricas suficientes.",
         4: "Tecnología funcional. Conectividad estable. Tomas adecuadas.",
         3: "Algunos computadores lentos. WiFi intermitente. Tomas insuficientes.",
         2: "Computadores obsoletos. WiFi deficiente. Pocas tomas funcionales.",
         1: "Sin computadores. Sin WiFi. Sin tomas eléctricas."
       }},
       { id: "ambiente", name: "Ambiente de Estudio", descriptors: {
-        5: "Iluminación ≥500 lux. Climatización 22-24°C. Control acústico efectivo.",
+        5: "Muy buena iluminación. Climatización confortable. Control acústico efectivo.",
         4: "Iluminación y climatización adecuadas. Ruido aceptable.",
         3: "Iluminación desigual. Climatización con variaciones. Ruido intermitente.",
         2: "Iluminación insuficiente. Climatización deficiente. Ruido constante.",
@@ -884,30 +856,30 @@ const CATEGORIES = [
     id: "auditorio", name: "Auditorio / Sala de Eventos", icon: "🎭",
     dimensions: [
       { id: "estructura_asientos", name: "Estructura y Asientos", descriptors: {
-        5: "Silletería excelente (tapizado íntegro, plegado funcional, numeración visible). Escenario sin daños.",
+        5: "Silletería excelente (tapizado íntegro y plegado funcional). Escenario sin daños.",
         4: "Silletería en buen estado con desgaste menor. Escenario funcional.",
         3: "Asientos con tapizado desgastado. Escenario con marcas de uso.",
         2: "Silletería dañada (asientos rotos, respaldos sueltos). Escenario con daños.",
         1: "Silletería inutilizable (>20%). Pisos peligrosos. Escenario inseguro."
       }},
       { id: "audiovisual", name: "Equipos Audiovisuales y Acústica", descriptors: {
-        5: "Sonido profesional. Pantalla alta resolución. Micrófonos funcionales. Acústica tratada.",
+        5: "Sonido claro. Pantalla alta resolución. Micrófonos funcionales. Acústica tratada.",
         4: "Equipos funcionales con calidad adecuada. Acústica aceptable.",
-        3: "Equipos con deficiencias menores (micrófono con ruido, brillo reducido). Eco leve.",
-        2: "Equipos con fallas significativas (sonido distorsionado). Acústica deficiente.",
+        3: "Equipos con deficiencias menores (micrófono con ruido, brillo reducido). Eco leve. Calidad de imagen reducida.",
+        2: "Equipos con fallas significativas (sonido distorsionado). Acústica deficiente. Poca visibilidad de la pantalla.",
         1: "Equipos inoperativos. Acústica inaceptable. No apto para eventos."
       }},
       { id: "iluminacion", name: "Iluminación Escénica y General", descriptors: {
-        5: "Iluminación regulable (dimmer). Iluminación escénica completa. Luces de emergencia. Control centralizado.",
+        5: "Iluminación escénica completa. Luces de emergencia. Control centralizado.",
         4: "Iluminación funcional con regulación. Luces de emergencia presentes.",
-        3: "Iluminación general sin regulación. Escénica básica.",
+        3: "Iluminación general sin regulación.",
         2: "Iluminación insuficiente o sin regulación. Sin escénica.",
         1: "Iluminación deficiente que impide eventos. Sin luces de emergencia."
       }},
       { id: "clima_servicios", name: "Climatización y Servicios", descriptors: {
         5: "Climatización silenciosa para aforo completo. Baños cercanos. Accesibilidad completa.",
         4: "Climatización adecuada. Servicios disponibles. Accesibilidad funcional.",
-        3: "Climatización insuficiente con aforo completo. Baños distantes.",
+        3: "Climatización insuficiente. Baños distantes.",
         2: "Climatización deficiente o ruidosa. Servicios limitados.",
         1: "Sin climatización. Sin servicios. Sin accesibilidad."
       }}
