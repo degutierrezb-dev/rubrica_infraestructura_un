@@ -417,6 +417,7 @@ const ESPACIOS = [
   {cat:"cancha",ed:"CAMPUS",cod:"CAMP-FIELD09",piso:"",nom:"Cancha Multiple 1"},
   {cat:"cancha",ed:"CAMPUS",cod:"CAMP-FIELD10",piso:"",nom:"Cancha Multiple 2"},
   {cat:"cancha",ed:"CAMPUS",cod:"CAMP-FIELD11",piso:"",nom:"Cancha fútbol sintético"},
+  {cat:"cancha",ed:"CAMPUS",cod:"PISCINA",piso:"",nom:"Piscina"},
   {cat:"cafeteria",ed:"BLOQF",cod:"ZONALI01",piso:"1",nom:"Du Nord Plaza"},
   {cat:"cafeteria",ed:"BLOQF",cod:"ZONALI02",piso:"2",nom:"La Crepería"},
   {cat:"cafeteria",ed:"BLOQF",cod:"ZONALI03",piso:"2",nom:"1966"},
