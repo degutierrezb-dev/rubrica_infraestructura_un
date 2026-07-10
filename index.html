@@ -616,21 +616,23 @@ textarea { resize: vertical; min-height: 70px; }
           <h2>Datos Generales</h2>
         </div>
         <div class="form-grid">
-          <!-- Evaluador & Cargo (persisten entre evaluaciones) -->
-          <div class="form-group">
-            <label for="evaluador">Evaluador <span class="required">*</span></label>
-            <input type="text" id="evaluador" placeholder="Nombre completo" required />
+          <!-- Evaluador/a (selector — primer paso) -->
+          <div class="form-group full-width">
+            <label for="evaluador">Evaluador/a <span class="required">*</span></label>
+            <select id="evaluador" required>
+              <option value="">— Seleccionar evaluador/a —</option>
+            </select>
           </div>
           <div class="form-group">
             <label for="cargo">Cargo</label>
             <input type="text" id="cargo" placeholder="Ej: Coord. Planta Física" />
           </div>
 
-          <!-- Cascada: Categoría → Edificio → Código → Auto-fill -->
+          <!-- Cascada: Evaluador → Categoría → Edificio → Código → Auto-fill -->
           <div class="form-group full-width">
             <label for="categoria">Categoría <span class="required">*</span></label>
-            <select id="categoria" required>
-              <option value="">— Seleccionar categoría —</option>
+            <select id="categoria" required disabled>
+              <option value="">— Seleccione evaluador/a primero —</option>
             </select>
           </div>
           <div class="form-group" id="edificioGroup">
@@ -799,500 +801,545 @@ textarea { resize: vertical; min-height: 70px; }
   <!-- Rúbrica data.js -->
   <script>
     // === INICIO_DATA ===
-// Espacios físicos extraídos del archivo Excel v2.0
+// Espacios físicos extraídos del archivo Excel v3.0 (hoja Asignaciones)
 // Generado automáticamente — no editar manualmente
 const ESPACIOS = [
-  {cat:"salon",ed:"BLOI1",cod:"I1-22",piso:"2",nom:"Salón I1-22"},
-  {cat:"salon",ed:"BLOI1",cod:"I1-26",piso:"2",nom:"Salón I1-26"},
-  {cat:"salon",ed:"BLOI1",cod:"I1-23",piso:"2",nom:"Salón I1-23"},
-  {cat:"salon",ed:"BLOI1",cod:"I1-24",piso:"2",nom:"Salón I1-24"},
-  {cat:"salon",ed:"BLOI1",cod:"I1-27",piso:"2",nom:"Salón I1-27"},
-  {cat:"salon",ed:"BLOI1",cod:"I1-25",piso:"2",nom:"Salón I1-25"},
-  {cat:"salon",ed:"BLOI1",cod:"I1-21",piso:"2",nom:"Salón I1-21"},
-  {cat:"salon",ed:"BLOI2",cod:"I2-24",piso:"2",nom:"Salón I2-24"},
-  {cat:"salon",ed:"BLOI2",cod:"I2-12",piso:"1",nom:"Salón I2-12"},
-  {cat:"salon",ed:"BLOI2",cod:"I2-23",piso:"2",nom:"Salón I2-23"},
-  {cat:"salon",ed:"BLOI2",cod:"I2-15",piso:"1",nom:"Salón I2-15"},
-  {cat:"salon",ed:"BLOI2",cod:"I2-21",piso:"2",nom:"Salón I2-21"},
-  {cat:"salon",ed:"BLOI2",cod:"I2-11",piso:"1",nom:"Salón I2-11"},
-  {cat:"salon",ed:"BLOI2",cod:"I2-22",piso:"2",nom:"Salón I2-22"},
-  {cat:"salon",ed:"BLOI2",cod:"I2-13",piso:"1",nom:"Salón I2-13"},
-  {cat:"salon",ed:"BLOI2",cod:"I2-25",piso:"2",nom:"Salón I2-25"},
-  {cat:"salon",ed:"BLOI2",cod:"I2-14",piso:"1",nom:"Salón I2-14"},
-  {cat:"salon",ed:"BLOI3",cod:"I3-21",piso:"2",nom:"Salón I3-21"},
-  {cat:"salon",ed:"BLOI3",cod:"I3-24",piso:"2",nom:"Salón I3-24"},
-  {cat:"salon",ed:"BLOI3",cod:"I3-23",piso:"2",nom:"Salón I3-23"},
-  {cat:"salon",ed:"BLOI3",cod:"I3-11",piso:"1",nom:"Salón I3-11"},
-  {cat:"salon",ed:"BLOI3",cod:"I3-13",piso:"1",nom:"Salón I3-13"},
-  {cat:"salon",ed:"BLOI3",cod:"I3-22",piso:"2",nom:"Salón I3-22"},
-  {cat:"salon",ed:"BLOI3",cod:"I3-12",piso:"1",nom:"Salón I3-12"},
-  {cat:"salon",ed:"BLOI4",cod:"I4-12",piso:"1",nom:"Salón I4-12"},
-  {cat:"salon",ed:"BLOI4",cod:"I4-25",piso:"2",nom:"Salón I4-25"},
-  {cat:"salon",ed:"BLOI4",cod:"I4-S13",piso:"S",nom:"Salón I4-S13"},
-  {cat:"salon",ed:"BLOI4",cod:"I4-13",piso:"1",nom:"Salón I4-13"},
-  {cat:"salon",ed:"BLOI4",cod:"I4-S11",piso:"S",nom:"Salón I4-S11"},
-  {cat:"salon",ed:"BLOI4",cod:"I4-11",piso:"1",nom:"Salón I4-11"},
-  {cat:"salon",ed:"BLOI4",cod:"I4-21",piso:"2",nom:"Salón I4-21"},
-  {cat:"salon",ed:"BLOI4",cod:"I4-15",piso:"1",nom:"Salón I4-15"},
-  {cat:"salon",ed:"BLOI4",cod:"I4-28",piso:"2",nom:"Salón I4-28"},
-  {cat:"salon",ed:"BLOI4",cod:"I4-22",piso:"2",nom:"Salón I4-22"},
-  {cat:"salon",ed:"BLOI4",cod:"I4-14",piso:"1",nom:"Salón I4-14"},
-  {cat:"salon",ed:"BLOI4",cod:"I4-23",piso:"2",nom:"Salón I4-23"},
-  {cat:"salon",ed:"BLOI4",cod:"I4-27",piso:"2",nom:"Salón I4-27"},
-  {cat:"salon",ed:"BLOI4",cod:"I4-S12",piso:"S",nom:"Salón I4-S12"},
-  {cat:"salon",ed:"BLOI4",cod:"I4-26",piso:"2",nom:"Salón I4-26"},
-  {cat:"salon",ed:"BLOI4",cod:"I4-24",piso:"2",nom:"Salón I4-24"},
-  {cat:"salon",ed:"BLOQB",cod:"32B",piso:"3",nom:"Salón de Clases / Salón 32B"},
-  {cat:"salon",ed:"BLOQB",cod:"33B",piso:"3",nom:"Salón de Clases / Salón 33B"},
-  {cat:"salon",ed:"BLOQC",cod:"33C",piso:"3",nom:"Salón 33C"},
-  {cat:"salon",ed:"BLOQC",cod:"14C",piso:"1",nom:"Salón 14C"},
-  {cat:"salon",ed:"BLOQC",cod:"34C",piso:"3",nom:"Salón 34C"},
-  {cat:"salon",ed:"BLOQC",cod:"38C",piso:"3",nom:"Salón 38C"},
-  {cat:"salon",ed:"BLOQC",cod:"24C",piso:"2",nom:"Salón 24C"},
-  {cat:"salon",ed:"BLOQC",cod:"31C",piso:"3",nom:"Salón 31C"},
-  {cat:"salon",ed:"BLOQC",cod:"35C",piso:"3",nom:"Salón 35C"},
-  {cat:"salon",ed:"BLOQC",cod:"13C",piso:"1",nom:"Salón 13C"},
-  {cat:"salon",ed:"BLOQC",cod:"32C",piso:"3",nom:"Salón 32C"},
-  {cat:"salon",ed:"BLOQC",cod:"26C",piso:"2",nom:"Salón 26C"},
-  {cat:"salon",ed:"BLOQC",cod:"22C",piso:"2",nom:"Salón 22C"},
-  {cat:"salon",ed:"BLOQC",cod:"36C",piso:"3",nom:"Salón 36C"},
-  {cat:"salon",ed:"BLOQC",cod:"23C",piso:"2",nom:"Salón 23C"},
-  {cat:"salon",ed:"BLOQC",cod:"A2C",piso:"2",nom:"Salón A2C"},
-  {cat:"salon",ed:"BLOQC",cod:"A1C",piso:"1",nom:"Salón A1C"},
-  {cat:"salon",ed:"BLOQC",cod:"25C",piso:"2",nom:"Salón 25C"},
-  {cat:"salon",ed:"BLOQD",cod:"25D",piso:"2",nom:"Salón 25D"},
-  {cat:"salon",ed:"BLOQD",cod:"24D",piso:"2",nom:"Salón 24D"},
-  {cat:"salon",ed:"BLOQD",cod:"23D",piso:"2",nom:"Salón 23D"},
-  {cat:"salon",ed:"BLOQD",cod:"31D",piso:"3",nom:"Salón 31D"},
-  {cat:"salon",ed:"BLOQD",cod:"22D",piso:"2",nom:"Salón 22D"},
-  {cat:"salon",ed:"BLOQE",cod:"32E",piso:"3",nom:"Salón 32E"},
-  {cat:"salon",ed:"BLOQE",cod:"11E",piso:"1",nom:"Salón 11E"},
-  {cat:"salon",ed:"BLOQE",cod:"33E",piso:"3",nom:"Salón 33E"},
-  {cat:"salon",ed:"BLOQE",cod:"22E",piso:"2",nom:"Salón 22E"},
-  {cat:"salon",ed:"BLOQE",cod:"23E",piso:"2",nom:"Salón 23E"},
-  {cat:"salon",ed:"BLOQE",cod:"12E",piso:"1",nom:"Salón 12E"},
-  {cat:"salon",ed:"BLOQE",cod:"24E",piso:"2",nom:"Salón 24E"},
-  {cat:"salon",ed:"BLOQE",cod:"25E",piso:"2",nom:"Salón 25E"},
-  {cat:"salon",ed:"BLOQF",cod:"21F",piso:"2",nom:"Salón 21F"},
-  {cat:"salon",ed:"BLOQF",cod:"22F",piso:"2",nom:"Salón 22F"},
-  {cat:"salon",ed:"BLOQF",cod:"25F",piso:"2",nom:"Salón 25F"},
-  {cat:"salon",ed:"BLOQF",cod:"24F",piso:"2",nom:"Salón 24F"},
-  {cat:"salon",ed:"BLOQF",cod:"23F",piso:"2",nom:"Salón 23F"},
-  {cat:"salon",ed:"BLOQG",cod:"51G",piso:"5",nom:"Sala de Doctorado 1"},
-  {cat:"salon",ed:"BLOQG",cod:"52G",piso:"5",nom:"Sala de Doctorado 2"},
-  {cat:"salon",ed:"BLOQG",cod:"53G",piso:"5",nom:"Sala de Doctorado 3"},
-  {cat:"salon",ed:"BLOQG1",cod:"31G1",piso:"3",nom:"Salón 31G1"},
-  {cat:"salon",ed:"BLOQG1",cod:"34G1",piso:"3",nom:"Salón 34G1"},
-  {cat:"salon",ed:"BLOQG1",cod:"22G1",piso:"2",nom:"Salón 22G1"},
-  {cat:"salon",ed:"BLOQG1",cod:"54G1",piso:"5",nom:"Salón 54G1"},
-  {cat:"salon",ed:"BLOQG1",cod:"25G1",piso:"2",nom:"Salón 25G1"},
-  {cat:"salon",ed:"BLOQG1",cod:"55G1",piso:"5",nom:"Salón 55G1"},
-  {cat:"salon",ed:"BLOQG1",cod:"33G1",piso:"3",nom:"Salón 33G1"},
-  {cat:"salon",ed:"BLOQG1",cod:"32G1",piso:"3",nom:"Salón 32G1"},
-  {cat:"salon",ed:"BLOQG1",cod:"51G1",piso:"5",nom:"Salón 51G1"},
-  {cat:"salon",ed:"BLOQG1",cod:"21G1",piso:"2",nom:"Salón 21G1"},
-  {cat:"salon",ed:"BLOQG1",cod:"42G1",piso:"4",nom:"Salón 42G1"},
-  {cat:"salon",ed:"BLOQG1",cod:"45G1",piso:"4",nom:"Salón 45G1"},
-  {cat:"salon",ed:"BLOQG1",cod:"43G1",piso:"4",nom:"Salón 43G1"},
-  {cat:"salon",ed:"BLOQG1",cod:"24G1",piso:"2",nom:"Salón 24G1"},
-  {cat:"salon",ed:"BLOQG1",cod:"41G1",piso:"4",nom:"Salón 41G1"},
-  {cat:"salon",ed:"BLOQG1",cod:"23G1",piso:"2",nom:"Salón 23G1"},
-  {cat:"salon",ed:"BLOQG1",cod:"35G1",piso:"3",nom:"Salón 35G1"},
-  {cat:"salon",ed:"BLOQG1",cod:"44G1",piso:"4",nom:"Salón 44G1"},
-  {cat:"salon",ed:"BLOQG1",cod:"52G1",piso:"5",nom:"Salón 52G1"},
-  {cat:"salon",ed:"BLOQG1",cod:"53G1",piso:"5",nom:"Salón 53G1"},
-  {cat:"salon",ed:"BLOQG2",cod:"31G2",piso:"3",nom:"Salón 31G2"},
-  {cat:"salon",ed:"BLOQG2",cod:"32G2",piso:"3",nom:"Salón 32G2"},
-  {cat:"salon",ed:"BLOQG2",cod:"25G2",piso:"2",nom:"Salón Harvard 2 -salón magistral"},
-  {cat:"salon",ed:"BLOQG2",cod:"36G2",piso:"3",nom:"Salón 36G2"},
-  {cat:"salon",ed:"BLOQG2",cod:"12G2",piso:"1",nom:"Salón 12G2"},
-  {cat:"salon",ed:"BLOQG2",cod:"11G2",piso:"1",nom:"Salón 11G2"},
-  {cat:"salon",ed:"BLOQG2",cod:"33G2",piso:"3",nom:"Salón 33G2"},
-  {cat:"salon",ed:"BLOQG2",cod:"37G2",piso:"3",nom:"Salón 37G2"},
-  {cat:"salon",ed:"BLOQG2",cod:"21G2",piso:"2",nom:"Salón 21G2"},
-  {cat:"salon",ed:"BLOQG2",cod:"38G2",piso:"3",nom:"Salón 38G2"},
-  {cat:"salon",ed:"BLOQG2",cod:"23G2",piso:"2",nom:"Salón Harvard- salón magistral"},
-  {cat:"salon",ed:"BLOQG2",cod:"35G2",piso:"3",nom:"Salón 35G2"},
-  {cat:"salon",ed:"BLOQG2",cod:"51G2",piso:"5",nom:"Salón 51G2"},
-  {cat:"salon",ed:"BLOQG2",cod:"13G2",piso:"1",nom:"Salón 13G2"},
-  {cat:"salon",ed:"BLOQG2",cod:"34G2",piso:"3",nom:"Salón 34G2"},
-  {cat:"salon",ed:"BLOQG2",cod:"54G2",piso:"5",nom:"Sala de Doctorado 4"},
-  {cat:"salon",ed:"BLOQG2",cod:"22G2",piso:"2",nom:"Oralidad- salón magistral"},
-  {cat:"salon",ed:"BLOQJ1",cod:"14J",piso:"1",nom:"Salon de clases 14J"},
-  {cat:"salon",ed:"BLOQJ1",cod:"25J",piso:"2",nom:"Salon de clases 25J"},
-  {cat:"salon",ed:"BLOQJ1",cod:"17J",piso:"1",nom:"Salon de clases 17J"},
-  {cat:"salon",ed:"BLOQJ1",cod:"16J",piso:"1",nom:"Salon de clases 16J"},
-  {cat:"salon",ed:"BLOQJ1",cod:"11J",piso:"1",nom:"Salon de clases 11J"},
-  {cat:"salon",ed:"BLOQJ1",cod:"15J",piso:"1",nom:"Salon de clases 15J"},
-  {cat:"salon",ed:"BLOQJ1",cod:"22J",piso:"2",nom:"Salon de clases 22J"},
-  {cat:"salon",ed:"BLOQJ1",cod:"33J",piso:"3",nom:"Salon de clases 33J"},
-  {cat:"salon",ed:"BLOQJ1",cod:"38J",piso:"3",nom:"Salon de clases 38J"},
-  {cat:"salon",ed:"BLOQJ1",cod:"13J",piso:"1",nom:"Salon de clases 13J"},
-  {cat:"salon",ed:"BLOQJ1",cod:"24J",piso:"2",nom:"Salon de clases 24J"},
-  {cat:"salon",ed:"BLOQJ1",cod:"36J",piso:"3",nom:"Salon de clases 36J"},
-  {cat:"salon",ed:"BLOQJ1",cod:"18J",piso:"1",nom:"Salon de clases 18J"},
-  {cat:"salon",ed:"BLOQJ1",cod:"35J",piso:"3",nom:"Salon de clases 35J"},
-  {cat:"salon",ed:"BLOQJ1",cod:"21J",piso:"2",nom:"Salon de clases 21J"},
-  {cat:"salon",ed:"BLOQJ1",cod:"26J",piso:"2",nom:"Salon de clases 26J"},
-  {cat:"salon",ed:"BLOQJ1",cod:"23J",piso:"2",nom:"Salon de clases 23J"},
-  {cat:"salon",ed:"BLOQJ1",cod:"34J",piso:"3",nom:"Salon de clases 34J"},
-  {cat:"salon",ed:"BLOQJ1",cod:"31J",piso:"3",nom:"Salon de clases 31J"},
-  {cat:"salon",ed:"BLOQJ1",cod:"37J",piso:"3",nom:"Salon de clases 37J"},
-  {cat:"salon",ed:"BLOQJ1",cod:"28J",piso:"2",nom:"Salon de clases 28J"},
-  {cat:"salon",ed:"BLOQJ1",cod:"12J",piso:"1",nom:"Salon de clases 12J"},
-  {cat:"salon",ed:"BLOQJ1",cod:"32J",piso:"3",nom:"Salon de clases 32J"},
-  {cat:"salon",ed:"BLOQJ1",cod:"27J",piso:"2",nom:"Salon de clases27J"},
-  {cat:"salon",ed:"BLOQK",cod:"21K",piso:"2",nom:"SALON 21K"},
-  {cat:"salon",ed:"BLOQK",cod:"92K",piso:"9",nom:"Salón 92K"},
-  {cat:"salon",ed:"BLOQK",cod:"93K",piso:"9",nom:"Salón 93K"},
-  {cat:"salon",ed:"BLOQK",cod:"45K",piso:"4",nom:"Salón 45K"},
-  {cat:"salon",ed:"BLOQK",cod:"41K",piso:"4",nom:"Salón 41K"},
-  {cat:"salon",ed:"BLOQK",cod:"43K",piso:"4",nom:"Salón 43K"},
-  {cat:"salon",ed:"BLOQK",cod:"46K",piso:"4",nom:"Salón 46K"},
-  {cat:"salon",ed:"BLOQK",cod:"91K",piso:"9",nom:"Salón 91K"},
-  {cat:"salon",ed:"BLOQK",cod:"44K",piso:"4",nom:"Salón 44K"},
-  {cat:"salon",ed:"BLOQK",cod:"31K",piso:"3",nom:"SALON 31K"},
-  {cat:"salon",ed:"BLOQK",cod:"42K",piso:"4",nom:"Salón 42K"},
-  {cat:"salon",ed:"BLOQK",cod:"94K",piso:"9",nom:"Salón 94K"},
-  {cat:"salon",ed:"BLOQK",cod:"95K",piso:"9",nom:"Salón 95K"},
-  {cat:"salon",ed:"BLOQK",cod:"97K",piso:"9",nom:"Salón 97K"},
-  {cat:"salon",ed:"BLOQK",cod:"96K",piso:"9",nom:"Salón 96K"},
-  {cat:"salon",ed:"BLOQM",cod:"5M",piso:"1",nom:"Salón de clase música 5M"},
-  {cat:"salon",ed:"BLOQM",cod:"4M",piso:"1",nom:"4M"},
-  {cat:"salon",ed:"BLOQM",cod:"1M",piso:"1",nom:"1M"},
-  {cat:"salon",ed:"BLOQM",cod:"2M",piso:"1",nom:"2M"},
-  {cat:"salon",ed:"BLOQM",cod:"3M",piso:"1",nom:"3M"},
-  {cat:"salon",ed:"COLIS",cod:"SAL1",piso:"1",nom:"Salón De Música No.1."},
-  {cat:"laboratorio",ed:"BLOQK",cod:"1-1L",piso:"1",nom:"Lab. de Aprendizaje Estudiantes"},
-  {cat:"laboratorio",ed:"BLOQK",cod:"1-2L",piso:"1",nom:"Lab. de Aprendizaje Docente"},
-  {cat:"laboratorio",ed:"1L6",cod:"1L6-11",piso:"1",nom:"Lab. de Desarrollo de modelos y prototipos"},
-  {cat:"laboratorio",ed:"1L6",cod:"1L6-21",piso:"2",nom:"Sala de Diseño Estudiantes"},
-  {cat:"laboratorio",ed:"1L6",cod:"1L6-22",piso:"2",nom:"Sala Diseño de Estudiantes"},
-  {cat:"laboratorio",ed:"1L6",cod:"1L6-31",piso:"3",nom:"Lab. de Sistemas Digitales"},
-  {cat:"laboratorio",ed:"1L6",cod:"1L6-32",piso:"3",nom:"Sala 2 Investigación y Desarrollo"},
-  {cat:"laboratorio",ed:"1L6",cod:"1L6-33",piso:"3",nom:"Sala 3 Investigación y Desarrollo"},
-  {cat:"laboratorio",ed:"1L6",cod:"1L6-34",piso:"3",nom:"Sala 4 Investigación y Desarrollo"},
-  {cat:"laboratorio",ed:"1L6",cod:"1L6-35",piso:"3",nom:"Sala 5 Investigación - Lab.Telemática"},
-  {cat:"laboratorio",ed:"1L6",cod:"1L6-36",piso:"3",nom:"Sala 6 Investigación y Desarrollo"},
-  {cat:"laboratorio",ed:"1L6",cod:"1L6-37",piso:"3",nom:"Sala 7 Investigación y Desarrollo"},
-  {cat:"laboratorio",ed:"1L6",cod:"1L6-38",piso:"3",nom:"Sala 8 Investigación y Desarrollo"},
-  {cat:"laboratorio",ed:"1L6",cod:"1L6-39",piso:"3",nom:"Sala 9 Investigación y Desarrollo"},
-  {cat:"laboratorio",ed:"L4",cod:"2-1 L4",piso:"2",nom:"Laboratorio simulacion preclinica odontologica"},
-  {cat:"laboratorio",ed:"BLOQC",cod:"21C",piso:"2",nom:"Taller Arquitectura"},
-  {cat:"laboratorio",ed:"BLOQD",cod:"21D",piso:"2",nom:"Salón 21D"},
-  {cat:"laboratorio",ed:"L4",cod:"2-2 L4",piso:"2",nom:"Laboratorio multifuncional de Materiales dentales"},
-  {cat:"laboratorio",ed:"L4",cod:"2-3 L4",piso:"2",nom:"Laboratorio rayos X odontologicos"},
-  {cat:"laboratorio",ed:"L4",cod:"2-4 L4",piso:"2",nom:"Laboratorio simulacion preclinica odontologica"},
-  {cat:"laboratorio",ed:"BLOQK",cod:"3-1L",piso:"3",nom:"Lab Mecanica Computacional y Diseño"},
-  {cat:"laboratorio",ed:"BLOQK",cod:"3-2L",piso:"3",nom:"Lab. de Hidráulica e Ing. Ambiental"},
-  {cat:"laboratorio",ed:"BLOQB",cod:"34B",piso:"3",nom:"Salón de Dibujo"},
-  {cat:"laboratorio",ed:"BLOQC",cod:"37C",piso:"3",nom:"Taller de Diseño y Arquitectura"},
-  {cat:"laboratorio",ed:"1L6",cod:"3L-10",piso:"1",nom:"Salón 3L-10"},
-  {cat:"laboratorio",ed:"1L6",cod:"3L-11",piso:"1",nom:"Salón 3L-11"},
-  {cat:"laboratorio",ed:"1L6",cod:"3L-12",piso:"1",nom:"Laboratorio Investigacion departamento de fisica"},
-  {cat:"laboratorio",ed:"BLOQK",cod:"4-1L",piso:"4",nom:"Diseño Digital"},
-  {cat:"laboratorio",ed:"BLOQK",cod:"4-2L",piso:"4",nom:"Estudio de Fotografia"},
-  {cat:"laboratorio",ed:"1L6",cod:"4L-1",piso:"4",nom:"Salón 4L-1 Diseño digital"},
-  {cat:"laboratorio",ed:"1L6",cod:"4L-2",piso:"4",nom:"Salón 4L-2 Diseño digital"},
-  {cat:"laboratorio",ed:"1L6",cod:"4L-3",piso:"4",nom:"Salón 4L-3 Diseño digital"},
-  {cat:"laboratorio",ed:"BLOQK",cod:"5-2L",piso:"5",nom:"Sala de Computo Ing civil"},
-  {cat:"laboratorio",ed:"BLOQK",cod:"6-2L",piso:"6",nom:"Lab Mediciones y Control"},
-  {cat:"laboratorio",ed:"BLOQK",cod:"6-3L",piso:"6",nom:"Lab Ciencias de la Computacion"},
-  {cat:"laboratorio",ed:"BLOQK",cod:"6-4L",piso:"6",nom:"Lab Termo Fluidos"},
-  {cat:"laboratorio",ed:"BLOQK",cod:"6-5L",piso:"6",nom:"Lab. Biocombustible"},
-  {cat:"laboratorio",ed:"BLOQK",cod:"6-6L",piso:"6",nom:"Lab. de Biotecnología"},
-  {cat:"laboratorio",ed:"BLOQK",cod:"6-8L",piso:"6",nom:"Laboratorio de Mecatronica"},
-  {cat:"laboratorio",ed:"BLOQK",cod:"6-9L",piso:"6",nom:"Lab. Mecánica de Máquinas y Diseños"},
-  {cat:"laboratorio",ed:"BLOQK",cod:"7-1L",piso:"7",nom:"Lab. Computacional Ing. Industrial"},
-  {cat:"laboratorio",ed:"BLOQK",cod:"7-2L",piso:"7",nom:"Lab. Investigación de Operaciones"},
-  {cat:"laboratorio",ed:"BLOQK",cod:"7-3L",piso:"7",nom:"Lab Higiene y seguridad Industrial"},
-  {cat:"laboratorio",ed:"BLOQK",cod:"7-4L",piso:"7",nom:"Lab. Operaciones y Logística"},
-  {cat:"laboratorio",ed:"CANCH",cod:"CDA-1L",piso:"1",nom:"Arquitectura Tropical"},
-  {cat:"laboratorio",ed:"CANCH",cod:"CDA-2L",piso:"1",nom:"Lab Energia Renovables"},
-  {cat:"laboratorio",ed:"BLOQK",cod:"ECO",piso:"",nom:"Centro de escritura"},
-  {cat:"laboratorio",ed:"L1",cod:"L1-1",piso:"1",nom:"Lab. de Química"},
-  {cat:"laboratorio",ed:"BLOQM",cod:"L11M",piso:"1",nom:"Lab de producción y composición músical"},
-  {cat:"laboratorio",ed:"L1",cod:"L1-2",piso:"1",nom:"Lab. de Fitoquímica"},
-  {cat:"laboratorio",ed:"L1",cod:"L1-3",piso:"1",nom:"Lab. de Física Calor"},
-  {cat:"laboratorio",ed:"L1",cod:"L1-4",piso:"1",nom:"Lab. Física Mecánica"},
-  {cat:"laboratorio",ed:"L1",cod:"L1-5",piso:"1",nom:"Lab. de Física Eléctrica"},
-  {cat:"laboratorio",ed:"L2",cod:"L2-2",piso:"1",nom:"Lab. Multifuncional Bioquimica"},
-  {cat:"laboratorio",ed:"L2",cod:"L2-3",piso:"1",nom:"Lab. Multifuncional Biología"},
-  {cat:"laboratorio",ed:"L2",cod:"L2-4",piso:"1",nom:"Lab. de Genética"},
-  {cat:"laboratorio",ed:"L2",cod:"L2-5",piso:"1",nom:"Laboratorio de Investigacion Biodiversidad"},
-  {cat:"laboratorio",ed:"L2",cod:"L2-6",piso:"1",nom:"Laboratorio de Quimica y Bioiologia"},
-  {cat:"laboratorio",ed:"L2",cod:"L2-7",piso:"1",nom:"Laboratorio Computacional de Quimica y Biologia"},
-  {cat:"laboratorio",ed:"L3",cod:"L3-1",piso:"1",nom:"Laboratorio de Mercadeo"},
-  {cat:"laboratorio",ed:"L3",cod:"L3-2",piso:"1",nom:"Lab. Inm. y Biol. Molecular"},
-  {cat:"laboratorio",ed:"BLOQK",cod:"L4-1",piso:"4",nom:"Lab. Robótica Industrial"},
-  {cat:"laboratorio",ed:"BLOQJ1",cod:"L-41J",piso:"4",nom:"Laboratorio Instituto de Idiomas No 5"},
-  {cat:"laboratorio",ed:"BLOQJ1",cod:"L-42J",piso:"4",nom:"Laboratorio Instituto de Idiomas No 6"},
-  {cat:"laboratorio",ed:"BLOQJ1",cod:"L-43J",piso:"4",nom:"Laboratorio Experimental de Matematicas"},
-  {cat:"laboratorio",ed:"BKCP",cod:"L5-1",piso:"",nom:"Lab. de Fotografía"},
-  {cat:"laboratorio",ed:"L5",cod:"L5-11",piso:"1",nom:"Sala de Computadores de Pedagogia Infantil"},
-  {cat:"laboratorio",ed:"L5",cod:"L5-12",piso:"1",nom:"Lab. virologia"},
-  {cat:"laboratorio",ed:"BLOQJ1",cod:"L-51J",piso:"5",nom:"Laboratorio Aula Taller de Comunicación Social y Periodismo"},
-  {cat:"laboratorio",ed:"BKCP",cod:"L5-2",piso:"",nom:"Estudio de Televisión"},
-  {cat:"laboratorio",ed:"BLOQJ1",cod:"L-52J",piso:"5",nom:"Laboratorio de Educación"},
-  {cat:"laboratorio",ed:"BLOQJ1",cod:"L-53J",piso:"5",nom:"Laboratorio de Arqueologia"},
-  {cat:"laboratorio",ed:"BLOQC",cod:"LC-1",piso:"S",nom:"Lab. Ing. de Control"},
-  {cat:"laboratorio",ed:"BLOQC",cod:"LC-2",piso:"S",nom:"Lab. de Ing Electrónica y comunicaciones"},
-  {cat:"laboratorio",ed:"BLOQC",cod:"LC-3",piso:"S",nom:"Lab. diseño de sofware y redes"},
-  {cat:"laboratorio",ed:"BLOQC",cod:"LC-4",piso:"S",nom:"Laboratorio / Sala de usuario-Lab. Circuitos y Maq. Eléctricas"},
-  {cat:"laboratorio",ed:"BLOQC",cod:"LC-5",piso:"S",nom:"Laboratorio / Sala de Usuario -Lab. de Transmisión"},
-  {cat:"laboratorio",ed:"BLOQC",cod:"LC-6",piso:"S",nom:"Lab. de Infraestructura Tecnologica Informatica"},
-  {cat:"laboratorio",ed:"BLOQD",cod:"LD1",piso:"S",nom:"Laboratorio de economia experimental"},
-  {cat:"laboratorio",ed:"BLOQE",cod:"LE-1",piso:"",nom:"Lab. Enfermedades Tropicales"},
-  {cat:"laboratorio",ed:"BLOQE",cod:"LE-3_2",piso:"",nom:"Laboratorio de Morfología"},
-  {cat:"laboratorio",ed:"BLOQE",cod:"LE-4",piso:"",nom:"Lab. de Enfermería"},
-  {cat:"laboratorio",ed:"BLOQE",cod:"LE-5",piso:"",nom:"Lab. de Psicología"},
-  {cat:"laboratorio",ed:"BLOQF",cod:"LF-1",piso:"",nom:"Lab. Fisiología e Histología y Microbiologia"},
-  {cat:"laboratorio",ed:"BLOQG2",cod:"LG2-51",piso:"5",nom:"Lab. Relaciones Internacionales"},
-  {cat:"laboratorio",ed:"BLOQG2",cod:"LG2-52",piso:"5",nom:"Lab. Comunicación Social"},
-  {cat:"laboratorio",ed:"BLOI1",cod:"LI1-1",piso:"1",nom:"Lab. de Idiomas 1"},
-  {cat:"laboratorio",ed:"BLOI1",cod:"LI1-2",piso:"1",nom:"Lab. de Idiomas 2"},
-  {cat:"laboratorio",ed:"BLOI4",cod:"LI4-4",piso:"1",nom:"Lab. LI4-4"},
-  {cat:"laboratorio",ed:"L5",cod:"LJ-1",piso:"1",nom:"Lab. Lic. En Pedagogía Infantil"},
-  {cat:"laboratorio",ed:"BLOQJ",cod:"LJ-5",piso:"",nom:"Pendiente"},
-  {cat:"laboratorio",ed:"BLOQJ1",cod:"L-S1J",piso:"S",nom:"Laboratorio de Petrografia óptica"},
-  {cat:"laboratorio",ed:"BLOQJ1",cod:"L-S2J",piso:"S",nom:"Laboratorio de Cartografia y Geomorfologia"},
-  {cat:"laboratorio",ed:"BLOQJ1",cod:"L-S5J",piso:"S",nom:"Laboratorio de Geología Física"},
-  {cat:"laboratorio",ed:"BLOQK",cod:"S1-10L",piso:"S",nom:"Lab. de Soldadura"},
-  {cat:"laboratorio",ed:"BLOQK",cod:"S1-11L",piso:"S",nom:"Lab. Geotecnia y Materiales Constr."},
-  {cat:"laboratorio",ed:"BLOQK",cod:"S1-1L",piso:"S",nom:"Lab. de Tratamientos Térmicos"},
-  {cat:"laboratorio",ed:"BLOQK",cod:"S1-2L",piso:"S",nom:"Lab. Corrosión"},
-  {cat:"laboratorio",ed:"BLOQK",cod:"S1-3L",piso:"S",nom:"Lab. de Microscopia Electrónica"},
-  {cat:"laboratorio",ed:"BLOQK",cod:"S1-4L",piso:"S",nom:"Lab. Metalografía"},
-  {cat:"laboratorio",ed:"BLOQK",cod:"S1-5L",piso:"S",nom:"Lab. de Ensayos de Materiales"},
-  {cat:"laboratorio",ed:"BLOQK",cod:"S1-6L",piso:"S",nom:"Lab. de Prototipos"},
-  {cat:"laboratorio",ed:"BLOQK",cod:"S1-7L",piso:"S",nom:"Lab. Centro de Mediciones y Coordenadas"},
-  {cat:"laboratorio",ed:"BLOQK",cod:"S1-8L",piso:"S",nom:"Lab. de Manufactura"},
-  {cat:"laboratorio",ed:"BLOQK",cod:"S1-9L",piso:"S",nom:"Lab. de Materiales De Ingeniería"},
-  {cat:"sala_pc",ed:"BLOQB",cod:"SDU3",piso:"2",nom:"Sala de Usuario / Sala de Usuarios No. 3"},
-  {cat:"sala_pc",ed:"BLOQB",cod:"SDU5",piso:"3",nom:"Sala de Usuario/ Sala de Usuarios No. 5"},
-  {cat:"sala_pc",ed:"BLOQB",cod:"SIN1",piso:"",nom:"sala de usuario / Sala de Internet 1"},
-  {cat:"sala_pc",ed:"BLOQB",cod:"SDU2",piso:"2",nom:"Sala de usuario /Sala de Usuarios No. 2"},
-  {cat:"sala_pc",ed:"BLOQC",cod:"SDU1",piso:"1",nom:"Sala de Usuario / Sala de Usuarios 1"},
-  {cat:"sala_pc",ed:"BLOQD",cod:"SIN2",piso:"",nom:"Sala de Internet 2"},
-  {cat:"sala_pc",ed:"BLOQD",cod:"SDU4",piso:"3",nom:"Sala de Usuarios No. 4"},
-  {cat:"sala_pc",ed:"BLOQG",cod:"5-0G",piso:"5",nom:"Aula Digital"},
-  {cat:"sala_pc",ed:"BLOQG",cod:"SDU6",piso:"5",nom:"Sala de Usuarios No. 6"},
-  {cat:"sala_pc",ed:"BLOQG2",cod:"SDU7",piso:"5",nom:"Sala de Usuarios No. 7"},
-  {cat:"sala_pc",ed:"BLOQJ1",cod:"SDU-51J",piso:"5",nom:"Sala de usuarios No. 11"},
-  {cat:"sala_pc",ed:"BLOQK",cod:"SDU8",piso:"",nom:"Sala de Usuarios No. 8"},
-  {cat:"sala_pc",ed:"BLOQK",cod:"SDU10",piso:"",nom:"Sala de Usuarios No. 10"},
-  {cat:"sala_pc",ed:"BLOQK",cod:"SDU9",piso:"",nom:"Sala de Usuarios No. 9"},
-  {cat:"sala_pc",ed:"BACA",cod:"BLB3",piso:"",nom:"Biblab 3"},
-  {cat:"sala_pc",ed:"BKCP",cod:"BLB2",piso:"1",nom:"Biblab 2"},
-  {cat:"sala_pc",ed:"BKCP",cod:"BLB1",piso:"1",nom:"Biblab 1"},
-  {cat:"bano",ed:"BLOQA",cod:"BATH01",piso:"2",nom:"Baño Hombres BLOQA - Piso 2"},
-  {cat:"bano",ed:"BLOQA",cod:"BATH02",piso:"2",nom:"Baño Mujeres BLOQA - Piso 2"},
-  {cat:"bano",ed:"BLOQB",cod:"BATH03",piso:"1",nom:"Baño Hombres BLOQB - Piso 1"},
-  {cat:"bano",ed:"BLOQB",cod:"BATH04",piso:"1",nom:"Baño Mujeres BLOQB - Piso 1"},
-  {cat:"bano",ed:"BLOQC",cod:"BATH05",piso:"2",nom:"Baño Hombres BLOQC - Piso 2"},
-  {cat:"bano",ed:"BLOQC",cod:"BATH06",piso:"2",nom:"Baño Mujeres BLOQC - Piso 2"},
-  {cat:"bano",ed:"BLOQE",cod:"BATH07",piso:"1",nom:"Baño Hombres BLOQE - Piso 1"},
-  {cat:"bano",ed:"BLOQE",cod:"BATH08",piso:"2",nom:"Baño Mujeres BLOQE - Piso 2"},
-  {cat:"bano",ed:"BLOQF",cod:"BATH09",piso:"2",nom:"Baño Hombres BLOQF - Piso 2"},
-  {cat:"bano",ed:"BLOQF",cod:"BATH10",piso:"2",nom:"Baño Mujeres BLOQF - Piso 2"},
-  {cat:"bano",ed:"BLOQG",cod:"BATH11",piso:"1",nom:"Baño Hombres BLOQG - Piso 1"},
-  {cat:"bano",ed:"BLOQG",cod:"BATH12",piso:"2",nom:"Baño Hombres BLOQG - Piso 2"},
-  {cat:"bano",ed:"BLOQG",cod:"BATH13",piso:"3",nom:"Baño Hombres BLOQG - Piso 3"},
-  {cat:"bano",ed:"BLOQG",cod:"BATH14",piso:"4",nom:"Baño Hombres BLOQG - Piso 4"},
-  {cat:"bano",ed:"BLOQG",cod:"BATH15",piso:"5",nom:"Baño Hombres BLOQG - Piso 5"},
-  {cat:"bano",ed:"BLOQG",cod:"BATH16",piso:"1",nom:"Baño Mujeres BLOQG - Piso 1"},
-  {cat:"bano",ed:"BLOQG",cod:"BATH17",piso:"2",nom:"Baño Mujeres BLOQG - Piso 2"},
-  {cat:"bano",ed:"BLOQG",cod:"BATH18",piso:"3",nom:"Baño Mujeres BLOQG - Piso 3"},
-  {cat:"bano",ed:"BLOQG",cod:"BATH19",piso:"4",nom:"Baño Mujeres BLOQG - Piso 4"},
-  {cat:"bano",ed:"BLOQG",cod:"BATH20",piso:"5",nom:"Baño Mujeres BLOQG - Piso 5"},
-  {cat:"bano",ed:"BLOQI",cod:"BATH21",piso:"1",nom:"Baño Hombre BLOQI1 - Piso 1"},
-  {cat:"bano",ed:"BLOQI",cod:"BATH22",piso:"1",nom:"Baño Mujeres BLOQI1 - Piso 1"},
-  {cat:"bano",ed:"BLOQI",cod:"BATH23",piso:"2",nom:"Baño Hombres BLOQI4 - Piso 2"},
-  {cat:"bano",ed:"BLOQI",cod:"BATH24",piso:"2",nom:"Baño Mujeres BLOQI4 - Piso 2"},
-  {cat:"bano",ed:"BLOQK",cod:"BATH25",piso:"1",nom:"Baño Hombres BLOQK - Piso 1"},
-  {cat:"bano",ed:"BLOQK",cod:"BATH26",piso:"2",nom:"Baño Hombres BLOQK - Piso 2"},
-  {cat:"bano",ed:"BLOQK",cod:"BATH27",piso:"3",nom:"Baño Hombres BLOQK - Piso 3"},
-  {cat:"bano",ed:"BLOQK",cod:"BATH28",piso:"4",nom:"Baño Hombres BLOQK - Piso 4"},
-  {cat:"bano",ed:"BLOQK",cod:"BATH29",piso:"5",nom:"Baño Hombres BLOQK - Piso 5"},
-  {cat:"bano",ed:"BLOQK",cod:"BATH30",piso:"6",nom:"Baño Hombres BLOQK - Piso 6"},
-  {cat:"bano",ed:"BLOQK",cod:"BATH31",piso:"7",nom:"Baño Hombres BLOQK - Piso 7"},
-  {cat:"bano",ed:"BLOQK",cod:"BATH32",piso:"8",nom:"Baño Hombres BLOQK - Piso 8"},
-  {cat:"bano",ed:"BLOQK",cod:"BATH33",piso:"9",nom:"Baño Hombres BLOQK - Piso 9"},
-  {cat:"bano",ed:"BLOQK",cod:"BATH34",piso:"1",nom:"Baño Mujeres BLOQK - Piso 1"},
-  {cat:"bano",ed:"BLOQK",cod:"BATH35",piso:"2",nom:"Baño Mujeres BLOQK - Piso 2"},
-  {cat:"bano",ed:"BLOQK",cod:"BATH36",piso:"3",nom:"Baño Mujeres BLOQK - Piso 3"},
-  {cat:"bano",ed:"BLOQK",cod:"BATH37",piso:"4",nom:"Baño Mujeres BLOQK - Piso 4"},
-  {cat:"bano",ed:"BLOQK",cod:"BATH38",piso:"5",nom:"Baño Mujeres BLOQK - Piso 5"},
-  {cat:"bano",ed:"BLOQK",cod:"BATH39",piso:"6",nom:"Baño Mujeres BLOQK - Piso 6"},
-  {cat:"bano",ed:"BLOQK",cod:"BATH40",piso:"7",nom:"Baño Mujeres BLOQK - Piso 7"},
-  {cat:"bano",ed:"BLOQK",cod:"BATH41",piso:"8",nom:"Baño Mujeres BLOQK - Piso 8"},
-  {cat:"bano",ed:"BLOQK",cod:"BATH42",piso:"9",nom:"Baño Mujeres BLOQK - Piso 9"},
-  {cat:"bano",ed:"BLOQM",cod:"BATH43",piso:"1",nom:"Baño Hombres BLOQM"},
-  {cat:"bano",ed:"BLOQM",cod:"BATH44",piso:"1",nom:"Baño Hombres BLOQM"},
-  {cat:"bano",ed:"BLOQM",cod:"BATH45",piso:"1",nom:"Baño Hombres BLOQM"},
-  {cat:"bano",ed:"BLOQM",cod:"BATH46",piso:"1",nom:"Baño Mujeres BLOQM"},
-  {cat:"bano",ed:"BLOQM",cod:"BATH47",piso:"1",nom:"Baño Mujeres BLOQM"},
-  {cat:"bano",ed:"BLOQM",cod:"BATH48",piso:"1",nom:"Baño Mujeres BLOQM"},
-  {cat:"bano",ed:"BLOQJ",cod:"BATH49",piso:"1",nom:"Baño Hombres BLOQJ - Piso 1"},
-  {cat:"bano",ed:"BLOQJ",cod:"BATH50",piso:"2",nom:"Baño Hombres BLOQJ - Piso 2"},
-  {cat:"bano",ed:"BLOQJ",cod:"BATH51",piso:"3",nom:"Baño Hombres BLOQJ - Piso 3"},
-  {cat:"bano",ed:"BLOQJ",cod:"BATH52",piso:"4",nom:"Baño Hombres BLOQJ - Piso 4"},
-  {cat:"bano",ed:"BLOQJ",cod:"BATH53",piso:"5",nom:"Baño Hombres BLOQJ - Piso 5"},
-  {cat:"bano",ed:"BLOQJ",cod:"BATH54",piso:"6",nom:"Baño Hombres BLOQJ - Piso 6"},
-  {cat:"bano",ed:"BLOQJ",cod:"BATH55",piso:"7",nom:"Baño Hombres BLOQJ - Piso 7"},
-  {cat:"bano",ed:"BLOQJ",cod:"BATH56",piso:"8",nom:"Baño Hombres BLOQJ - Piso 8"},
-  {cat:"bano",ed:"BLOQJ",cod:"BATH57",piso:"9",nom:"Baño Hombres BLOQJ - Piso 9"},
-  {cat:"bano",ed:"BLOQJ",cod:"BATH58",piso:"10",nom:"Baño Hombres BLOQJ - Piso 10"},
-  {cat:"bano",ed:"BLOQJ",cod:"BATH59",piso:"1",nom:"Baño Mujeres BLOQJ - Piso 1"},
-  {cat:"bano",ed:"BLOQJ",cod:"BATH60",piso:"2",nom:"Baño Mujeres BLOQJ - Piso 2"},
-  {cat:"bano",ed:"BLOQJ",cod:"BATH61",piso:"3",nom:"Baño Mujeres BLOQJ - Piso 3"},
-  {cat:"bano",ed:"BLOQJ",cod:"BATH62",piso:"4",nom:"Baño Mujeres BLOQJ - Piso 4"},
-  {cat:"bano",ed:"BLOQJ",cod:"BATH63",piso:"5",nom:"Baño Mujeres BLOQJ - Piso 5"},
-  {cat:"bano",ed:"BLOQJ",cod:"BATH64",piso:"6",nom:"Baño Mujeres BLOQJ - Piso 6"},
-  {cat:"bano",ed:"BLOQJ",cod:"BATH65",piso:"7",nom:"Baño Mujeres BLOQJ - Piso 7"},
-  {cat:"bano",ed:"BLOQJ",cod:"BATH66",piso:"8",nom:"Baño Mujeres BLOQJ - Piso 8"},
-  {cat:"bano",ed:"BLOQJ",cod:"BATH67",piso:"9",nom:"Baño Mujeres BLOQJ - Piso 9"},
-  {cat:"bano",ed:"BLOQJ",cod:"BATH68",piso:"10",nom:"Baño Mujeres BLOQJ - Piso 10"},
-  {cat:"bano",ed:"L4",cod:"BATH69",piso:"",nom:"Baño Hombres Bloque Laboratorios N° 4"},
-  {cat:"bano",ed:"L4",cod:"BATH70",piso:"",nom:"Baño Hombres Bloque Laboratorios N° 4"},
-  {cat:"bano",ed:"L4",cod:"BATH71",piso:"",nom:"Baño Hombres Bloque Laboratorios N° 4"},
-  {cat:"bano",ed:"L4",cod:"BATH72",piso:"",nom:"Baño Mujeres Bloque Laboratorios N° 4"},
-  {cat:"bano",ed:"L4",cod:"BATH73",piso:"",nom:"Baño Mujeres Bloque Laboratorios N° 4"},
-  {cat:"bano",ed:"L4",cod:"BATH74",piso:"",nom:"Baño Mujeres Bloque Laboratorios N° 4"},
-  {cat:"bano",ed:"L5",cod:"BATH75",piso:"1",nom:"Baño Hombres Bloque Laboratorios N° 5"},
-  {cat:"bano",ed:"L5",cod:"BATH76",piso:"1",nom:"Baño Mujeres Bloque Laboratorios N° 5"},
-  {cat:"bano",ed:"1L6",cod:"BATH77",piso:"",nom:"Baño Hombres Bloque Laboratorios N° 6"},
-  {cat:"bano",ed:"1L6",cod:"BATH78",piso:"",nom:"Baño Hombres Bloque Laboratorios N° 6"},
-  {cat:"bano",ed:"1L6",cod:"BATH79",piso:"",nom:"Baño Hombres Bloque Laboratorios N° 6"},
-  {cat:"bano",ed:"1L6",cod:"BATH80",piso:"",nom:"Baño Mujeres Bloque Laboratorios N° 6"},
-  {cat:"bano",ed:"1L6",cod:"BATH81",piso:"",nom:"Baño Mujeres Bloque Laboratorios N° 6"},
-  {cat:"bano",ed:"1L6",cod:"BATH82",piso:"",nom:"Baño Mujeres Bloque Laboratorios N° 6"},
-  {cat:"bano",ed:"BACA",cod:"BATH83",piso:"1",nom:"Baño Hombres Casa Estudio - Piso 1"},
-  {cat:"bano",ed:"BACA",cod:"BATH84",piso:"2",nom:"Baño Hombres Casa Estudio - Piso 2"},
-  {cat:"bano",ed:"BACA",cod:"BATH85",piso:"3",nom:"Baño Hombres Casa Estudio - Piso 3"},
-  {cat:"bano",ed:"BACA",cod:"BATH86",piso:"1",nom:"Baño Mujeres Casa Estudio - Piso 1"},
-  {cat:"bano",ed:"BACA",cod:"BATH87",piso:"2",nom:"Baño Mujeres Casa Estudio - Piso 2"},
-  {cat:"bano",ed:"BACA",cod:"BATH88",piso:"3",nom:"Baño Mujeres Casa Estudio - Piso 3"},
-  {cat:"bano",ed:"BKCP",cod:"BATH89",piso:"S",nom:"Baño Hombres Biblioteca - Piso 1"},
-  {cat:"bano",ed:"BKCP",cod:"BATH90",piso:"1",nom:"Baño Hombres Biblioteca - Piso 2"},
-  {cat:"bano",ed:"BKCP",cod:"BATH91",piso:"2",nom:"Baño Hombres Biblioteca - Piso 3"},
-  {cat:"bano",ed:"BKCP",cod:"BATH92",piso:"S",nom:"Baño Mujeres Biblioteca - Piso 1"},
-  {cat:"bano",ed:"BKCP",cod:"BATH93",piso:"1",nom:"Baño Mujeres Biblioteca - Piso 2"},
-  {cat:"bano",ed:"BKCP",cod:"BATH94",piso:"2",nom:"Baño Mujeres Biblioteca - Piso 3"},
-  {cat:"bano",ed:"COLIS",cod:"BATH95",piso:"1",nom:"Baño Hombres Coliseo"},
-  {cat:"bano",ed:"COLIS",cod:"BATH96",piso:"1",nom:"Baño Mujeres Coliseo"},
-  {cat:"biblioteca",ed:"BLOQA",cod:"SAES01",piso:"1",nom:"Sala de Estudio BLOQA"},
-  {cat:"biblioteca",ed:"BLOQB",cod:"SAES02",piso:"1",nom:"Sala de Estudio BLOQB"},
-  {cat:"biblioteca",ed:"BLOQD",cod:"SAES03",piso:"1",nom:"Sala de Estudio BLOQD"},
-  {cat:"biblioteca",ed:"BLOQE",cod:"SAES04",piso:"1",nom:"Sala de Estudio BLOQE"},
-  {cat:"biblioteca",ed:"BLOQG",cod:"SAES05",piso:"1",nom:"Sala de Estudio BLOQG"},
-  {cat:"biblioteca",ed:"BLOQJ",cod:"SAES06",piso:"1",nom:"Sala de Estudio BLOQJ"},
-  {cat:"biblioteca",ed:"L1",cod:"SAES07",piso:"1",nom:"Sala de Estudio Bloque Laboratorio N° 1"},
-  {cat:"biblioteca",ed:"BACA",cod:"SAES08",piso:"1",nom:"Sala de Estudio BACA"},
-  {cat:"biblioteca",ed:"BACA",cod:"SAES09",piso:"2",nom:"Sala de Estudio BACA"},
-  {cat:"biblioteca",ed:"BACA",cod:"SAES10",piso:"3",nom:"Sala de Estudio BACA"},
-  {cat:"biblioteca",ed:"BKCP",cod:"SAES11",piso:"S",nom:"Sala de Estudio BKCP"},
-  {cat:"biblioteca",ed:"BKCP",cod:"SAES12",piso:"1",nom:"Sala de Estudio BKCP"},
-  {cat:"biblioteca",ed:"BKCP",cod:"SAES13",piso:"2",nom:"Sala de Estudio BKCP"},
-  {cat:"biblioteca",ed:"BKCP",cod:"SAES14",piso:"3",nom:"Sala de Estudio BKCP"},
-  {cat:"biblioteca",ed:"BKCP",cod:"SAES15",piso:"4",nom:"Sala de Estudio BKCP"},
-  {cat:"biblioteca",ed:"CAMPUS",cod:"ZOEST01",piso:"1",nom:"Zona de Estudiantes - Bambú 1"},
-  {cat:"biblioteca",ed:"CAMPUS",cod:"ZOEST02",piso:"1",nom:"Zona de Estudiantes - Bambú 2"},
-  {cat:"parqueadero",ed:"FUERA",cod:"P8",piso:"",nom:"Parqueadero Exterior N° 8"},
-  {cat:"parqueadero",ed:"FUERA",cod:"P9",piso:"",nom:"Parqueadero Exterior N° 9"},
-  {cat:"parqueadero",ed:"FUERA",cod:"P12",piso:"",nom:"Parqueadero Exterior N° 12"},
-  {cat:"acceso",ed:"CAMPUS",cod:"C-ACCES01",piso:"",nom:"Portería 1"},
-  {cat:"acceso",ed:"CAMPUS",cod:"C-ACCES04",piso:"",nom:"Portería 4"},
-  {cat:"acceso",ed:"CAMPUS",cod:"C-ACCES07",piso:"",nom:"Portería 7"},
-  {cat:"acceso",ed:"CAMPUS",cod:"C-ACCES11",piso:"",nom:"Portería 11"},
-  {cat:"acceso",ed:"CAMPUS",cod:"C-ACCES11B",piso:"",nom:"Portería 11B"},
-  {cat:"acceso",ed:"CAMPUS",cod:"C-ACCES09",piso:"",nom:"Portería 09 peatonal (hacia bloque M)"},
-  {cat:"cancha",ed:"COLIS",cod:"CSEO-FIELD01",piso:"",nom:"Cancha Deportiva"},
-  {cat:"cancha",ed:"CAMPUS",cod:"CAMP-FIELD02",piso:"",nom:"Cancha Multiple cubierta"},
-  {cat:"cancha",ed:"CAMPUS",cod:"CAMP-FIELD03",piso:"",nom:"Cancha de raquetball 1"},
-  {cat:"cancha",ed:"CAMPUS",cod:"CAMP-FIELD04",piso:"",nom:"Cancha de raquetball 2"},
-  {cat:"cancha",ed:"CAMPUS",cod:"CAMP-FIELD05",piso:"",nom:"Cancha de raquetball 3"},
-  {cat:"cancha",ed:"CAMPUS",cod:"CAMP-FIELD06",piso:"",nom:"Cancha fútbol"},
-  {cat:"cancha",ed:"CAMPUS",cod:"CAMP-FIELD07",piso:"",nom:"Cancha Tenis 1"},
-  {cat:"cancha",ed:"CAMPUS",cod:"CAMP-FIELD08",piso:"",nom:"Cancha Tenis 2"},
-  {cat:"cancha",ed:"CAMPUS",cod:"CAMP-FIELD09",piso:"",nom:"Cancha Multiple 1"},
-  {cat:"cancha",ed:"CAMPUS",cod:"CAMP-FIELD10",piso:"",nom:"Cancha Multiple 2"},
-  {cat:"cancha",ed:"CAMPUS",cod:"CAMP-FIELD11",piso:"",nom:"Cancha fútbol sintético"},
-  {cat:"cancha",ed:"CAMPUS",cod:"PISCINA",piso:"",nom:"Piscina"},
-  {cat:"cafeteria",ed:"BLOQF",cod:"ZONALI01",piso:"1",nom:"Du Nord Plaza"},
-  {cat:"cafeteria",ed:"BLOQF",cod:"ZONALI02",piso:"2",nom:"La Crepería"},
-  {cat:"cafeteria",ed:"BLOQF",cod:"ZONALI03",piso:"2",nom:"1966"},
-  {cat:"cafeteria",ed:"BLOQK",cod:"ZONALI04",piso:"4",nom:"Le Petit"},
-  {cat:"cafeteria",ed:"BLOQJ",cod:"ZONALI05",piso:"9",nom:"Bocas de Ceniza"},
-  {cat:"cafeteria",ed:"COLIS",cod:"ZONALI06",piso:"3",nom:"Du Nord Terrasse"},
-  {cat:"cafeteria",ed:"CAMPUS",cod:"ZONALI07",piso:"",nom:"Café Du Nord"},
-  {cat:"cafeteria",ed:"CAMPUS",cod:"ZONALI08",piso:"",nom:"El Contenedor"},
-  {cat:"cafeteria",ed:"CAMPUS",cod:"ZONALI09",piso:"",nom:"La Esquina"},
-  {cat:"cafeteria",ed:"CAMPUS",cod:"ZONALI10",piso:"",nom:"El Express"},
-  {cat:"cafeteria",ed:"BLOQB",cod:"ZONALI11",piso:"1",nom:"Hot Dogs"},
-  {cat:"fachada",ed:"BLOQA",cod:"BLD-A",piso:"",nom:"Edificio Bloque A"},
-  {cat:"fachada",ed:"BLOQB",cod:"BLD-B",piso:"",nom:"Edificio Bloque B"},
-  {cat:"fachada",ed:"BLOQC",cod:"BLD-C",piso:"",nom:"Edificio Bloque C"},
-  {cat:"fachada",ed:"BLOQD",cod:"BLD-D",piso:"",nom:"Edificio Bloque D"},
-  {cat:"fachada",ed:"BLOQE",cod:"BLD-E",piso:"",nom:"Edificio Bloque E"},
-  {cat:"fachada",ed:"BLOQF",cod:"BLD-F",piso:"",nom:"Edificio Bloque F"},
-  {cat:"fachada",ed:"BLOQG",cod:"BLD-G",piso:"",nom:"Edificio Álvaro Jaramillo Vengoechea"},
-  {cat:"fachada",ed:"BLOQI",cod:"BLD-I",piso:"",nom:"Edificio Bloque I"},
-  {cat:"fachada",ed:"BLOQJ",cod:"BLD-J",piso:"",nom:"Edificio Mario Santo Domingo"},
-  {cat:"fachada",ed:"BLOQK",cod:"BLD-K",piso:"",nom:"Edificio Bloque K - Ingenierías"},
-  {cat:"fachada",ed:"BLOQM",cod:"BLD-M",piso:"",nom:"Edificio Bloque M"},
-  {cat:"fachada",ed:"BKCP",cod:"BLD-BKCP",piso:"",nom:"Biblioteca Karl C. Parrish Jr."},
-  {cat:"fachada",ed:"BACA",cod:"BLD-BACA",piso:"",nom:"Casa Estudio Alfredo Correa De Andreis"},
-  {cat:"fachada",ed:"COLIS",cod:"BLD-COLIS",piso:"",nom:"Coliseo"},
-  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS01",piso:"",nom:"Jardín frente Biblioteca"},
-  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS02",piso:"",nom:"Jardín posterior Biblioteca"},
-  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS03",piso:"",nom:"Jardín de alrededor de comedor funcionarios"},
-  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS04",piso:"",nom:"Jardín Laboratorio 1"},
-  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS05",piso:"",nom:"Jardín Laboratorio 2"},
-  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS06",piso:"",nom:"Jardín Laboratorio 5"},
-  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS07",piso:"",nom:"Jardín Laboratorio 6"},
-  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS08",piso:"",nom:"Jardín administrativo 2"},
-  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS09",piso:"",nom:"Jardín alrededor del Edificio Santo Domingo (Bloque J)"},
-  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS10",piso:"",nom:"Jardín Café Du Nord"},
-  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS11",piso:"",nom:"Jardín Alrededor de la Rampa de Posgrados (Bloque G)"},
-  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS12",piso:"",nom:"Jardín Media Torta Coliseo (Frente a Cancha de Tennis)"},
-  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS13",piso:"",nom:"Jardín Escaleras Coliseo"},
-  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS14",piso:"",nom:"Jardín entre Bloque B y Bloque C"},
-  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS15",piso:"",nom:"Jardín Casa Estudio"},
-  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS16",piso:"",nom:"Jardín Portería 04"},
-  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS17",piso:"",nom:"Jardín Central de Frío 2 (Frente Laboratorios ING Civil atras de Bloque K)"},
-  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS18",piso:"",nom:"Jardín Central de Acopio"},
-  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS19",piso:"",nom:"Jardín Zona Martillo (Alrededor de la Zona Multiple de Estudiantes 2)"},
-  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS20",piso:"",nom:"Jardín Bloque K"},
-  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS21",piso:"",nom:"Jardín Bloque Idiomas 4 (Bloque I4)"},
-  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS22",piso:"",nom:"Jardín KM5 hacia Instituto de Idiomas"},
-  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS23",piso:"",nom:"Jardín Emisora (Bloque D)"},
-  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS24",piso:"",nom:"Jardín Auditorio (Bloque F)"},
-  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS25",piso:"",nom:"Jardín Palmeras 1966 (Frente)"},
-  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS26",piso:"",nom:"Jardín Izquierdo Plazoleta Posgrados (Frente Bloque G)"},
-  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS27",piso:"",nom:"Jardín Ptar Principal (Frente a la bodega de mantenimiento)"},
-  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS28",piso:"",nom:"Jardín Bloque de la Salud"},
-  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS29",piso:"",nom:"Jardín Zona Multiple Estudiantes 1"},
-  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS30",piso:"",nom:"Jardín Almacen (Frente a Cancha de Tennis)"},
-  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS31",piso:"",nom:"Jardín Coliseo"},
-  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS32",piso:"",nom:"Jardín Lobby Norte (Coliseo)"},
-  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS33",piso:"",nom:"Jardín Casa Blanca (Administrativo 1)"},
-  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS34",piso:"",nom:"Jardín Portería 01"},
-  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS35",piso:"",nom:"Jardín Portería 02"},
-  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS36",piso:"",nom:"Jardín Campestre (Izquierda de porteria 01)"},
-  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS37",piso:"",nom:"Jardín Du Nord Plaza"},
-  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS38",piso:"",nom:"Jardín Graphique"},
-  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS39",piso:"",nom:"Jardín Express"},
-  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS40",piso:"",nom:"Jardín Bancolombia"},
-  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS41",piso:"",nom:"Jardín Campos Deportivos"},
-  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS42",piso:"",nom:"Jardínes Bloque M"},
-  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS43",piso:"",nom:"Fuente de la Rectitud, Alegría y Verdad"},
-  {cat:"jardin",ed:"FUERA",cod:"J-EXTER01",piso:"",nom:"Jardín Parqueadero 08-Vía Colegio San José"},
-  {cat:"jardin",ed:"FUERA",cod:"J-EXTER02",piso:"",nom:"Jardín Parqueadero 08"},
-  {cat:"jardin",ed:"FUERA",cod:"J-EXTER03",piso:"",nom:"Jardín Parqueadero 09"},
-  {cat:"jardin",ed:"FUERA",cod:"J-EXTER04",piso:"",nom:"Jardín Parqueadero 12"},
-  {cat:"jardin",ed:"FUERA",cod:"J-EXTER05",piso:"",nom:"Jardín Exterior Portería 11 a Portería 11B"},
-  {cat:"jardin",ed:"FUERA",cod:"J-EXTER06",piso:"",nom:"Jardín Exterior Portería 05 a Portería 07"},
+  {cat:"auditorio",ed:"CAMPUS",cod:"AUDITORIO",piso:"1",nom:"Auditorio Marvel Moreno",ev:"ANA KARINA QUINTERO ARTEAGA"},
+  {cat:"auditorio",ed:"CAMPUS",cod:"SAL_PROYECCION",piso:"1",nom:"Salón Gabriel García Márquez",ev:"DANIEL EDUARDO GUTIERREZ BORRERO"},
+  {cat:"salon",ed:"BLOI1",cod:"I1-22",piso:"2",nom:"Salón I1-22",ev:"Hailyn Kelly Mejia Piedris"},
+  {cat:"salon",ed:"BLOI1",cod:"I1-26",piso:"2",nom:"Salón I1-26",ev:"Hailyn Kelly Mejia Piedris"},
+  {cat:"salon",ed:"BLOI1",cod:"I1-23",piso:"2",nom:"Salón I1-23",ev:"Hailyn Kelly Mejia Piedris"},
+  {cat:"salon",ed:"BLOI1",cod:"I1-24",piso:"2",nom:"Salón I1-24",ev:"Hailyn Kelly Mejia Piedris"},
+  {cat:"salon",ed:"BLOI1",cod:"I1-27",piso:"2",nom:"Salón I1-27",ev:"Hailyn Kelly Mejia Piedris"},
+  {cat:"salon",ed:"BLOI1",cod:"I1-25",piso:"2",nom:"Salón I1-25",ev:"Hailyn Kelly Mejia Piedris"},
+  {cat:"salon",ed:"BLOI1",cod:"I1-21",piso:"2",nom:"Salón I1-21",ev:"Hailyn Kelly Mejia Piedris"},
+  {cat:"salon",ed:"BLOI2",cod:"I2-24",piso:"2",nom:"Salón I2-24",ev:"YOSIRIS YOHANA YEPES MIRANDA"},
+  {cat:"salon",ed:"BLOI2",cod:"I2-12",piso:"1",nom:"Salón I2-12",ev:"YOSIRIS YOHANA YEPES MIRANDA"},
+  {cat:"salon",ed:"BLOI2",cod:"I2-23",piso:"2",nom:"Salón I2-23",ev:"YOSIRIS YOHANA YEPES MIRANDA"},
+  {cat:"salon",ed:"BLOI2",cod:"I2-15",piso:"1",nom:"Salón I2-15",ev:"YOSIRIS YOHANA YEPES MIRANDA"},
+  {cat:"salon",ed:"BLOI2",cod:"I2-21",piso:"2",nom:"Salón I2-21",ev:"YOSIRIS YOHANA YEPES MIRANDA"},
+  {cat:"salon",ed:"BLOI2",cod:"I2-11",piso:"1",nom:"Salón I2-11",ev:"YOSIRIS YOHANA YEPES MIRANDA"},
+  {cat:"salon",ed:"BLOI2",cod:"I2-22",piso:"2",nom:"Salón I2-22",ev:"YOSIRIS YOHANA YEPES MIRANDA"},
+  {cat:"salon",ed:"BLOI2",cod:"I2-13",piso:"1",nom:"Salón I2-13",ev:"YOSIRIS YOHANA YEPES MIRANDA"},
+  {cat:"salon",ed:"BLOI2",cod:"I2-25",piso:"2",nom:"Salón I2-25",ev:"YOSIRIS YOHANA YEPES MIRANDA"},
+  {cat:"salon",ed:"BLOI2",cod:"I2-14",piso:"1",nom:"Salón I2-14",ev:"YOSIRIS YOHANA YEPES MIRANDA"},
+  {cat:"salon",ed:"BLOI3",cod:"I3-11",piso:"1",nom:"Salón I3-11",ev:"SANDRA PAOLA PEÑA CASTELLANO"},
+  {cat:"salon",ed:"BLOI3",cod:"I3-13",piso:"1",nom:"Salón I3-13",ev:"SANDRA PAOLA PEÑA CASTELLANO"},
+  {cat:"salon",ed:"BLOI3",cod:"I3-12",piso:"1",nom:"Salón I3-12",ev:"SANDRA PAOLA PEÑA CASTELLANO"},
+  {cat:"salon",ed:"BLOI3",cod:"I3-21",piso:"2",nom:"Salón I3-21",ev:"YOSIRIS YOHANA YEPES MIRANDA"},
+  {cat:"salon",ed:"BLOI3",cod:"I3-24",piso:"2",nom:"Salón I3-24",ev:"YOSIRIS YOHANA YEPES MIRANDA"},
+  {cat:"salon",ed:"BLOI3",cod:"I3-23",piso:"2",nom:"Salón I3-23",ev:"YOSIRIS YOHANA YEPES MIRANDA"},
+  {cat:"salon",ed:"BLOI3",cod:"I3-22",piso:"2",nom:"Salón I3-22",ev:"YOSIRIS YOHANA YEPES MIRANDA"},
+  {cat:"salon",ed:"BLOI4",cod:"I4-12",piso:"1",nom:"Salón I4-12",ev:"EYLEEN GIOBET CASTILLO MENDOZA"},
+  {cat:"salon",ed:"BLOI4",cod:"I4-25",piso:"2",nom:"Salón I4-25",ev:"EYLEEN GIOBET CASTILLO MENDOZA"},
+  {cat:"salon",ed:"BLOI4",cod:"I4-13",piso:"1",nom:"Salón I4-13",ev:"EYLEEN GIOBET CASTILLO MENDOZA"},
+  {cat:"salon",ed:"BLOI4",cod:"I4-11",piso:"1",nom:"Salón I4-11",ev:"EYLEEN GIOBET CASTILLO MENDOZA"},
+  {cat:"salon",ed:"BLOI4",cod:"I4-21",piso:"2",nom:"Salón I4-21",ev:"EYLEEN GIOBET CASTILLO MENDOZA"},
+  {cat:"salon",ed:"BLOI4",cod:"I4-15",piso:"1",nom:"Salón I4-15",ev:"EYLEEN GIOBET CASTILLO MENDOZA"},
+  {cat:"salon",ed:"BLOI4",cod:"I4-28",piso:"2",nom:"Salón I4-28",ev:"EYLEEN GIOBET CASTILLO MENDOZA"},
+  {cat:"salon",ed:"BLOI4",cod:"I4-22",piso:"2",nom:"Salón I4-22",ev:"EYLEEN GIOBET CASTILLO MENDOZA"},
+  {cat:"salon",ed:"BLOI4",cod:"I4-14",piso:"1",nom:"Salón I4-14",ev:"EYLEEN GIOBET CASTILLO MENDOZA"},
+  {cat:"salon",ed:"BLOI4",cod:"I4-23",piso:"2",nom:"Salón I4-23",ev:"EYLEEN GIOBET CASTILLO MENDOZA"},
+  {cat:"salon",ed:"BLOI4",cod:"I4-27",piso:"2",nom:"Salón I4-27",ev:"EYLEEN GIOBET CASTILLO MENDOZA"},
+  {cat:"salon",ed:"BLOI4",cod:"I4-26",piso:"2",nom:"Salón I4-26",ev:"EYLEEN GIOBET CASTILLO MENDOZA"},
+  {cat:"salon",ed:"BLOI4",cod:"I4-24",piso:"2",nom:"Salón I4-24",ev:"EYLEEN GIOBET CASTILLO MENDOZA"},
+  {cat:"salon",ed:"BLOI4",cod:"I4-S13",piso:"S",nom:"Salón I4-S13",ev:"SANDRA PAOLA PEÑA CASTELLANO"},
+  {cat:"salon",ed:"BLOI4",cod:"I4-S11",piso:"S",nom:"Salón I4-S11",ev:"SANDRA PAOLA PEÑA CASTELLANO"},
+  {cat:"salon",ed:"BLOI4",cod:"I4-S12",piso:"S",nom:"Salón I4-S12",ev:"SANDRA PAOLA PEÑA CASTELLANO"},
+  {cat:"salon",ed:"BLOQB",cod:"32B",piso:"3",nom:"Salón de Clases / Salón 32B",ev:"VIVIANA CARREÑO DURAN"},
+  {cat:"salon",ed:"BLOQB",cod:"33B",piso:"3",nom:"Salón de Clases / Salón 33B",ev:"VIVIANA CARREÑO DURAN"},
+  {cat:"salon",ed:"BLOQC",cod:"33C",piso:"3",nom:"Salón 33C",ev:"JULIO ALFREDO JIMENEZ MARTINEZ"},
+  {cat:"salon",ed:"BLOQC",cod:"14C",piso:"1",nom:"Salón 14C",ev:"JULIO ALFREDO JIMENEZ MARTINEZ"},
+  {cat:"salon",ed:"BLOQC",cod:"34C",piso:"3",nom:"Salón 34C",ev:"JULIO ALFREDO JIMENEZ MARTINEZ"},
+  {cat:"salon",ed:"BLOQC",cod:"38C",piso:"3",nom:"Salón 38C",ev:"JULIO ALFREDO JIMENEZ MARTINEZ"},
+  {cat:"salon",ed:"BLOQC",cod:"24C",piso:"2",nom:"Salón 24C",ev:"JULIO ALFREDO JIMENEZ MARTINEZ"},
+  {cat:"salon",ed:"BLOQC",cod:"31C",piso:"3",nom:"Salón 31C",ev:"JULIO ALFREDO JIMENEZ MARTINEZ"},
+  {cat:"salon",ed:"BLOQC",cod:"35C",piso:"3",nom:"Salón 35C",ev:"JULIO ALFREDO JIMENEZ MARTINEZ"},
+  {cat:"salon",ed:"BLOQC",cod:"13C",piso:"1",nom:"Salón 13C",ev:"JULIO ALFREDO JIMENEZ MARTINEZ"},
+  {cat:"salon",ed:"BLOQC",cod:"32C",piso:"3",nom:"Salón 32C",ev:"JULIO ALFREDO JIMENEZ MARTINEZ"},
+  {cat:"salon",ed:"BLOQC",cod:"26C",piso:"2",nom:"Salón 26C",ev:"JULIO ALFREDO JIMENEZ MARTINEZ"},
+  {cat:"salon",ed:"BLOQC",cod:"22C",piso:"2",nom:"Salón 22C",ev:"JULIO ALFREDO JIMENEZ MARTINEZ"},
+  {cat:"salon",ed:"BLOQC",cod:"36C",piso:"3",nom:"Salón 36C",ev:"JULIO ALFREDO JIMENEZ MARTINEZ"},
+  {cat:"salon",ed:"BLOQC",cod:"23C",piso:"2",nom:"Salón 23C",ev:"JULIO ALFREDO JIMENEZ MARTINEZ"},
+  {cat:"salon",ed:"BLOQC",cod:"A1C",piso:"1",nom:"Salón A1C",ev:"JULIO ALFREDO JIMENEZ MARTINEZ"},
+  {cat:"salon",ed:"BLOQC",cod:"A2C",piso:"2",nom:"Salón A2C",ev:"MARIBEL DEL SOCORRO PEREZ ROMERO"},
+  {cat:"salon",ed:"BLOQC",cod:"25C",piso:"2",nom:"Salón 25C",ev:"MARIBEL DEL SOCORRO PEREZ ROMERO"},
+  {cat:"salon",ed:"BLOQD",cod:"25D",piso:"2",nom:"Salón 25D",ev:"DIANA CAROLINA CASTRO HERNANDEZ"},
+  {cat:"salon",ed:"BLOQD",cod:"24D",piso:"2",nom:"Salón 24D",ev:"DIANA CAROLINA CASTRO HERNANDEZ"},
+  {cat:"salon",ed:"BLOQD",cod:"23D",piso:"2",nom:"Salón 23D",ev:"DIANA CAROLINA CASTRO HERNANDEZ"},
+  {cat:"salon",ed:"BLOQD",cod:"31D",piso:"3",nom:"Salón 31D",ev:"DIANA CAROLINA CASTRO HERNANDEZ"},
+  {cat:"salon",ed:"BLOQD",cod:"22D",piso:"2",nom:"Salón 22D",ev:"DIANA CAROLINA CASTRO HERNANDEZ"},
+  {cat:"salon",ed:"BLOQE",cod:"32E",piso:"3",nom:"Salón 32E",ev:"ANGELA MERCEDES GONZALEZ VERGARA"},
+  {cat:"salon",ed:"BLOQE",cod:"11E",piso:"1",nom:"Salón 11E",ev:"ANGELA MERCEDES GONZALEZ VERGARA"},
+  {cat:"salon",ed:"BLOQE",cod:"33E",piso:"3",nom:"Salón 33E",ev:"ANGELA MERCEDES GONZALEZ VERGARA"},
+  {cat:"salon",ed:"BLOQE",cod:"22E",piso:"2",nom:"Salón 22E",ev:"ANGELA MERCEDES GONZALEZ VERGARA"},
+  {cat:"salon",ed:"BLOQE",cod:"23E",piso:"2",nom:"Salón 23E",ev:"ANGELA MERCEDES GONZALEZ VERGARA"},
+  {cat:"salon",ed:"BLOQE",cod:"12E",piso:"1",nom:"Salón 12E",ev:"ANGELA MERCEDES GONZALEZ VERGARA"},
+  {cat:"salon",ed:"BLOQE",cod:"24E",piso:"2",nom:"Salón 24E",ev:"ANGELA MERCEDES GONZALEZ VERGARA"},
+  {cat:"salon",ed:"BLOQE",cod:"25E",piso:"2",nom:"Salón 25E",ev:"ANGELA MERCEDES GONZALEZ VERGARA"},
+  {cat:"salon",ed:"BLOQF",cod:"21F",piso:"2",nom:"Salón 21F",ev:"NITZIA GISELA CARABALLO CABRERA"},
+  {cat:"salon",ed:"BLOQF",cod:"22F",piso:"2",nom:"Salón 22F",ev:"NITZIA GISELA CARABALLO CABRERA"},
+  {cat:"salon",ed:"BLOQF",cod:"25F",piso:"2",nom:"Salón 25F",ev:"NITZIA GISELA CARABALLO CABRERA"},
+  {cat:"salon",ed:"BLOQF",cod:"24F",piso:"2",nom:"Salón 24F",ev:"NITZIA GISELA CARABALLO CABRERA"},
+  {cat:"salon",ed:"BLOQF",cod:"23F",piso:"2",nom:"Salón 23F",ev:"NITZIA GISELA CARABALLO CABRERA"},
+  {cat:"salon",ed:"BLOQG",cod:"51G",piso:"5",nom:"Sala de Doctorado 1",ev:"IVAN JOSE DE JESUS LUZARDO LUNA"},
+  {cat:"salon",ed:"BLOQG",cod:"52G",piso:"5",nom:"Sala de Doctorado 2",ev:"IVAN JOSE DE JESUS LUZARDO LUNA"},
+  {cat:"salon",ed:"BLOQG",cod:"53G",piso:"5",nom:"Sala de Doctorado 3",ev:"IVAN JOSE DE JESUS LUZARDO LUNA"},
+  {cat:"salon",ed:"BLOQG1",cod:"22G1",piso:"2",nom:"Salón 22G1",ev:"LEILA ANGELA MLAYES HADDAD"},
+  {cat:"salon",ed:"BLOQG1",cod:"25G1",piso:"2",nom:"Salón 25G1",ev:"MELISSA DEL CARMEN DELUQUE BASTIDAS"},
+  {cat:"salon",ed:"BLOQG1",cod:"21G1",piso:"2",nom:"Salón 21G1",ev:"MELISSA DEL CARMEN DELUQUE BASTIDAS"},
+  {cat:"salon",ed:"BLOQG1",cod:"24G1",piso:"2",nom:"Salón 24G1",ev:"MELISSA DEL CARMEN DELUQUE BASTIDAS"},
+  {cat:"salon",ed:"BLOQG1",cod:"23G1",piso:"2",nom:"Salón 23G1",ev:"MELISSA DEL CARMEN DELUQUE BASTIDAS"},
+  {cat:"salon",ed:"BLOQG1",cod:"31G1",piso:"3",nom:"Salón 31G1",ev:"MELISSA DEL CARMEN DELUQUE BASTIDAS"},
+  {cat:"salon",ed:"BLOQG1",cod:"34G1",piso:"3",nom:"Salón 34G1",ev:"MELISSA DEL CARMEN DELUQUE BASTIDAS"},
+  {cat:"salon",ed:"BLOQG1",cod:"33G1",piso:"3",nom:"Salón 33G1",ev:"MELISSA DEL CARMEN DELUQUE BASTIDAS"},
+  {cat:"salon",ed:"BLOQG1",cod:"32G1",piso:"3",nom:"Salón 32G1",ev:"MELISSA DEL CARMEN DELUQUE BASTIDAS"},
+  {cat:"salon",ed:"BLOQG1",cod:"35G1",piso:"3",nom:"Salón 35G1",ev:"MELISSA DEL CARMEN DELUQUE BASTIDAS"},
+  {cat:"salon",ed:"BLOQG1",cod:"42G1",piso:"4",nom:"Salón 42G1",ev:"MELISSA DEL CARMEN DELUQUE BASTIDAS"},
+  {cat:"salon",ed:"BLOQG1",cod:"45G1",piso:"4",nom:"Salón 45G1",ev:"MELISSA DEL CARMEN DELUQUE BASTIDAS"},
+  {cat:"salon",ed:"BLOQG1",cod:"43G1",piso:"4",nom:"Salón 43G1",ev:"MELISSA DEL CARMEN DELUQUE BASTIDAS"},
+  {cat:"salon",ed:"BLOQG1",cod:"41G1",piso:"4",nom:"Salón 41G1",ev:"MELISSA DEL CARMEN DELUQUE BASTIDAS"},
+  {cat:"salon",ed:"BLOQG1",cod:"44G1",piso:"4",nom:"Salón 44G1",ev:"MELISSA DEL CARMEN DELUQUE BASTIDAS"},
+  {cat:"salon",ed:"BLOQG1",cod:"54G1",piso:"5",nom:"Salón 54G1",ev:"MILENA MERCEDES VARELA CARDONA"},
+  {cat:"salon",ed:"BLOQG1",cod:"55G1",piso:"5",nom:"Salón 55G1",ev:"MILENA MERCEDES VARELA CARDONA"},
+  {cat:"salon",ed:"BLOQG1",cod:"51G1",piso:"5",nom:"Salón 51G1",ev:"MILENA MERCEDES VARELA CARDONA"},
+  {cat:"salon",ed:"BLOQG1",cod:"52G1",piso:"5",nom:"Salón 52G1",ev:"MILENA MERCEDES VARELA CARDONA"},
+  {cat:"salon",ed:"BLOQG1",cod:"53G1",piso:"5",nom:"Salón 53G1",ev:"MILENA MERCEDES VARELA CARDONA"},
+  {cat:"salon",ed:"BLOQG2",cod:"12G2",piso:"1",nom:"Salón 12G2",ev:"Hailyn Kelly Mejia Piedris"},
+  {cat:"salon",ed:"BLOQG2",cod:"11G2",piso:"1",nom:"Salón 11G2",ev:"IVAN JOSE DE JESUS LUZARDO LUNA"},
+  {cat:"salon",ed:"BLOQG2",cod:"25G2",piso:"2",nom:"Salón Harvard 2 -salón magistral",ev:"IVAN JOSE DE JESUS LUZARDO LUNA"},
+  {cat:"salon",ed:"BLOQG2",cod:"23G2",piso:"2",nom:"Salón Harvard- salón magistral",ev:"IVAN JOSE DE JESUS LUZARDO LUNA"},
+  {cat:"salon",ed:"BLOQG2",cod:"54G2",piso:"5",nom:"Sala de Doctorado 4",ev:"IVAN JOSE DE JESUS LUZARDO LUNA"},
+  {cat:"salon",ed:"BLOQG2",cod:"31G2",piso:"3",nom:"Salón 31G2",ev:"JOHANNA HELENA MORENO MONTAÑEZ"},
+  {cat:"salon",ed:"BLOQG2",cod:"32G2",piso:"3",nom:"Salón 32G2",ev:"JOHANNA HELENA MORENO MONTAÑEZ"},
+  {cat:"salon",ed:"BLOQG2",cod:"36G2",piso:"3",nom:"Salón 36G2",ev:"JOHANNA HELENA MORENO MONTAÑEZ"},
+  {cat:"salon",ed:"BLOQG2",cod:"33G2",piso:"3",nom:"Salón 33G2",ev:"JOHANNA HELENA MORENO MONTAÑEZ"},
+  {cat:"salon",ed:"BLOQG2",cod:"37G2",piso:"3",nom:"Salón 37G2",ev:"JOHANNA HELENA MORENO MONTAÑEZ"},
+  {cat:"salon",ed:"BLOQG2",cod:"38G2",piso:"3",nom:"Salón 38G2",ev:"JOHANNA HELENA MORENO MONTAÑEZ"},
+  {cat:"salon",ed:"BLOQG2",cod:"35G2",piso:"3",nom:"Salón 35G2",ev:"JOHANNA HELENA MORENO MONTAÑEZ"},
+  {cat:"salon",ed:"BLOQG2",cod:"34G2",piso:"3",nom:"Salón 34G2",ev:"JOHANNA HELENA MORENO MONTAÑEZ"},
+  {cat:"salon",ed:"BLOQG2",cod:"21G2",piso:"2",nom:"Salón 21G2",ev:"LEILA ANGELA MLAYES HADDAD"},
+  {cat:"salon",ed:"BLOQG2",cod:"22G2",piso:"2",nom:"Oralidad- salón magistral",ev:"LEILA ANGELA MLAYES HADDAD"},
+  {cat:"salon",ed:"BLOQG2",cod:"13G2",piso:"1",nom:"Salón 13G2",ev:"MILENA MERCEDES VARELA CARDONA"},
+  {cat:"salon",ed:"BLOQG2",cod:"51G2",piso:"5",nom:"Salón 51G2",ev:"MILENA MERCEDES VARELA CARDONA"},
+  {cat:"salon",ed:"BLOQJ1",cod:"14J",piso:"1",nom:"Salon de clases 14J",ev:"ELMA CRISTINA MORALES CORTINA"},
+  {cat:"salon",ed:"BLOQJ1",cod:"17J",piso:"1",nom:"Salon de clases 17J",ev:"ELMA CRISTINA MORALES CORTINA"},
+  {cat:"salon",ed:"BLOQJ1",cod:"16J",piso:"1",nom:"Salon de clases 16J",ev:"ELMA CRISTINA MORALES CORTINA"},
+  {cat:"salon",ed:"BLOQJ1",cod:"15J",piso:"1",nom:"Salon de clases 15J",ev:"ELMA CRISTINA MORALES CORTINA"},
+  {cat:"salon",ed:"BLOQJ1",cod:"18J",piso:"1",nom:"Salon de clases 18J",ev:"ELMA CRISTINA MORALES CORTINA"},
+  {cat:"salon",ed:"BLOQJ1",cod:"33J",piso:"3",nom:"Salon de clases 33J",ev:"MARGARITA ROSA DE ALBA AVENDAÑO"},
+  {cat:"salon",ed:"BLOQJ1",cod:"38J",piso:"3",nom:"Salon de clases 38J",ev:"MARGARITA ROSA DE ALBA AVENDAÑO"},
+  {cat:"salon",ed:"BLOQJ1",cod:"36J",piso:"3",nom:"Salon de clases 36J",ev:"MARGARITA ROSA DE ALBA AVENDAÑO"},
+  {cat:"salon",ed:"BLOQJ1",cod:"35J",piso:"3",nom:"Salon de clases 35J",ev:"MARGARITA ROSA DE ALBA AVENDAÑO"},
+  {cat:"salon",ed:"BLOQJ1",cod:"34J",piso:"3",nom:"Salon de clases 34J",ev:"MARGARITA ROSA DE ALBA AVENDAÑO"},
+  {cat:"salon",ed:"BLOQJ1",cod:"31J",piso:"3",nom:"Salon de clases 31J",ev:"MARGARITA ROSA DE ALBA AVENDAÑO"},
+  {cat:"salon",ed:"BLOQJ1",cod:"37J",piso:"3",nom:"Salon de clases 37J",ev:"MARGARITA ROSA DE ALBA AVENDAÑO"},
+  {cat:"salon",ed:"BLOQJ1",cod:"32J",piso:"3",nom:"Salon de clases 32J",ev:"MARGARITA ROSA DE ALBA AVENDAÑO"},
+  {cat:"salon",ed:"BLOQJ1",cod:"11J",piso:"1",nom:"Salon de clases 11J",ev:"MARIA ALEJANDRA SOCARRAS MEDRANO"},
+  {cat:"salon",ed:"BLOQJ1",cod:"13J",piso:"1",nom:"Salon de clases 13J",ev:"MARIA ALEJANDRA SOCARRAS MEDRANO"},
+  {cat:"salon",ed:"BLOQJ1",cod:"12J",piso:"1",nom:"Salon de clases 12J",ev:"MARIA ALEJANDRA SOCARRAS MEDRANO"},
+  {cat:"salon",ed:"BLOQJ1",cod:"25J",piso:"2",nom:"Salon de clases 25J",ev:"MARIA ALEJANDRA SOCARRAS MEDRANO"},
+  {cat:"salon",ed:"BLOQJ1",cod:"22J",piso:"2",nom:"Salon de clases 22J",ev:"MARIA ALEJANDRA SOCARRAS MEDRANO"},
+  {cat:"salon",ed:"BLOQJ1",cod:"24J",piso:"2",nom:"Salon de clases 24J",ev:"MARIA ALEJANDRA SOCARRAS MEDRANO"},
+  {cat:"salon",ed:"BLOQJ1",cod:"21J",piso:"2",nom:"Salon de clases 21J",ev:"MARIA ALEJANDRA SOCARRAS MEDRANO"},
+  {cat:"salon",ed:"BLOQJ1",cod:"26J",piso:"2",nom:"Salon de clases 26J",ev:"MARIA ALEJANDRA SOCARRAS MEDRANO"},
+  {cat:"salon",ed:"BLOQJ1",cod:"23J",piso:"2",nom:"Salon de clases 23J",ev:"MARIA ALEJANDRA SOCARRAS MEDRANO"},
+  {cat:"salon",ed:"BLOQJ1",cod:"28J",piso:"2",nom:"Salon de clases 28J",ev:"MARIA ALEJANDRA SOCARRAS MEDRANO"},
+  {cat:"salon",ed:"BLOQJ1",cod:"27J",piso:"2",nom:"Salon de clases27J",ev:"MARIA ALEJANDRA SOCARRAS MEDRANO"},
+  {cat:"salon",ed:"BLOQK",cod:"21K",piso:"2",nom:"SALON 21K",ev:"Hailyn Kelly Mejia Piedris"},
+  {cat:"salon",ed:"BLOQK",cod:"31K",piso:"3",nom:"SALON 31K",ev:"Hailyn Kelly Mejia Piedris"},
+  {cat:"salon",ed:"BLOQK",cod:"92K",piso:"9",nom:"Salón 92K",ev:"PATRICIA JAIMES TABOADA"},
+  {cat:"salon",ed:"BLOQK",cod:"93K",piso:"9",nom:"Salón 93K",ev:"PATRICIA JAIMES TABOADA"},
+  {cat:"salon",ed:"BLOQK",cod:"45K",piso:"4",nom:"Salón 45K",ev:"PATRICIA JAIMES TABOADA"},
+  {cat:"salon",ed:"BLOQK",cod:"41K",piso:"4",nom:"Salón 41K",ev:"PATRICIA JAIMES TABOADA"},
+  {cat:"salon",ed:"BLOQK",cod:"43K",piso:"4",nom:"Salón 43K",ev:"PATRICIA JAIMES TABOADA"},
+  {cat:"salon",ed:"BLOQK",cod:"46K",piso:"4",nom:"Salón 46K",ev:"PATRICIA JAIMES TABOADA"},
+  {cat:"salon",ed:"BLOQK",cod:"91K",piso:"9",nom:"Salón 91K",ev:"PATRICIA JAIMES TABOADA"},
+  {cat:"salon",ed:"BLOQK",cod:"44K",piso:"4",nom:"Salón 44K",ev:"PATRICIA JAIMES TABOADA"},
+  {cat:"salon",ed:"BLOQK",cod:"42K",piso:"4",nom:"Salón 42K",ev:"PATRICIA JAIMES TABOADA"},
+  {cat:"salon",ed:"BLOQK",cod:"94K",piso:"9",nom:"Salón 94K",ev:"PATRICIA JAIMES TABOADA"},
+  {cat:"salon",ed:"BLOQK",cod:"95K",piso:"9",nom:"Salón 95K",ev:"PATRICIA JAIMES TABOADA"},
+  {cat:"salon",ed:"BLOQK",cod:"97K",piso:"9",nom:"Salón 97K",ev:"PATRICIA JAIMES TABOADA"},
+  {cat:"salon",ed:"BLOQK",cod:"96K",piso:"9",nom:"Salón 96K",ev:"PATRICIA JAIMES TABOADA"},
+  {cat:"salon",ed:"BLOQM",cod:"5M",piso:"1",nom:"Salón de clase música 5M",ev:"Alexander Villegas Mendoza"},
+  {cat:"salon",ed:"BLOQM",cod:"4M",piso:"1",nom:"4M",ev:"Alexander Villegas Mendoza"},
+  {cat:"salon",ed:"BLOQM",cod:"1M",piso:"1",nom:"1M",ev:"Alexander Villegas Mendoza"},
+  {cat:"salon",ed:"BLOQM",cod:"2M",piso:"1",nom:"2M",ev:"Alexander Villegas Mendoza"},
+  {cat:"salon",ed:"BLOQM",cod:"3M",piso:"1",nom:"3M",ev:"Alexander Villegas Mendoza"},
+  {cat:"salon",ed:"COLIS",cod:"SAL1",piso:"1",nom:"Salón De Música No.1.",ev:"EDWIN LUIS ANGULO LUGO"},
+  {cat:"sala_pc",ed:"BACA",cod:"BLB3",piso:"",nom:"Biblab 3",ev:"JOAQUIN JESUS PINTO ROMERO"},
+  {cat:"sala_pc",ed:"BKCP",cod:"BLB2",piso:"1",nom:"Biblab 2",ev:"GRACE MARIA SANCHEZ PATERNOSTRO"},
+  {cat:"sala_pc",ed:"BKCP",cod:"BLB1",piso:"1",nom:"Biblab 1",ev:"GRACE MARIA SANCHEZ PATERNOSTRO"},
+  {cat:"sala_pc",ed:"BLOQB",cod:"SDU3",piso:"2",nom:"Sala de Usuario / Sala de Usuarios No. 3",ev:"VIVIANA CARREÑO DURAN"},
+  {cat:"sala_pc",ed:"BLOQB",cod:"SDU5",piso:"3",nom:"Sala de Usuario/ Sala de Usuarios No. 5",ev:"VIVIANA CARREÑO DURAN"},
+  {cat:"sala_pc",ed:"BLOQB",cod:"SIN1",piso:"",nom:"sala de usuario / Sala de Internet 1",ev:"VIVIANA CARREÑO DURAN"},
+  {cat:"sala_pc",ed:"BLOQB",cod:"SDU2",piso:"2",nom:"Sala de usuario /Sala de Usuarios No. 2",ev:"VIVIANA CARREÑO DURAN"},
+  {cat:"sala_pc",ed:"BLOQC",cod:"SDU1",piso:"1",nom:"Sala de Usuario / Sala de Usuarios 1",ev:"MARIBEL DEL SOCORRO PEREZ ROMERO"},
+  {cat:"sala_pc",ed:"BLOQD",cod:"SIN2",piso:"",nom:"Sala de Internet 2",ev:"DIANA CAROLINA CASTRO HERNANDEZ"},
+  {cat:"sala_pc",ed:"BLOQD",cod:"SDU4",piso:"3",nom:"Sala de Usuarios No. 4",ev:"DIANA CAROLINA CASTRO HERNANDEZ"},
+  {cat:"sala_pc",ed:"BLOQG",cod:"5-0G",piso:"5",nom:"Aula Digital",ev:"LEILA ANGELA MLAYES HADDAD"},
+  {cat:"sala_pc",ed:"BLOQG",cod:"SDU6",piso:"5",nom:"Sala de Usuarios No. 6",ev:"LEILA ANGELA MLAYES HADDAD"},
+  {cat:"sala_pc",ed:"BLOQG2",cod:"SDU7",piso:"5",nom:"Sala de Usuarios No. 7",ev:"LEILA ANGELA MLAYES HADDAD"},
+  {cat:"sala_pc",ed:"BLOQJ1",cod:"SDU-51J",piso:"5",nom:"Sala de usuarios No. 11",ev:"VALERIA MELISSA FONTALVO QUINTERO"},
+  {cat:"sala_pc",ed:"BLOQK",cod:"SDU8",piso:"",nom:"Sala de Usuarios No. 8",ev:"OSVALDO DE JESUS GAMARRA AMARIS"},
+  {cat:"sala_pc",ed:"BLOQK",cod:"SDU10",piso:"",nom:"Sala de Usuarios No. 10",ev:"OSVALDO DE JESUS GAMARRA AMARIS"},
+  {cat:"sala_pc",ed:"BLOQK",cod:"SDU9",piso:"",nom:"Sala de Usuarios No. 9",ev:"OSVALDO DE JESUS GAMARRA AMARIS"},
+  {cat:"parqueadero",ed:"FUERA",cod:"P8",piso:"",nom:"Parqueadero Exterior N° 8",ev:"JUAN CAMILO PERALTA"},
+  {cat:"parqueadero",ed:"FUERA",cod:"P9",piso:"",nom:"Parqueadero Exterior N° 9",ev:"JUAN CAMILO PERALTA"},
+  {cat:"parqueadero",ed:"FUERA",cod:"P12",piso:"",nom:"Parqueadero Exterior N° 12",ev:"JUAN CAMILO PERALTA"},
+  {cat:"laboratorio",ed:"1L6",cod:"3L-10",piso:"1",nom:"Salón 3L-10",ev:"ELMA CRISTINA MORALES CORTINA"},
+  {cat:"laboratorio",ed:"1L6",cod:"3L-11",piso:"1",nom:"Salón 3L-11",ev:"ELMA CRISTINA MORALES CORTINA"},
+  {cat:"laboratorio",ed:"1L6",cod:"1L6-11",piso:"1",nom:"Lab. de Desarrollo de modelos y prototipos",ev:"GUSTAVO ADOLFO LOPEZ HENRIQUEZ"},
+  {cat:"laboratorio",ed:"1L6",cod:"1L6-21",piso:"2",nom:"Sala de Diseño Estudiantes",ev:"GUSTAVO ADOLFO LOPEZ HENRIQUEZ"},
+  {cat:"laboratorio",ed:"1L6",cod:"1L6-22",piso:"2",nom:"Sala Diseño de Estudiantes",ev:"GUSTAVO ADOLFO LOPEZ HENRIQUEZ"},
+  {cat:"laboratorio",ed:"1L6",cod:"1L6-31",piso:"3",nom:"Lab. de Sistemas Digitales",ev:"GUSTAVO ADOLFO LOPEZ HENRIQUEZ"},
+  {cat:"laboratorio",ed:"1L6",cod:"1L6-32",piso:"3",nom:"Sala 2 Investigación y Desarrollo",ev:"GUSTAVO ADOLFO LOPEZ HENRIQUEZ"},
+  {cat:"laboratorio",ed:"1L6",cod:"1L6-33",piso:"3",nom:"Sala 3 Investigación y Desarrollo",ev:"GUSTAVO ADOLFO LOPEZ HENRIQUEZ"},
+  {cat:"laboratorio",ed:"1L6",cod:"1L6-34",piso:"3",nom:"Sala 4 Investigación y Desarrollo",ev:"GUSTAVO ADOLFO LOPEZ HENRIQUEZ"},
+  {cat:"laboratorio",ed:"1L6",cod:"1L6-35",piso:"3",nom:"Sala 5 Investigación - Lab.Telemática",ev:"GUSTAVO ADOLFO LOPEZ HENRIQUEZ"},
+  {cat:"laboratorio",ed:"1L6",cod:"1L6-36",piso:"3",nom:"Sala 6 Investigación y Desarrollo",ev:"GUSTAVO ADOLFO LOPEZ HENRIQUEZ"},
+  {cat:"laboratorio",ed:"1L6",cod:"1L6-37",piso:"3",nom:"Sala 7 Investigación y Desarrollo",ev:"GUSTAVO ADOLFO LOPEZ HENRIQUEZ"},
+  {cat:"laboratorio",ed:"1L6",cod:"1L6-38",piso:"3",nom:"Sala 8 Investigación y Desarrollo",ev:"GUSTAVO ADOLFO LOPEZ HENRIQUEZ"},
+  {cat:"laboratorio",ed:"1L6",cod:"1L6-39",piso:"3",nom:"Sala 9 Investigación y Desarrollo",ev:"GUSTAVO ADOLFO LOPEZ HENRIQUEZ"},
+  {cat:"laboratorio",ed:"1L6",cod:"3L-12",piso:"1",nom:"Laboratorio Investigacion departamento de fisica",ev:"GUSTAVO ADOLFO LOPEZ HENRIQUEZ"},
+  {cat:"laboratorio",ed:"1L6",cod:"4L-1",piso:"4",nom:"Salón 4L-1 Diseño digital",ev:"MILENA MERCEDES VARELA CARDONA"},
+  {cat:"laboratorio",ed:"1L6",cod:"4L-2",piso:"4",nom:"Salón 4L-2 Diseño digital",ev:"MILENA MERCEDES VARELA CARDONA"},
+  {cat:"laboratorio",ed:"1L6",cod:"4L-3",piso:"4",nom:"Salón 4L-3 Diseño digital",ev:"MILENA MERCEDES VARELA CARDONA"},
+  {cat:"laboratorio",ed:"BKCP",cod:"L5-1",piso:"S",nom:"Lab. de Fotografía",ev:"SANDRA PAOLA PEÑA CASTELLANO"},
+  {cat:"laboratorio",ed:"BKCP",cod:"L5-2",piso:"S",nom:"Estudio de Televisión",ev:"SANDRA PAOLA PEÑA CASTELLANO"},
+  {cat:"laboratorio",ed:"BLOI1",cod:"LI1-1",piso:"1",nom:"Lab. de Idiomas 1",ev:"Hailyn Kelly Mejia Piedris"},
+  {cat:"laboratorio",ed:"BLOI1",cod:"LI1-2",piso:"1",nom:"Lab. de Idiomas 2",ev:"Hailyn Kelly Mejia Piedris"},
+  {cat:"laboratorio",ed:"BLOI4",cod:"LI4-4",piso:"1",nom:"Lab. LI4-4",ev:"EYLEEN GIOBET CASTILLO MENDOZA"},
+  {cat:"laboratorio",ed:"BLOQB",cod:"34B",piso:"3",nom:"Salón de Dibujo",ev:"VIVIANA CARREÑO DURAN"},
+  {cat:"laboratorio",ed:"BLOQC",cod:"21C",piso:"2",nom:"Taller Arquitectura",ev:"MARIBEL DEL SOCORRO PEREZ ROMERO"},
+  {cat:"laboratorio",ed:"BLOQC",cod:"37C",piso:"3",nom:"Taller de Diseño y Arquitectura",ev:"MARIBEL DEL SOCORRO PEREZ ROMERO"},
+  {cat:"laboratorio",ed:"BLOQC",cod:"LC-1",piso:"S",nom:"Lab. Ing. de Control",ev:"MARIBEL DEL SOCORRO PEREZ ROMERO"},
+  {cat:"laboratorio",ed:"BLOQC",cod:"LC-2",piso:"S",nom:"Lab. de Ing Electrónica y comunicaciones",ev:"MARIBEL DEL SOCORRO PEREZ ROMERO"},
+  {cat:"laboratorio",ed:"BLOQC",cod:"LC-3",piso:"S",nom:"Lab. diseño de sofware y redes",ev:"MARIBEL DEL SOCORRO PEREZ ROMERO"},
+  {cat:"laboratorio",ed:"BLOQC",cod:"LC-4",piso:"S",nom:"Laboratorio / Sala de usuario-Lab. Circuitos y Maq. Eléctricas",ev:"MARIBEL DEL SOCORRO PEREZ ROMERO"},
+  {cat:"laboratorio",ed:"BLOQC",cod:"LC-5",piso:"S",nom:"Laboratorio / Sala de Usuario -Lab. de Transmisión",ev:"MARIBEL DEL SOCORRO PEREZ ROMERO"},
+  {cat:"laboratorio",ed:"BLOQC",cod:"LC-6",piso:"S",nom:"Lab. de Infraestructura Tecnologica Informatica",ev:"MARIBEL DEL SOCORRO PEREZ ROMERO"},
+  {cat:"laboratorio",ed:"BLOQD",cod:"21D",piso:"2",nom:"Salón 21D",ev:"DIANA CAROLINA CASTRO HERNANDEZ"},
+  {cat:"laboratorio",ed:"BLOQD",cod:"LD1",piso:"S",nom:"Laboratorio de economia experimental",ev:"DIANA CAROLINA CASTRO HERNANDEZ"},
+  {cat:"laboratorio",ed:"BLOQE",cod:"LE-1",piso:"",nom:"Lab. Enfermedades Tropicales",ev:"ANGELA MERCEDES GONZALEZ VERGARA"},
+  {cat:"laboratorio",ed:"BLOQE",cod:"LE-3_2",piso:"",nom:"Laboratorio de Morfología",ev:"ANGELA MERCEDES GONZALEZ VERGARA"},
+  {cat:"laboratorio",ed:"BLOQE",cod:"LE-4",piso:"",nom:"Lab. de Enfermería",ev:"ANGELA MERCEDES GONZALEZ VERGARA"},
+  {cat:"laboratorio",ed:"BLOQE",cod:"LE-5",piso:"",nom:"Lab. de Psicología",ev:"ANGELA MERCEDES GONZALEZ VERGARA"},
+  {cat:"laboratorio",ed:"BLOQF",cod:"LF-1",piso:"",nom:"Lab. Fisiología e Histología y Microbiologia",ev:"NITZIA GISELA CARABALLO CABRERA"},
+  {cat:"laboratorio",ed:"BLOQG2",cod:"LG2-51",piso:"5",nom:"Lab. Relaciones Internacionales",ev:"LEILA ANGELA MLAYES HADDAD"},
+  {cat:"laboratorio",ed:"BLOQG2",cod:"LG2-52",piso:"5",nom:"Lab. Comunicación Social",ev:"LEILA ANGELA MLAYES HADDAD"},
+  {cat:"laboratorio",ed:"BLOQJ",cod:"LJ-5",piso:"",nom:"Pendiente",ev:"VALERIA MELISSA FONTALVO QUINTERO"},
+  {cat:"laboratorio",ed:"BLOQJ1",cod:"L-41J",piso:"4",nom:"Laboratorio Instituto de Idiomas No 5",ev:"MARGARITA ROSA DE ALBA AVENDAÑO"},
+  {cat:"laboratorio",ed:"BLOQJ1",cod:"L-42J",piso:"4",nom:"Laboratorio Instituto de Idiomas No 6",ev:"MARGARITA ROSA DE ALBA AVENDAÑO"},
+  {cat:"laboratorio",ed:"BLOQJ1",cod:"L-43J",piso:"4",nom:"Laboratorio Experimental de Matematicas",ev:"MARGARITA ROSA DE ALBA AVENDAÑO"},
+  {cat:"laboratorio",ed:"BLOQJ1",cod:"L-S1J",piso:"S",nom:"Laboratorio de Petrografia óptica",ev:"MARGARITA ROSA DE ALBA AVENDAÑO"},
+  {cat:"laboratorio",ed:"BLOQJ1",cod:"L-S2J",piso:"S",nom:"Laboratorio de Cartografia y Geomorfologia",ev:"MARGARITA ROSA DE ALBA AVENDAÑO"},
+  {cat:"laboratorio",ed:"BLOQJ1",cod:"L-S5J",piso:"S",nom:"Laboratorio de Geología Física",ev:"MARGARITA ROSA DE ALBA AVENDAÑO"},
+  {cat:"laboratorio",ed:"BLOQJ1",cod:"L-51J",piso:"5",nom:"Laboratorio Aula Taller de Comunicación Social y Periodismo",ev:"VALERIA MELISSA FONTALVO QUINTERO"},
+  {cat:"laboratorio",ed:"BLOQJ1",cod:"L-52J",piso:"5",nom:"Laboratorio de Educación",ev:"VALERIA MELISSA FONTALVO QUINTERO"},
+  {cat:"laboratorio",ed:"BLOQJ1",cod:"L-53J",piso:"5",nom:"Laboratorio de Arqueologia",ev:"VALERIA MELISSA FONTALVO QUINTERO"},
+  {cat:"laboratorio",ed:"BLOQK",cod:"6-4L",piso:"6",nom:"Lab Termo Fluidos",ev:"CESAR MANUEL STAND ZAMBRANO"},
+  {cat:"laboratorio",ed:"BLOQK",cod:"6-5L",piso:"6",nom:"Lab. Biocombustible",ev:"CESAR MANUEL STAND ZAMBRANO"},
+  {cat:"laboratorio",ed:"BLOQK",cod:"6-6L",piso:"6",nom:"Lab. de Biotecnología",ev:"CESAR MANUEL STAND ZAMBRANO"},
+  {cat:"laboratorio",ed:"BLOQK",cod:"6-8L",piso:"6",nom:"Laboratorio de Mecatronica",ev:"CESAR MANUEL STAND ZAMBRANO"},
+  {cat:"laboratorio",ed:"BLOQK",cod:"6-9L",piso:"6",nom:"Lab. Mecánica de Máquinas y Diseños",ev:"CESAR MANUEL STAND ZAMBRANO"},
+  {cat:"laboratorio",ed:"BLOQK",cod:"S1-10L",piso:"S",nom:"Lab. de Soldadura",ev:"CESAR MANUEL STAND ZAMBRANO"},
+  {cat:"laboratorio",ed:"BLOQK",cod:"S1-11L",piso:"S",nom:"Lab. Geotecnia y Materiales Constr.",ev:"CESAR MANUEL STAND ZAMBRANO"},
+  {cat:"laboratorio",ed:"BLOQK",cod:"S1-4L",piso:"S",nom:"Lab. Metalografía",ev:"CESAR MANUEL STAND ZAMBRANO"},
+  {cat:"laboratorio",ed:"BLOQK",cod:"S1-5L",piso:"S",nom:"Lab. de Ensayos de Materiales",ev:"CESAR MANUEL STAND ZAMBRANO"},
+  {cat:"laboratorio",ed:"BLOQK",cod:"S1-6L",piso:"S",nom:"Lab. de Prototipos",ev:"CESAR MANUEL STAND ZAMBRANO"},
+  {cat:"laboratorio",ed:"BLOQK",cod:"S1-7L",piso:"S",nom:"Lab. Centro de Mediciones y Coordenadas",ev:"CESAR MANUEL STAND ZAMBRANO"},
+  {cat:"laboratorio",ed:"BLOQK",cod:"S1-8L",piso:"S",nom:"Lab. de Manufactura",ev:"CESAR MANUEL STAND ZAMBRANO"},
+  {cat:"laboratorio",ed:"BLOQK",cod:"S1-9L",piso:"S",nom:"Lab. de Materiales De Ingeniería",ev:"CESAR MANUEL STAND ZAMBRANO"},
+  {cat:"laboratorio",ed:"BLOQK",cod:"1-1L",piso:"1",nom:"Lab. de Aprendizaje Estudiantes",ev:"HAROLD JOSE RIOS BRUGES"},
+  {cat:"laboratorio",ed:"BLOQK",cod:"1-2L",piso:"1",nom:"Lab. de Aprendizaje Docente",ev:"HAROLD JOSE RIOS BRUGES"},
+  {cat:"laboratorio",ed:"BLOQK",cod:"4-1L",piso:"4",nom:"Diseño Digital",ev:"HAROLD JOSE RIOS BRUGES"},
+  {cat:"laboratorio",ed:"BLOQK",cod:"4-2L",piso:"4",nom:"Estudio de Fotografia",ev:"HAROLD JOSE RIOS BRUGES"},
+  {cat:"laboratorio",ed:"BLOQK",cod:"L4-1",piso:"4",nom:"Lab. Robótica Industrial",ev:"HAROLD JOSE RIOS BRUGES"},
+  {cat:"laboratorio",ed:"BLOQK",cod:"5-2L",piso:"5",nom:"Sala de Computo Ing civil",ev:"HAROLD JOSE RIOS BRUGES"},
+  {cat:"laboratorio",ed:"BLOQK",cod:"6-2L",piso:"6",nom:"Lab Mediciones y Control",ev:"HAROLD JOSE RIOS BRUGES"},
+  {cat:"laboratorio",ed:"BLOQK",cod:"6-3L",piso:"6",nom:"Lab Ciencias de la Computacion",ev:"HAROLD JOSE RIOS BRUGES"},
+  {cat:"laboratorio",ed:"BLOQK",cod:"7-1L",piso:"7",nom:"Lab. Computacional Ing. Industrial",ev:"HAROLD JOSE RIOS BRUGES"},
+  {cat:"laboratorio",ed:"BLOQK",cod:"7-2L",piso:"7",nom:"Lab. Investigación de Operaciones",ev:"HAROLD JOSE RIOS BRUGES"},
+  {cat:"laboratorio",ed:"BLOQK",cod:"7-3L",piso:"7",nom:"Lab Higiene y seguridad Industrial",ev:"HAROLD JOSE RIOS BRUGES"},
+  {cat:"laboratorio",ed:"BLOQK",cod:"7-4L",piso:"7",nom:"Lab. Operaciones y Logística",ev:"HAROLD JOSE RIOS BRUGES"},
+  {cat:"laboratorio",ed:"BLOQK",cod:"ECO",piso:"",nom:"Centro de escritura",ev:"HAROLD JOSE RIOS BRUGES"},
+  {cat:"laboratorio",ed:"BLOQK",cod:"3-1L",piso:"3",nom:"Lab Mecanica Computacional y Diseño",ev:"JUAN CARLOS GALEANO MUÑOZ"},
+  {cat:"laboratorio",ed:"BLOQK",cod:"3-2L",piso:"3",nom:"Lab. de Hidráulica e Ing. Ambiental",ev:"JUAN CARLOS GALEANO MUÑOZ"},
+  {cat:"laboratorio",ed:"BLOQK",cod:"S1-1L",piso:"S",nom:"Lab. de Tratamientos Térmicos",ev:"JUAN CARLOS GALEANO MUÑOZ"},
+  {cat:"laboratorio",ed:"BLOQK",cod:"S1-2L",piso:"S",nom:"Lab. Corrosión",ev:"JUAN CARLOS GALEANO MUÑOZ"},
+  {cat:"laboratorio",ed:"BLOQK",cod:"S1-3L",piso:"S",nom:"Lab. de Microscopia Electrónica",ev:"JUAN CARLOS GALEANO MUÑOZ"},
+  {cat:"laboratorio",ed:"BLOQM",cod:"L11M",piso:"1",nom:"Lab de producción y composición músical",ev:"IRMINA DEL CARMEN RICAURTE MARTINEZ"},
+  {cat:"laboratorio",ed:"CANCH",cod:"CDA-1L",piso:"1",nom:"Arquitectura Tropical",ev:"IRMINA DEL CARMEN RICAURTE MARTINEZ"},
+  {cat:"laboratorio",ed:"CANCH",cod:"CDA-2L",piso:"1",nom:"Lab Energia Renovables",ev:"IRMINA DEL CARMEN RICAURTE MARTINEZ"},
+  {cat:"laboratorio",ed:"L1",cod:"L1-1",piso:"1",nom:"Lab. de Química",ev:"YULEINE YANIET MORENO FONTALVO"},
+  {cat:"laboratorio",ed:"L1",cod:"L1-2",piso:"1",nom:"Lab. de Fitoquímica",ev:"YULEINE YANIET MORENO FONTALVO"},
+  {cat:"laboratorio",ed:"L1",cod:"L1-3",piso:"1",nom:"Lab. de Física Calor",ev:"YULEINE YANIET MORENO FONTALVO"},
+  {cat:"laboratorio",ed:"L1",cod:"L1-4",piso:"1",nom:"Lab. Física Mecánica",ev:"YULEINE YANIET MORENO FONTALVO"},
+  {cat:"laboratorio",ed:"L1",cod:"L1-5",piso:"1",nom:"Lab. de Física Eléctrica",ev:"YULEINE YANIET MORENO FONTALVO"},
+  {cat:"laboratorio",ed:"L2",cod:"L2-2",piso:"1",nom:"Lab. Multifuncional Bioquimica",ev:"YULEINE YANIET MORENO FONTALVO"},
+  {cat:"laboratorio",ed:"L2",cod:"L2-3",piso:"1",nom:"Lab. Multifuncional Biología",ev:"YULEINE YANIET MORENO FONTALVO"},
+  {cat:"laboratorio",ed:"L2",cod:"L2-4",piso:"1",nom:"Lab. de Genética",ev:"YULEINE YANIET MORENO FONTALVO"},
+  {cat:"laboratorio",ed:"L2",cod:"L2-5",piso:"1",nom:"Laboratorio de Investigacion Biodiversidad",ev:"YULEINE YANIET MORENO FONTALVO"},
+  {cat:"laboratorio",ed:"L2",cod:"L2-6",piso:"1",nom:"Laboratorio de Quimica y Bioiologia",ev:"YULEINE YANIET MORENO FONTALVO"},
+  {cat:"laboratorio",ed:"L2",cod:"L2-7",piso:"1",nom:"Laboratorio Computacional de Quimica y Biologia",ev:"YULEINE YANIET MORENO FONTALVO"},
+  {cat:"laboratorio",ed:"L3",cod:"L3-1",piso:"1",nom:"Laboratorio de Mercadeo",ev:"YULEINE YANIET MORENO FONTALVO"},
+  {cat:"laboratorio",ed:"L3",cod:"L3-2",piso:"1",nom:"Lab. Inm. y Biol. Molecular",ev:"YULEINE YANIET MORENO FONTALVO"},
+  {cat:"laboratorio",ed:"L4",cod:"2-1 L4",piso:"2",nom:"Laboratorio simulacion preclinica odontologica",ev:"IRMINA DEL CARMEN RICAURTE MARTINEZ"},
+  {cat:"laboratorio",ed:"L4",cod:"2-2 L4",piso:"2",nom:"Laboratorio multifuncional de Materiales dentales",ev:"IRMINA DEL CARMEN RICAURTE MARTINEZ"},
+  {cat:"laboratorio",ed:"L4",cod:"2-3 L4",piso:"2",nom:"Laboratorio rayos X odontologicos",ev:"IRMINA DEL CARMEN RICAURTE MARTINEZ"},
+  {cat:"laboratorio",ed:"L4",cod:"2-4 L4",piso:"2",nom:"Laboratorio simulacion preclinica odontologica",ev:"IRMINA DEL CARMEN RICAURTE MARTINEZ"},
+  {cat:"laboratorio",ed:"L5",cod:"L5-11",piso:"1",nom:"Sala de Computadores de Pedagogia Infantil",ev:"IRMINA DEL CARMEN RICAURTE MARTINEZ"},
+  {cat:"laboratorio",ed:"L5",cod:"L5-12",piso:"1",nom:"Lab. virologia",ev:"IRMINA DEL CARMEN RICAURTE MARTINEZ"},
+  {cat:"laboratorio",ed:"L5",cod:"LJ-1",piso:"1",nom:"Lab. Lic. En Pedagogía Infantil",ev:"IRMINA DEL CARMEN RICAURTE MARTINEZ"},
+  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS03",piso:"",nom:"Jardín de alrededor de comedor funcionarios",ev:"ELMA CRISTINA MORALES CORTINA"},
+  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS08",piso:"",nom:"Jardín administrativo 2",ev:"ELMA CRISTINA MORALES CORTINA"},
+  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS01",piso:"",nom:"Jardín frente Biblioteca",ev:"HOLLY ANDREA DE LA ROSA RODRIGUEZ"},
+  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS02",piso:"",nom:"Jardín posterior Biblioteca",ev:"HOLLY ANDREA DE LA ROSA RODRIGUEZ"},
+  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS04",piso:"",nom:"Jardín Laboratorio 1",ev:"HOLLY ANDREA DE LA ROSA RODRIGUEZ"},
+  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS05",piso:"",nom:"Jardín Laboratorio 2",ev:"HOLLY ANDREA DE LA ROSA RODRIGUEZ"},
+  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS14",piso:"",nom:"Jardín entre Bloque B y Bloque C",ev:"HOLLY ANDREA DE LA ROSA RODRIGUEZ"},
+  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS33",piso:"",nom:"Jardín Casa Blanca (Administrativo 1)",ev:"HOLLY ANDREA DE LA ROSA RODRIGUEZ"},
+  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS40",piso:"",nom:"Jardín Bancolombia",ev:"HOLLY ANDREA DE LA ROSA RODRIGUEZ"},
+  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS28",piso:"",nom:"Jardín Bloque de la Salud",ev:"IRMINA DEL CARMEN RICAURTE MARTINEZ"},
+  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS09",piso:"",nom:"Jardín alrededor del Edificio Santo Domingo (Bloque J)",ev:"ISABELLA SIR VALDES"},
+  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS12",piso:"",nom:"Jardín Media Torta Coliseo (Frente a Cancha de Tennis)",ev:"ISABELLA SIR VALDES"},
+  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS13",piso:"",nom:"Jardín Escaleras Coliseo",ev:"ISABELLA SIR VALDES"},
+  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS15",piso:"",nom:"Jardín Casa Estudio",ev:"ISABELLA SIR VALDES"},
+  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS17",piso:"",nom:"Jardín Central de Frío 2 (Frente Laboratorios ING Civil atras de Bloque K)",ev:"ISABELLA SIR VALDES"},
+  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS18",piso:"",nom:"Jardín Central de Acopio",ev:"ISABELLA SIR VALDES"},
+  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS19",piso:"",nom:"Jardín Zona Martillo (Alrededor de la Zona Multiple de Estudiantes 2)",ev:"ISABELLA SIR VALDES"},
+  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS21",piso:"",nom:"Jardín Bloque Idiomas 4 (Bloque I4)",ev:"ISABELLA SIR VALDES"},
+  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS23",piso:"",nom:"Jardín Emisora (Bloque D)",ev:"ISABELLA SIR VALDES"},
+  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS27",piso:"",nom:"Jardín Ptar Principal (Frente a la bodega de mantenimiento)",ev:"ISABELLA SIR VALDES"},
+  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS29",piso:"",nom:"Jardín Zona Multiple Estudiantes 1",ev:"ISABELLA SIR VALDES"},
+  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS30",piso:"",nom:"Jardín Almacen (Frente a Cancha de Tennis)",ev:"ISABELLA SIR VALDES"},
+  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS31",piso:"",nom:"Jardín Coliseo",ev:"ISABELLA SIR VALDES"},
+  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS32",piso:"",nom:"Jardín Lobby Norte (Coliseo)",ev:"ISABELLA SIR VALDES"},
+  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS11",piso:"",nom:"Jardín Alrededor de la Rampa de Posgrados (Bloque G)",ev:"JOHANNA HELENA MORENO MONTAÑEZ"},
+  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS26",piso:"",nom:"Jardín Izquierdo Plazoleta Posgrados (Frente Bloque G)",ev:"JOHANNA HELENA MORENO MONTAÑEZ"},
+  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS16",piso:"",nom:"Jardín Portería 04",ev:"JOSE MAURICIO VILLEGAS ROJAS"},
+  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS34",piso:"",nom:"Jardín Portería 01",ev:"JOSE MAURICIO VILLEGAS ROJAS"},
+  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS35",piso:"",nom:"Jardín Portería 02",ev:"JOSE MAURICIO VILLEGAS ROJAS"},
+  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS36",piso:"",nom:"Jardín Campestre (Izquierda de porteria 01)",ev:"JOSE MAURICIO VILLEGAS ROJAS"},
+  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS41",piso:"",nom:"Jardín Campos Deportivos",ev:"JUAN CAMILO PERALTA"},
+  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS42",piso:"",nom:"Jardínes Bloque M",ev:"JUAN CAMILO PERALTA"},
+  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS10",piso:"",nom:"Jardín Café Du Nord",ev:"JUAN CARLOS GALEANO MUÑOZ"},
+  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS20",piso:"",nom:"Jardín Bloque K",ev:"JUAN CARLOS GALEANO MUÑOZ"},
+  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS22",piso:"",nom:"Jardín KM5 hacia Instituto de Idiomas",ev:"NITZIA GISELA CARABALLO CABRERA"},
+  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS24",piso:"",nom:"Jardín Auditorio (Bloque F)",ev:"NITZIA GISELA CARABALLO CABRERA"},
+  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS25",piso:"",nom:"Jardín Palmeras 1966 (Frente)",ev:"NITZIA GISELA CARABALLO CABRERA"},
+  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS06",piso:"",nom:"Jardín Laboratorio 5",ev:"SAMIRA DEL CARMEN CONSUEGRA BETTER"},
+  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS07",piso:"",nom:"Jardín Laboratorio 6",ev:"SAMIRA DEL CARMEN CONSUEGRA BETTER"},
+  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS37",piso:"",nom:"Jardín Du Nord Plaza",ev:"SAMIRA DEL CARMEN CONSUEGRA BETTER"},
+  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS38",piso:"",nom:"Jardín Graphique",ev:"SAMIRA DEL CARMEN CONSUEGRA BETTER"},
+  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS39",piso:"",nom:"Jardín Express",ev:"SAMIRA DEL CARMEN CONSUEGRA BETTER"},
+  {cat:"jardin",ed:"CAMPUS",cod:"J-CAMPUS43",piso:"",nom:"Fuente de la Rectitud, Alegría y Verdad",ev:"SAMIRA DEL CARMEN CONSUEGRA BETTER"},
+  {cat:"jardin",ed:"FUERA",cod:"J-EXTER05",piso:"",nom:"Jardín Exterior Portería 11 a Portería 11B",ev:"JOSE MAURICIO VILLEGAS ROJAS"},
+  {cat:"jardin",ed:"FUERA",cod:"J-EXTER06",piso:"",nom:"Jardín Exterior Portería 05 a Portería 07",ev:"JOSE MAURICIO VILLEGAS ROJAS"},
+  {cat:"jardin",ed:"FUERA",cod:"J-EXTER01",piso:"",nom:"Jardín Parqueadero 08-Vía Colegio San José",ev:"JUAN CAMILO PERALTA"},
+  {cat:"jardin",ed:"FUERA",cod:"J-EXTER02",piso:"",nom:"Jardín Parqueadero 08",ev:"JUAN CAMILO PERALTA"},
+  {cat:"jardin",ed:"FUERA",cod:"J-EXTER03",piso:"",nom:"Jardín Parqueadero 09",ev:"JUAN CAMILO PERALTA"},
+  {cat:"jardin",ed:"FUERA",cod:"J-EXTER04",piso:"",nom:"Jardín Parqueadero 12",ev:"JUAN CAMILO PERALTA"},
+  {cat:"fachada",ed:"BACA",cod:"BLD-BACA",piso:"",nom:"Casa Estudio Alfredo Correa De Andreis",ev:"JOAQUIN JESUS PINTO ROMERO"},
+  {cat:"fachada",ed:"BKCP",cod:"BLD-BKCP",piso:"",nom:"Biblioteca Karl C. Parrish Jr.",ev:"GRACE MARIA SANCHEZ PATERNOSTRO"},
+  {cat:"fachada",ed:"BLOQA",cod:"BLD-A",piso:"",nom:"Edificio Bloque A",ev:"HOLLY ANDREA DE LA ROSA RODRIGUEZ"},
+  {cat:"fachada",ed:"BLOQB",cod:"BLD-B",piso:"",nom:"Edificio Bloque B",ev:"VIVIANA CARREÑO DURAN"},
+  {cat:"fachada",ed:"BLOQC",cod:"BLD-C",piso:"",nom:"Edificio Bloque C",ev:"MARIBEL DEL SOCORRO PEREZ ROMERO"},
+  {cat:"fachada",ed:"BLOQD",cod:"BLD-D",piso:"",nom:"Edificio Bloque D",ev:"DIANA CAROLINA CASTRO HERNANDEZ"},
+  {cat:"fachada",ed:"BLOQE",cod:"BLD-E",piso:"",nom:"Edificio Bloque E",ev:"SANDRA PAOLA PEÑA CASTELLANO"},
+  {cat:"fachada",ed:"BLOQF",cod:"BLD-F",piso:"",nom:"Edificio Bloque F",ev:"SANDRA PAOLA PEÑA CASTELLANO"},
+  {cat:"fachada",ed:"BLOQG",cod:"BLD-G",piso:"",nom:"Edificio Álvaro Jaramillo Vengoechea",ev:"IVAN JOSE DE JESUS LUZARDO LUNA"},
+  {cat:"fachada",ed:"BLOQI",cod:"BLD-I",piso:"",nom:"Edificio Bloque I",ev:"SANDRA PAOLA PEÑA CASTELLANO"},
+  {cat:"fachada",ed:"BLOQJ",cod:"BLD-J",piso:"",nom:"Edificio Mario Santo Domingo",ev:"JUAN CAMILO PERALTA"},
+  {cat:"fachada",ed:"BLOQK",cod:"BLD-K",piso:"",nom:"Edificio Bloque K - Ingenierías",ev:"JUAN CARLOS GALEANO MUÑOZ"},
+  {cat:"fachada",ed:"BLOQM",cod:"BLD-M",piso:"",nom:"Edificio Bloque M",ev:"Alexander Villegas Mendoza"},
+  {cat:"fachada",ed:"COLIS",cod:"BLD-COLIS",piso:"",nom:"Coliseo",ev:"EDWIN LUIS ANGULO LUGO"},
+  {cat:"acceso",ed:"CAMPUS",cod:"C-ACCES01",piso:"",nom:"Portería 1",ev:"JOSE MAURICIO VILLEGAS ROJAS"},
+  {cat:"acceso",ed:"CAMPUS",cod:"C-ACCES04",piso:"",nom:"Portería 4",ev:"JOSE MAURICIO VILLEGAS ROJAS"},
+  {cat:"acceso",ed:"CAMPUS",cod:"C-ACCES07",piso:"",nom:"Portería 7",ev:"JOSE MAURICIO VILLEGAS ROJAS"},
+  {cat:"acceso",ed:"CAMPUS",cod:"C-ACCES11",piso:"",nom:"Portería 11",ev:"JOSE MAURICIO VILLEGAS ROJAS"},
+  {cat:"acceso",ed:"CAMPUS",cod:"C-ACCES11B",piso:"",nom:"Portería 11B",ev:"JOSE MAURICIO VILLEGAS ROJAS"},
+  {cat:"acceso",ed:"CAMPUS",cod:"C-ACCES09",piso:"",nom:"Portería 09 peatonal (hacia bloque M)",ev:"JOSE MAURICIO VILLEGAS ROJAS"},
+  {cat:"cancha",ed:"CAMPUS",cod:"PISCINA",piso:"",nom:"Piscina",ev:"Alexander Villegas Mendoza"},
+  {cat:"cancha",ed:"CAMPUS",cod:"CAMP-FIELD02",piso:"",nom:"Cancha Multiple cubierta",ev:"EDWIN LUIS ANGULO LUGO"},
+  {cat:"cancha",ed:"CAMPUS",cod:"CAMP-FIELD03",piso:"",nom:"Cancha de raquetball 1",ev:"EDWIN LUIS ANGULO LUGO"},
+  {cat:"cancha",ed:"CAMPUS",cod:"CAMP-FIELD04",piso:"",nom:"Cancha de raquetball 2",ev:"EDWIN LUIS ANGULO LUGO"},
+  {cat:"cancha",ed:"CAMPUS",cod:"CAMP-FIELD05",piso:"",nom:"Cancha de raquetball 3",ev:"EDWIN LUIS ANGULO LUGO"},
+  {cat:"cancha",ed:"CAMPUS",cod:"CAMP-FIELD06",piso:"",nom:"Cancha fútbol",ev:"EDWIN LUIS ANGULO LUGO"},
+  {cat:"cancha",ed:"CAMPUS",cod:"CAMP-FIELD07",piso:"",nom:"Cancha Tenis 1",ev:"EDWIN LUIS ANGULO LUGO"},
+  {cat:"cancha",ed:"CAMPUS",cod:"CAMP-FIELD08",piso:"",nom:"Cancha Tenis 2",ev:"EDWIN LUIS ANGULO LUGO"},
+  {cat:"cancha",ed:"CAMPUS",cod:"CAMP-FIELD09",piso:"",nom:"Cancha Multiple 1",ev:"EDWIN LUIS ANGULO LUGO"},
+  {cat:"cancha",ed:"CAMPUS",cod:"CAMP-FIELD10",piso:"",nom:"Cancha Multiple 2",ev:"EDWIN LUIS ANGULO LUGO"},
+  {cat:"cancha",ed:"CAMPUS",cod:"CAMP-FIELD11",piso:"",nom:"Cancha fútbol sintético",ev:"EDWIN LUIS ANGULO LUGO"},
+  {cat:"cancha",ed:"COLIS",cod:"CSEO-FIELD01",piso:"",nom:"Cancha Deportiva",ev:"EDWIN LUIS ANGULO LUGO"},
+  {cat:"cafeteria",ed:"BLOQB",cod:"ZONALI11",piso:"1",nom:"Hot Dogs",ev:"VIVIANA CARREÑO DURAN"},
+  {cat:"cafeteria",ed:"BLOQF",cod:"ZONALI01",piso:"1",nom:"Du Nord Plaza",ev:"SAMIRA DEL CARMEN CONSUEGRA BETTER"},
+  {cat:"cafeteria",ed:"BLOQF",cod:"ZONALI02",piso:"2",nom:"La Crepería",ev:"SAMIRA DEL CARMEN CONSUEGRA BETTER"},
+  {cat:"cafeteria",ed:"BLOQF",cod:"ZONALI03",piso:"2",nom:"1966",ev:"SAMIRA DEL CARMEN CONSUEGRA BETTER"},
+  {cat:"cafeteria",ed:"BLOQJ",cod:"ZONALI05",piso:"9",nom:"Bocas de Ceniza",ev:"VALERIA MELISSA FONTALVO QUINTERO"},
+  {cat:"cafeteria",ed:"BLOQK",cod:"ZONALI04",piso:"4",nom:"Le Petit",ev:"JUAN CARLOS GALEANO MUÑOZ"},
+  {cat:"cafeteria",ed:"CAMPUS",cod:"ZONALI07",piso:"",nom:"Café Du Nord",ev:"JUAN CARLOS GALEANO MUÑOZ"},
+  {cat:"cafeteria",ed:"CAMPUS",cod:"ZONALI09",piso:"",nom:"La Esquina",ev:"SAMIRA DEL CARMEN CONSUEGRA BETTER"},
+  {cat:"cafeteria",ed:"CAMPUS",cod:"ZONALI10",piso:"",nom:"El Express",ev:"SAMIRA DEL CARMEN CONSUEGRA BETTER"},
+  {cat:"cafeteria",ed:"CAMPUS",cod:"ZONALI08",piso:"",nom:"El Contenedor",ev:"OSVALDO DE JESUS GAMARRA AMARIS"},
+  {cat:"cafeteria",ed:"COLIS",cod:"ZONALI06",piso:"3",nom:"Du Nord Terrasse",ev:"JUAN CAMILO PERALTA"},
+  {cat:"biblioteca",ed:"BACA",cod:"SAES08",piso:"1",nom:"Sala de Estudio BACA",ev:"JOAQUIN JESUS PINTO ROMERO"},
+  {cat:"biblioteca",ed:"BACA",cod:"SAES09",piso:"2",nom:"Sala de Estudio BACA",ev:"JOAQUIN JESUS PINTO ROMERO"},
+  {cat:"biblioteca",ed:"BACA",cod:"SAES10",piso:"3",nom:"Sala de Estudio BACA",ev:"JOAQUIN JESUS PINTO ROMERO"},
+  {cat:"biblioteca",ed:"BKCP",cod:"SAES11",piso:"S",nom:"Sala de Estudio BKCP",ev:"GRACE MARIA SANCHEZ PATERNOSTRO"},
+  {cat:"biblioteca",ed:"BKCP",cod:"SAES12",piso:"1",nom:"Sala de Estudio BKCP",ev:"GRACE MARIA SANCHEZ PATERNOSTRO"},
+  {cat:"biblioteca",ed:"BKCP",cod:"SAES13",piso:"2",nom:"Sala de Estudio BKCP",ev:"GRACE MARIA SANCHEZ PATERNOSTRO"},
+  {cat:"biblioteca",ed:"BKCP",cod:"SAES14",piso:"3",nom:"Sala de Estudio BKCP",ev:"GRACE MARIA SANCHEZ PATERNOSTRO"},
+  {cat:"biblioteca",ed:"BKCP",cod:"SAES15",piso:"4",nom:"Sala de Estudio BKCP",ev:"GRACE MARIA SANCHEZ PATERNOSTRO"},
+  {cat:"biblioteca",ed:"BLOQA",cod:"SAES01",piso:"1",nom:"Sala de Estudio BLOQA",ev:"HOLLY ANDREA DE LA ROSA RODRIGUEZ"},
+  {cat:"biblioteca",ed:"BLOQB",cod:"SAES02",piso:"1",nom:"Sala de Estudio BLOQB",ev:"VIVIANA CARREÑO DURAN"},
+  {cat:"biblioteca",ed:"BLOQD",cod:"SAES03",piso:"1",nom:"Sala de Estudio BLOQD",ev:"DIANA CAROLINA CASTRO HERNANDEZ"},
+  {cat:"biblioteca",ed:"BLOQE",cod:"SAES04",piso:"1",nom:"Sala de Estudio BLOQE",ev:"JUAN CARLOS GALEANO MUÑOZ"},
+  {cat:"biblioteca",ed:"BLOQG",cod:"SAES05",piso:"1",nom:"Sala de Estudio BLOQG",ev:"LEILA ANGELA MLAYES HADDAD"},
+  {cat:"biblioteca",ed:"BLOQJ",cod:"SAES06",piso:"1",nom:"Sala de Estudio BLOQJ",ev:"MARIA ALEJANDRA SOCARRAS MEDRANO"},
+  {cat:"biblioteca",ed:"CAMPUS",cod:"ZOEST01",piso:"1",nom:"Zona de Estudiantes - Bambú 1",ev:"ELMA CRISTINA MORALES CORTINA"},
+  {cat:"biblioteca",ed:"CAMPUS",cod:"ZOEST02",piso:"1",nom:"Zona de Estudiantes - Bambú 2",ev:"ELMA CRISTINA MORALES CORTINA"},
+  {cat:"biblioteca",ed:"L1",cod:"SAES07",piso:"1",nom:"Sala de Estudio Bloque Laboratorio N° 1",ev:"JOHANNA HELENA MORENO MONTAÑEZ"},
+  {cat:"bano",ed:"1L6",cod:"BATH77",piso:"",nom:"Baño Hombres Bloque Laboratorios N° 6",ev:"MARIA AUXILIADORA HEMER NARVAEZ"},
+  {cat:"bano",ed:"1L6",cod:"BATH78",piso:"",nom:"Baño Hombres Bloque Laboratorios N° 6",ev:"MARIA AUXILIADORA HEMER NARVAEZ"},
+  {cat:"bano",ed:"1L6",cod:"BATH79",piso:"",nom:"Baño Hombres Bloque Laboratorios N° 6",ev:"MARIA AUXILIADORA HEMER NARVAEZ"},
+  {cat:"bano",ed:"1L6",cod:"BATH80",piso:"",nom:"Baño Mujeres Bloque Laboratorios N° 6",ev:"MARIA AUXILIADORA HEMER NARVAEZ"},
+  {cat:"bano",ed:"1L6",cod:"BATH81",piso:"",nom:"Baño Mujeres Bloque Laboratorios N° 6",ev:"MARIA AUXILIADORA HEMER NARVAEZ"},
+  {cat:"bano",ed:"1L6",cod:"BATH82",piso:"",nom:"Baño Mujeres Bloque Laboratorios N° 6",ev:"MARIA AUXILIADORA HEMER NARVAEZ"},
+  {cat:"bano",ed:"BACA",cod:"BATH83",piso:"1",nom:"Baño Hombres Casa Estudio - Piso 1",ev:"JOAQUIN JESUS PINTO ROMERO"},
+  {cat:"bano",ed:"BACA",cod:"BATH84",piso:"2",nom:"Baño Hombres Casa Estudio - Piso 2",ev:"JOAQUIN JESUS PINTO ROMERO"},
+  {cat:"bano",ed:"BACA",cod:"BATH85",piso:"3",nom:"Baño Hombres Casa Estudio - Piso 3",ev:"JOAQUIN JESUS PINTO ROMERO"},
+  {cat:"bano",ed:"BACA",cod:"BATH86",piso:"1",nom:"Baño Mujeres Casa Estudio - Piso 1",ev:"JOAQUIN JESUS PINTO ROMERO"},
+  {cat:"bano",ed:"BACA",cod:"BATH87",piso:"2",nom:"Baño Mujeres Casa Estudio - Piso 2",ev:"JOAQUIN JESUS PINTO ROMERO"},
+  {cat:"bano",ed:"BACA",cod:"BATH88",piso:"3",nom:"Baño Mujeres Casa Estudio - Piso 3",ev:"JOAQUIN JESUS PINTO ROMERO"},
+  {cat:"bano",ed:"BKCP",cod:"BATH92",piso:"S",nom:"Baño Mujeres Biblioteca - Piso 1",ev:"GRACE MARIA SANCHEZ PATERNOSTRO"},
+  {cat:"bano",ed:"BKCP",cod:"BATH93",piso:"1",nom:"Baño Mujeres Biblioteca - Piso 2",ev:"GRACE MARIA SANCHEZ PATERNOSTRO"},
+  {cat:"bano",ed:"BKCP",cod:"BATH94",piso:"2",nom:"Baño Mujeres Biblioteca - Piso 3",ev:"GRACE MARIA SANCHEZ PATERNOSTRO"},
+  {cat:"bano",ed:"BKCP",cod:"BATH89",piso:"S",nom:"Baño Hombres Biblioteca - Piso 1",ev:"JOAQUIN JESUS PINTO ROMERO"},
+  {cat:"bano",ed:"BKCP",cod:"BATH90",piso:"1",nom:"Baño Hombres Biblioteca - Piso 2",ev:"JOAQUIN JESUS PINTO ROMERO"},
+  {cat:"bano",ed:"BKCP",cod:"BATH91",piso:"2",nom:"Baño Hombres Biblioteca - Piso 3",ev:"JOAQUIN JESUS PINTO ROMERO"},
+  {cat:"bano",ed:"BLOQA",cod:"BATH01",piso:"2",nom:"Baño Hombres BLOQA - Piso 2",ev:"HOLLY ANDREA DE LA ROSA RODRIGUEZ"},
+  {cat:"bano",ed:"BLOQA",cod:"BATH02",piso:"2",nom:"Baño Mujeres BLOQA - Piso 2",ev:"HOLLY ANDREA DE LA ROSA RODRIGUEZ"},
+  {cat:"bano",ed:"BLOQB",cod:"BATH03",piso:"1",nom:"Baño Hombres BLOQB - Piso 1",ev:"VIVIANA CARREÑO DURAN"},
+  {cat:"bano",ed:"BLOQB",cod:"BATH04",piso:"1",nom:"Baño Mujeres BLOQB - Piso 1",ev:"VIVIANA CARREÑO DURAN"},
+  {cat:"bano",ed:"BLOQC",cod:"BATH05",piso:"2",nom:"Baño Hombres BLOQC - Piso 2",ev:"MARIBEL DEL SOCORRO PEREZ ROMERO"},
+  {cat:"bano",ed:"BLOQC",cod:"BATH06",piso:"2",nom:"Baño Mujeres BLOQC - Piso 2",ev:"MARIBEL DEL SOCORRO PEREZ ROMERO"},
+  {cat:"bano",ed:"BLOQE",cod:"BATH07",piso:"1",nom:"Baño Hombres BLOQE - Piso 1",ev:"ANGELA MERCEDES GONZALEZ VERGARA"},
+  {cat:"bano",ed:"BLOQE",cod:"BATH08",piso:"2",nom:"Baño Mujeres BLOQE - Piso 2",ev:"ANGELA MERCEDES GONZALEZ VERGARA"},
+  {cat:"bano",ed:"BLOQF",cod:"BATH09",piso:"2",nom:"Baño Hombres BLOQF - Piso 2",ev:"NITZIA GISELA CARABALLO CABRERA"},
+  {cat:"bano",ed:"BLOQF",cod:"BATH10",piso:"2",nom:"Baño Mujeres BLOQF - Piso 2",ev:"NITZIA GISELA CARABALLO CABRERA"},
+  {cat:"bano",ed:"BLOQG",cod:"BATH11",piso:"1",nom:"Baño Hombres BLOQG - Piso 1",ev:"IVAN JOSE DE JESUS LUZARDO LUNA"},
+  {cat:"bano",ed:"BLOQG",cod:"BATH12",piso:"2",nom:"Baño Hombres BLOQG - Piso 2",ev:"IVAN JOSE DE JESUS LUZARDO LUNA"},
+  {cat:"bano",ed:"BLOQG",cod:"BATH13",piso:"3",nom:"Baño Hombres BLOQG - Piso 3",ev:"IVAN JOSE DE JESUS LUZARDO LUNA"},
+  {cat:"bano",ed:"BLOQG",cod:"BATH14",piso:"4",nom:"Baño Hombres BLOQG - Piso 4",ev:"IVAN JOSE DE JESUS LUZARDO LUNA"},
+  {cat:"bano",ed:"BLOQG",cod:"BATH15",piso:"5",nom:"Baño Hombres BLOQG - Piso 5",ev:"IVAN JOSE DE JESUS LUZARDO LUNA"},
+  {cat:"bano",ed:"BLOQG",cod:"BATH16",piso:"1",nom:"Baño Mujeres BLOQG - Piso 1",ev:"LEILA ANGELA MLAYES HADDAD"},
+  {cat:"bano",ed:"BLOQG",cod:"BATH17",piso:"2",nom:"Baño Mujeres BLOQG - Piso 2",ev:"LEILA ANGELA MLAYES HADDAD"},
+  {cat:"bano",ed:"BLOQG",cod:"BATH18",piso:"3",nom:"Baño Mujeres BLOQG - Piso 3",ev:"LEILA ANGELA MLAYES HADDAD"},
+  {cat:"bano",ed:"BLOQG",cod:"BATH19",piso:"4",nom:"Baño Mujeres BLOQG - Piso 4",ev:"LEILA ANGELA MLAYES HADDAD"},
+  {cat:"bano",ed:"BLOQG",cod:"BATH20",piso:"5",nom:"Baño Mujeres BLOQG - Piso 5",ev:"LEILA ANGELA MLAYES HADDAD"},
+  {cat:"bano",ed:"BLOQI",cod:"BATH21",piso:"1",nom:"Baño Hombre BLOQI1 - Piso 1",ev:"ANA KARINA QUINTERO ARTEAGA"},
+  {cat:"bano",ed:"BLOQI",cod:"BATH22",piso:"1",nom:"Baño Mujeres BLOQI1 - Piso 1",ev:"ANA KARINA QUINTERO ARTEAGA"},
+  {cat:"bano",ed:"BLOQI",cod:"BATH23",piso:"2",nom:"Baño Hombres BLOQI4 - Piso 2",ev:"ANA KARINA QUINTERO ARTEAGA"},
+  {cat:"bano",ed:"BLOQI",cod:"BATH24",piso:"2",nom:"Baño Mujeres BLOQI4 - Piso 2",ev:"ANA KARINA QUINTERO ARTEAGA"},
+  {cat:"bano",ed:"BLOQJ",cod:"BATH49",piso:"1",nom:"Baño Hombres BLOQJ - Piso 1",ev:"DANIEL EDUARDO GUTIERREZ BORRERO"},
+  {cat:"bano",ed:"BLOQJ",cod:"BATH59",piso:"1",nom:"Baño Mujeres BLOQJ - Piso 1",ev:"DANIEL EDUARDO GUTIERREZ BORRERO"},
+  {cat:"bano",ed:"BLOQJ",cod:"BATH50",piso:"2",nom:"Baño Hombres BLOQJ - Piso 2",ev:"DANIEL EDUARDO GUTIERREZ BORRERO"},
+  {cat:"bano",ed:"BLOQJ",cod:"BATH60",piso:"2",nom:"Baño Mujeres BLOQJ - Piso 2",ev:"DANIEL EDUARDO GUTIERREZ BORRERO"},
+  {cat:"bano",ed:"BLOQJ",cod:"BATH51",piso:"3",nom:"Baño Hombres BLOQJ - Piso 3",ev:"DANIEL EDUARDO GUTIERREZ BORRERO"},
+  {cat:"bano",ed:"BLOQJ",cod:"BATH61",piso:"3",nom:"Baño Mujeres BLOQJ - Piso 3",ev:"DANIEL EDUARDO GUTIERREZ BORRERO"},
+  {cat:"bano",ed:"BLOQJ",cod:"BATH52",piso:"4",nom:"Baño Hombres BLOQJ - Piso 4",ev:"DANIEL EDUARDO GUTIERREZ BORRERO"},
+  {cat:"bano",ed:"BLOQJ",cod:"BATH62",piso:"4",nom:"Baño Mujeres BLOQJ - Piso 4",ev:"DANIEL EDUARDO GUTIERREZ BORRERO"},
+  {cat:"bano",ed:"BLOQJ",cod:"BATH53",piso:"5",nom:"Baño Hombres BLOQJ - Piso 5",ev:"DANIEL EDUARDO GUTIERREZ BORRERO"},
+  {cat:"bano",ed:"BLOQJ",cod:"BATH63",piso:"5",nom:"Baño Mujeres BLOQJ - Piso 5",ev:"DANIEL EDUARDO GUTIERREZ BORRERO"},
+  {cat:"bano",ed:"BLOQJ",cod:"BATH54",piso:"6",nom:"Baño Hombres BLOQJ - Piso 6",ev:"DANIEL EDUARDO GUTIERREZ BORRERO"},
+  {cat:"bano",ed:"BLOQJ",cod:"BATH64",piso:"6",nom:"Baño Mujeres BLOQJ - Piso 6",ev:"DANIEL EDUARDO GUTIERREZ BORRERO"},
+  {cat:"bano",ed:"BLOQJ",cod:"BATH55",piso:"7",nom:"Baño Hombres BLOQJ - Piso 7",ev:"VALERIA MELISSA FONTALVO QUINTERO"},
+  {cat:"bano",ed:"BLOQJ",cod:"BATH65",piso:"7",nom:"Baño Mujeres BLOQJ - Piso 7",ev:"VALERIA MELISSA FONTALVO QUINTERO"},
+  {cat:"bano",ed:"BLOQJ",cod:"BATH56",piso:"8",nom:"Baño Hombres BLOQJ - Piso 8",ev:"VALERIA MELISSA FONTALVO QUINTERO"},
+  {cat:"bano",ed:"BLOQJ",cod:"BATH66",piso:"8",nom:"Baño Mujeres BLOQJ - Piso 8",ev:"VALERIA MELISSA FONTALVO QUINTERO"},
+  {cat:"bano",ed:"BLOQJ",cod:"BATH57",piso:"9",nom:"Baño Hombres BLOQJ - Piso 9",ev:"VALERIA MELISSA FONTALVO QUINTERO"},
+  {cat:"bano",ed:"BLOQJ",cod:"BATH67",piso:"9",nom:"Baño Mujeres BLOQJ - Piso 9",ev:"VALERIA MELISSA FONTALVO QUINTERO"},
+  {cat:"bano",ed:"BLOQJ",cod:"BATH58",piso:"10",nom:"Baño Hombres BLOQJ - Piso 10",ev:"VALERIA MELISSA FONTALVO QUINTERO"},
+  {cat:"bano",ed:"BLOQJ",cod:"BATH68",piso:"10",nom:"Baño Mujeres BLOQJ - Piso 10",ev:"VALERIA MELISSA FONTALVO QUINTERO"},
+  {cat:"bano",ed:"BLOQK",cod:"BATH34",piso:"1",nom:"Baño Mujeres BLOQK - Piso 1",ev:"ANA KARINA QUINTERO ARTEAGA"},
+  {cat:"bano",ed:"BLOQK",cod:"BATH35",piso:"2",nom:"Baño Mujeres BLOQK - Piso 2",ev:"ANA KARINA QUINTERO ARTEAGA"},
+  {cat:"bano",ed:"BLOQK",cod:"BATH36",piso:"3",nom:"Baño Mujeres BLOQK - Piso 3",ev:"ANA KARINA QUINTERO ARTEAGA"},
+  {cat:"bano",ed:"BLOQK",cod:"BATH37",piso:"4",nom:"Baño Mujeres BLOQK - Piso 4",ev:"ANA KARINA QUINTERO ARTEAGA"},
+  {cat:"bano",ed:"BLOQK",cod:"BATH38",piso:"5",nom:"Baño Mujeres BLOQK - Piso 5",ev:"ANA KARINA QUINTERO ARTEAGA"},
+  {cat:"bano",ed:"BLOQK",cod:"BATH39",piso:"6",nom:"Baño Mujeres BLOQK - Piso 6",ev:"ANA KARINA QUINTERO ARTEAGA"},
+  {cat:"bano",ed:"BLOQK",cod:"BATH40",piso:"7",nom:"Baño Mujeres BLOQK - Piso 7",ev:"ANA KARINA QUINTERO ARTEAGA"},
+  {cat:"bano",ed:"BLOQK",cod:"BATH41",piso:"8",nom:"Baño Mujeres BLOQK - Piso 8",ev:"ANA KARINA QUINTERO ARTEAGA"},
+  {cat:"bano",ed:"BLOQK",cod:"BATH42",piso:"9",nom:"Baño Mujeres BLOQK - Piso 9",ev:"ANA KARINA QUINTERO ARTEAGA"},
+  {cat:"bano",ed:"BLOQK",cod:"BATH25",piso:"1",nom:"Baño Hombres BLOQK - Piso 1",ev:"OSVALDO DE JESUS GAMARRA AMARIS"},
+  {cat:"bano",ed:"BLOQK",cod:"BATH26",piso:"2",nom:"Baño Hombres BLOQK - Piso 2",ev:"OSVALDO DE JESUS GAMARRA AMARIS"},
+  {cat:"bano",ed:"BLOQK",cod:"BATH27",piso:"3",nom:"Baño Hombres BLOQK - Piso 3",ev:"OSVALDO DE JESUS GAMARRA AMARIS"},
+  {cat:"bano",ed:"BLOQK",cod:"BATH28",piso:"4",nom:"Baño Hombres BLOQK - Piso 4",ev:"OSVALDO DE JESUS GAMARRA AMARIS"},
+  {cat:"bano",ed:"BLOQK",cod:"BATH29",piso:"5",nom:"Baño Hombres BLOQK - Piso 5",ev:"OSVALDO DE JESUS GAMARRA AMARIS"},
+  {cat:"bano",ed:"BLOQK",cod:"BATH30",piso:"6",nom:"Baño Hombres BLOQK - Piso 6",ev:"OSVALDO DE JESUS GAMARRA AMARIS"},
+  {cat:"bano",ed:"BLOQK",cod:"BATH31",piso:"7",nom:"Baño Hombres BLOQK - Piso 7",ev:"OSVALDO DE JESUS GAMARRA AMARIS"},
+  {cat:"bano",ed:"BLOQK",cod:"BATH32",piso:"8",nom:"Baño Hombres BLOQK - Piso 8",ev:"OSVALDO DE JESUS GAMARRA AMARIS"},
+  {cat:"bano",ed:"BLOQK",cod:"BATH33",piso:"9",nom:"Baño Hombres BLOQK - Piso 9",ev:"OSVALDO DE JESUS GAMARRA AMARIS"},
+  {cat:"bano",ed:"BLOQM",cod:"BATH43",piso:"1",nom:"Baño Hombres BLOQM",ev:"Alexander Villegas Mendoza"},
+  {cat:"bano",ed:"BLOQM",cod:"BATH44",piso:"1",nom:"Baño Hombres BLOQM",ev:"Alexander Villegas Mendoza"},
+  {cat:"bano",ed:"BLOQM",cod:"BATH45",piso:"1",nom:"Baño Hombres BLOQM",ev:"Alexander Villegas Mendoza"},
+  {cat:"bano",ed:"BLOQM",cod:"BATH46",piso:"1",nom:"Baño Mujeres BLOQM",ev:"Alexander Villegas Mendoza"},
+  {cat:"bano",ed:"BLOQM",cod:"BATH47",piso:"1",nom:"Baño Mujeres BLOQM",ev:"Alexander Villegas Mendoza"},
+  {cat:"bano",ed:"BLOQM",cod:"BATH48",piso:"1",nom:"Baño Mujeres BLOQM",ev:"Alexander Villegas Mendoza"},
+  {cat:"bano",ed:"COLIS",cod:"BATH95",piso:"1",nom:"Baño Hombres Coliseo",ev:"JUAN CAMILO PERALTA"},
+  {cat:"bano",ed:"COLIS",cod:"BATH96",piso:"1",nom:"Baño Mujeres Coliseo",ev:"MILENA MERCEDES VARELA CARDONA"},
+  {cat:"bano",ed:"L4",cod:"BATH69",piso:"",nom:"Baño Hombres Bloque Laboratorios N° 4",ev:"MARIA AUXILIADORA HEMER NARVAEZ"},
+  {cat:"bano",ed:"L4",cod:"BATH70",piso:"",nom:"Baño Hombres Bloque Laboratorios N° 4",ev:"MARIA AUXILIADORA HEMER NARVAEZ"},
+  {cat:"bano",ed:"L4",cod:"BATH71",piso:"",nom:"Baño Hombres Bloque Laboratorios N° 4",ev:"MARIA AUXILIADORA HEMER NARVAEZ"},
+  {cat:"bano",ed:"L4",cod:"BATH72",piso:"",nom:"Baño Mujeres Bloque Laboratorios N° 4",ev:"MARIA AUXILIADORA HEMER NARVAEZ"},
+  {cat:"bano",ed:"L4",cod:"BATH73",piso:"",nom:"Baño Mujeres Bloque Laboratorios N° 4",ev:"MARIA AUXILIADORA HEMER NARVAEZ"},
+  {cat:"bano",ed:"L4",cod:"BATH74",piso:"",nom:"Baño Mujeres Bloque Laboratorios N° 4",ev:"MARIA AUXILIADORA HEMER NARVAEZ"},
+  {cat:"bano",ed:"L5",cod:"BATH75",piso:"1",nom:"Baño Hombres Bloque Laboratorios N° 5",ev:"MARIA AUXILIADORA HEMER NARVAEZ"},
+  {cat:"bano",ed:"L5",cod:"BATH76",piso:"1",nom:"Baño Mujeres Bloque Laboratorios N° 5",ev:"MARIA AUXILIADORA HEMER NARVAEZ"},
+];
+
+// Lista de evaluadores extraída de la columna 'Evaluador/a'
+const EVALUADORES = [
+  "ANA KARINA QUINTERO ARTEAGA",
+  "ANGELA MERCEDES GONZALEZ VERGARA",
+  "Alexander Villegas Mendoza",
+  "CESAR MANUEL STAND ZAMBRANO",
+  "DANIEL EDUARDO GUTIERREZ BORRERO",
+  "DIANA CAROLINA CASTRO HERNANDEZ",
+  "EDWIN LUIS ANGULO LUGO",
+  "ELMA CRISTINA MORALES CORTINA",
+  "EYLEEN GIOBET CASTILLO MENDOZA",
+  "GRACE MARIA SANCHEZ PATERNOSTRO",
+  "GUSTAVO ADOLFO LOPEZ HENRIQUEZ",
+  "HAROLD JOSE RIOS BRUGES",
+  "HOLLY ANDREA DE LA ROSA RODRIGUEZ",
+  "Hailyn Kelly Mejia Piedris",
+  "IRMINA DEL CARMEN RICAURTE MARTINEZ",
+  "ISABELLA SIR VALDES",
+  "IVAN JOSE DE JESUS LUZARDO LUNA",
+  "JOAQUIN JESUS PINTO ROMERO",
+  "JOHANNA HELENA MORENO MONTAÑEZ",
+  "JOSE MAURICIO VILLEGAS ROJAS",
+  "JUAN CAMILO PERALTA",
+  "JUAN CARLOS GALEANO MUÑOZ",
+  "JULIO ALFREDO JIMENEZ MARTINEZ",
+  "LEILA ANGELA MLAYES HADDAD",
+  "MARGARITA ROSA DE ALBA AVENDAÑO",
+  "MARIA ALEJANDRA SOCARRAS MEDRANO",
+  "MARIA AUXILIADORA HEMER NARVAEZ",
+  "MARIBEL DEL SOCORRO PEREZ ROMERO",
+  "MELISSA DEL CARMEN DELUQUE BASTIDAS",
+  "MILENA MERCEDES VARELA CARDONA",
+  "NITZIA GISELA CARABALLO CABRERA",
+  "OSVALDO DE JESUS GAMARRA AMARIS",
+  "PATRICIA JAIMES TABOADA",
+  "SAMIRA DEL CARMEN CONSUEGRA BETTER",
+  "SANDRA PAOLA PEÑA CASTELLANO",
+  "VALERIA MELISSA FONTALVO QUINTERO",
+  "VIVIANA CARREÑO DURAN",
+  "YOSIRIS YOHANA YEPES MIRANDA",
+  "YULEINE YANIET MORENO FONTALVO",
 ];
 
 // ============================================================
@@ -1761,7 +1808,7 @@ function getClassification(score) {
   <script>
     // === INICIO_APP ===
 // ============================================================
-// app.js — UniNorte Evaluation Form v3 (Cascading Selects)
+// app.js — UniNorte Evaluation Form v4 (Evaluator + Cascading Selects)
 // ============================================================
 
 const STORAGE_KEY = "uninorte_evaluaciones_v2";
@@ -1769,6 +1816,9 @@ const MAX_PHOTOS_PER_DIM = 2;
 const PHOTO_MAX_SIZE = 1024;   // Max dimension in pixels
 const PHOTO_QUALITY = 0.5;     // JPEG quality (0-1)
 const STORAGE_WARN_PCT = 80;   // Warn when storage is X% full
+
+// Category ID for "Pasillos" (special case: available to all evaluators)
+const PASILLOS_CAT_ID = "pasillo";
 
 // Safe storage wrapper (iOS WebKit blocks localStorage in some contexts)
 let memoryStore = {};
@@ -1794,12 +1844,12 @@ let activePhotoDimId = null;
 
 // ===== DOM Elements =====
 const form = document.getElementById("evalForm");
+const evaluadorSelect = document.getElementById("evaluador");
 const categoriaSelect = document.getElementById("categoria");
 const edificioSelect = document.getElementById("edificio");
 const codigoSelect = document.getElementById("codigo");
 const pisoInput = document.getElementById("piso");
 const nombreInput = document.getElementById("nombre");
-const evaluadorInput = document.getElementById("evaluador");
 const cargoInput = document.getElementById("cargo");
 const dimensionsSection = document.getElementById("dimensionsSection");
 const dimensionsContainer = document.getElementById("dimensionsContainer");
@@ -1832,11 +1882,13 @@ const drawerStats = document.getElementById("drawerStats");
 
 // Track whether the current category has ESPACIOS data
 let currentCatHasEspacios = false;
+// Track the currently filtered ESPACIOS for the selected evaluator
+let evaluadorEspacios = [];
 
 // ===== Init =====
 document.addEventListener("DOMContentLoaded", () => {
   initTheme();
-  populateCategories();
+  populateEvaluadores();
   setDefaults();
   loadEvaluadorData();
   updateBadgeCount();
@@ -1867,8 +1919,22 @@ function updateThemeIcon() {
   if (btn) btn.textContent = document.documentElement.getAttribute("data-theme") === "light" ? "☀️" : "🌙";
 }
 
-function populateCategories() {
+// ===== Populate Evaluadores =====
+function populateEvaluadores() {
+  if (typeof EVALUADORES === 'undefined') return;
+  EVALUADORES.forEach(name => {
+    const opt = document.createElement("option");
+    opt.value = name;
+    opt.textContent = name;
+    evaluadorSelect.appendChild(opt);
+  });
+}
+
+// ===== Populate Categories (filtered by evaluator) =====
+function populateCategories(allowedCatIds) {
+  categoriaSelect.innerHTML = '<option value="">— Seleccionar categoría —</option>';
   CATEGORIES.forEach(cat => {
+    if (allowedCatIds && !allowedCatIds.has(cat.id)) return;
     const opt = document.createElement("option");
     opt.value = cat.id;
     opt.textContent = `${cat.icon} ${cat.name}`;
@@ -1887,14 +1953,18 @@ function loadEvaluadorData() {
   try {
     const ev = appStorage.getItem("uninorte_evaluador");
     const ca = appStorage.getItem("uninorte_cargo");
-    if (ev) evaluadorInput.value = ev;
+    if (ev) {
+      evaluadorSelect.value = ev;
+      // Trigger change to load their spaces
+      onEvaluadorChange();
+    }
     if (ca) cargoInput.value = ca;
   } catch (e) { /* ignore */ }
 }
 
 function saveEvaluadorData() {
   try {
-    const ev = evaluadorInput.value.trim();
+    const ev = evaluadorSelect.value;
     const ca = cargoInput.value.trim();
     if (ev) appStorage.setItem("uninorte_evaluador", ev);
     if (ca) appStorage.setItem("uninorte_cargo", ca);
@@ -1903,6 +1973,7 @@ function saveEvaluadorData() {
 
 // ===== Event Bindings =====
 function bindEvents() {
+  evaluadorSelect.addEventListener("change", onEvaluadorChange);
   categoriaSelect.addEventListener("change", onCategoryChange);
   edificioSelect.addEventListener("change", onEdificioChange);
   codigoSelect.addEventListener("change", onCodigoChange);
@@ -1948,7 +2019,44 @@ function bindEvents() {
   });
 }
 
-// ===== Category Change =====
+// ===== Evaluador Change (cascade step 0) =====
+function onEvaluadorChange() {
+  const selectedEvaluador = evaluadorSelect.value;
+  currentPhotos = {};
+
+  // Reset everything downstream
+  resetCascade();
+  dimensionsSection.style.display = "none";
+  resultSection.style.display = "none";
+  obsSection.style.display = "none";
+  perceptionSection.style.display = "none";
+  formActions.style.display = "none";
+  emptyState.style.display = "block";
+
+  if (!selectedEvaluador) {
+    // No evaluator selected — show empty categories
+    populateCategories(new Set());
+    categoriaSelect.disabled = true;
+    return;
+  }
+
+  // Filter ESPACIOS for this evaluator
+  evaluadorEspacios = (typeof ESPACIOS !== 'undefined')
+    ? ESPACIOS.filter(e => e.ev === selectedEvaluador)
+    : [];
+
+  // Get unique category IDs assigned to this evaluator
+  const assignedCatIds = new Set(evaluadorEspacios.map(e => e.cat));
+
+  // Always add "Pasillos / Escaleras / Áreas Comunes" for all evaluators
+  assignedCatIds.add(PASILLOS_CAT_ID);
+
+  // Populate categories with only the assigned ones
+  populateCategories(assignedCatIds);
+  categoriaSelect.disabled = false;
+}
+
+// ===== Category Change (cascade step 1) =====
 function onCategoryChange() {
   const catId = categoriaSelect.value;
   currentPhotos = {}; // Reset photos when category changes
@@ -1969,27 +2077,51 @@ function onCategoryChange() {
   const cat = CATEGORIES.find(c => c.id === catId);
   if (!cat) return;
 
-  // Populate edificio dropdown from ESPACIOS
-  const espaciosCat = (typeof ESPACIOS !== 'undefined') ? ESPACIOS.filter(e => e.cat === catId) : [];
-  currentCatHasEspacios = espaciosCat.length > 0;
+  const selectedEvaluador = evaluadorSelect.value;
 
-  if (currentCatHasEspacios) {
-    // Get unique edificios sorted
-    const edificios = [...new Set(espaciosCat.map(e => e.ed))].sort();
-    edificioSelect.innerHTML = '<option value="">— Seleccionar edificio —</option>';
-    edificios.forEach(ed => {
-      const opt = document.createElement("option");
-      opt.value = ed;
-      opt.textContent = ed;
-      edificioSelect.appendChild(opt);
-    });
-    edificioSelect.disabled = false;
-    codigoSelect.innerHTML = '<option value="">— Seleccione edificio primero —</option>';
-    codigoSelect.disabled = true;
+  // Special case: Pasillos — available to all evaluators
+  if (catId === PASILLOS_CAT_ID) {
+    currentCatHasEspacios = false;
+    // Show edificio as a select with ALL unique edificios from the full ESPACIOS
+    const allEdificios = (typeof ESPACIOS !== 'undefined')
+      ? [...new Set(ESPACIOS.map(e => e.ed))].sort()
+      : [];
+
+    if (allEdificios.length > 0) {
+      edificioSelect.innerHTML = '<option value="">— Seleccionar edificio —</option>';
+      allEdificios.forEach(ed => {
+        const opt = document.createElement("option");
+        opt.value = ed;
+        opt.textContent = ed;
+        edificioSelect.appendChild(opt);
+      });
+      edificioSelect.disabled = false;
+    }
+    // Codigo, piso, nombre are free text for Pasillos
+    swapToTextInput('codigoGroup', 'codigo', 'Ej: PAS-01');
   } else {
-    // Category without ESPACIOS data — convert to free text inputs
-    swapToTextInput('edificioGroup', 'edificio', 'Ej: Bloque K1');
-    swapToTextInput('codigoGroup', 'codigo', 'Ej: AUD-01');
+    // Normal category — filter by evaluator
+    const espaciosCat = evaluadorEspacios.filter(e => e.cat === catId);
+    currentCatHasEspacios = espaciosCat.length > 0;
+
+    if (currentCatHasEspacios) {
+      // Get unique edificios sorted
+      const edificios = [...new Set(espaciosCat.map(e => e.ed))].sort();
+      edificioSelect.innerHTML = '<option value="">— Seleccionar edificio —</option>';
+      edificios.forEach(ed => {
+        const opt = document.createElement("option");
+        opt.value = ed;
+        opt.textContent = ed;
+        edificioSelect.appendChild(opt);
+      });
+      edificioSelect.disabled = false;
+      codigoSelect.innerHTML = '<option value="">— Seleccione edificio primero —</option>';
+      codigoSelect.disabled = true;
+    } else {
+      // Category without ESPACIOS data — convert to free text inputs
+      swapToTextInput('edificioGroup', 'edificio', 'Ej: Bloque K1');
+      swapToTextInput('codigoGroup', 'codigo', 'Ej: AUD-01');
+    }
   }
 
   pisoInput.value = '';
@@ -2018,14 +2150,20 @@ function onEdificioChange() {
   pisoInput.value = '';
   nombreInput.value = '';
 
+  // Special case: Pasillos — edificio is selectable but codigo/piso/nombre are free text
+  if (catId === PASILLOS_CAT_ID) {
+    // Codigo is already a text input for Pasillos, nothing to cascade
+    return;
+  }
+
   if (!edValue || !currentCatHasEspacios) {
     codigoSelect.innerHTML = '<option value="">— Seleccione edificio primero —</option>';
     codigoSelect.disabled = true;
     return;
   }
 
-  // Filter ESPACIOS by cat + edificio
-  const matched = ESPACIOS.filter(e => e.cat === catId && e.ed === edValue);
+  // Filter ESPACIOS by evaluator + cat + edificio
+  const matched = evaluadorEspacios.filter(e => e.cat === catId && e.ed === edValue);
   const codigos = matched.sort((a, b) => a.cod.localeCompare(b.cod));
 
   codigoSelect.innerHTML = '<option value="">— Seleccionar código —</option>';
@@ -2043,13 +2181,17 @@ function onCodigoChange() {
   const catId = categoriaSelect.value;
   const codValue = codigoSelect.value;
 
-  if (!codValue || !currentCatHasEspacios) {
+  if (!currentCatHasEspacios) {
+    return;
+  }
+
+  if (!codValue) {
     pisoInput.value = '';
     nombreInput.value = '';
     return;
   }
 
-  const esp = ESPACIOS.find(e => e.cat === catId && e.cod === codValue);
+  const esp = evaluadorEspacios.find(e => e.cat === catId && e.cod === codValue);
   if (esp) {
     pisoInput.value = esp.piso || '';
     nombreInput.value = esp.nom || '';
@@ -2183,158 +2325,126 @@ function renderDimensions(cat) {
   });
 }
 
-// ===== Photo Handling =====
+function toggleDescriptors(btn) {
+  const desc = btn.nextElementSibling;
+  const arrow = btn.querySelector(".arrow");
+  const isOpen = desc.style.display === "block";
+  desc.style.display = isOpen ? "none" : "block";
+  arrow.textContent = isOpen ? "▶" : "▼";
+  btn.classList.toggle("open", !isOpen);
+}
+
+// ===== Photos =====
 function triggerPhoto(dimId) {
   const photos = currentPhotos[dimId] || [];
   if (photos.length >= MAX_PHOTOS_PER_DIM) {
-    showToast(`⚠️ Máximo ${MAX_PHOTOS_PER_DIM} fotos por dimensión`);
+    showToast(`📷 Máximo ${MAX_PHOTOS_PER_DIM} fotos por dimensión`);
     return;
   }
   activePhotoDimId = dimId;
-  photoInput.value = "";
   photoInput.click();
 }
 
-function onPhotoSelected(e) {
-  const file = e.target.files[0];
+function onPhotoSelected() {
+  const file = photoInput.files[0];
   if (!file || !activePhotoDimId) return;
 
-  if (!file.type.startsWith("image/")) {
-    showToast("⚠️ El archivo seleccionado no es una imagen");
-    return;
-  }
-
-  compressImage(file, (base64) => {
-    if (!currentPhotos[activePhotoDimId]) {
-      currentPhotos[activePhotoDimId] = [];
-    }
-    currentPhotos[activePhotoDimId].push(base64);
-    renderPhotoThumbs(activePhotoDimId);
-    activePhotoDimId = null;
-  });
-}
-
-function compressImage(file, callback) {
   const reader = new FileReader();
-  reader.onload = function (e) {
-    const img = new Image();
-    img.onload = function () {
-      const canvas = document.createElement("canvas");
-      let w = img.width;
-      let h = img.height;
-
-      // Resize if larger than max
-      if (w > PHOTO_MAX_SIZE || h > PHOTO_MAX_SIZE) {
-        if (w > h) {
-          h = Math.round(h * PHOTO_MAX_SIZE / w);
-          w = PHOTO_MAX_SIZE;
-        } else {
-          w = Math.round(w * PHOTO_MAX_SIZE / h);
-          h = PHOTO_MAX_SIZE;
-        }
-      }
-
-      canvas.width = w;
-      canvas.height = h;
-      const ctx = canvas.getContext("2d");
-      ctx.drawImage(img, 0, 0, w, h);
-
-      const base64 = canvas.toDataURL("image/jpeg", PHOTO_QUALITY);
-      callback(base64);
-    };
-    img.src = e.target.result;
+  reader.onload = (e) => {
+    compressImage(e.target.result, (compressed) => {
+      if (!currentPhotos[activePhotoDimId]) currentPhotos[activePhotoDimId] = [];
+      currentPhotos[activePhotoDimId].push(compressed);
+      renderPhotoThumbs(activePhotoDimId);
+      activePhotoDimId = null;
+    });
   };
   reader.readAsDataURL(file);
+  photoInput.value = '';
+}
+
+function compressImage(dataUrl, callback) {
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    let w = img.width, h = img.height;
+    if (w > PHOTO_MAX_SIZE || h > PHOTO_MAX_SIZE) {
+      if (w > h) { h = Math.round(h * PHOTO_MAX_SIZE / w); w = PHOTO_MAX_SIZE; }
+      else { w = Math.round(w * PHOTO_MAX_SIZE / h); h = PHOTO_MAX_SIZE; }
+    }
+    canvas.width = w;
+    canvas.height = h;
+    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+    callback(canvas.toDataURL('image/jpeg', PHOTO_QUALITY));
+  };
+  img.src = dataUrl;
 }
 
 function renderPhotoThumbs(dimId) {
   const row = document.getElementById(`photoRow_${dimId}`);
-  const btn = document.getElementById(`btnPhoto_${dimId}`);
-  const countEl = document.getElementById(`photoCount_${dimId}`);
-  const photos = currentPhotos[dimId] || [];
+  if (!row) return;
 
   // Remove existing thumbs
-  row.querySelectorAll(".photo-thumb-wrap").forEach(el => el.remove());
+  row.querySelectorAll('.photo-thumb').forEach(el => el.remove());
+  const countEl = document.getElementById(`photoCount_${dimId}`);
 
-  // Add thumbs
-  photos.forEach((base64, idx) => {
-    const wrap = document.createElement("div");
-    wrap.className = "photo-thumb-wrap";
-    wrap.innerHTML = `
-      <img class="photo-thumb" src="${base64}" alt="Foto ${idx + 1}" onclick="openLightbox('${dimId}', ${idx})" />
-      <button type="button" class="photo-remove" onclick="removePhoto('${dimId}', ${idx})">✕</button>
+  const photos = currentPhotos[dimId] || [];
+  countEl.textContent = photos.length > 0 ? `${photos.length}/${MAX_PHOTOS_PER_DIM}` : '';
+
+  photos.forEach((src, idx) => {
+    const thumb = document.createElement('div');
+    thumb.className = 'photo-thumb';
+    thumb.innerHTML = `
+      <img src="${src}" onclick="openLightbox('${src}')" />
+      <button type="button" class="photo-remove" onclick="removePhoto('${dimId}', ${idx})">×</button>
     `;
-    row.insertBefore(wrap, btn);
+    row.appendChild(thumb);
   });
 
-  // Update button state
-  if (photos.length >= MAX_PHOTOS_PER_DIM) {
-    btn.disabled = true;
-    btn.textContent = "📷 Máximo alcanzado";
-  } else {
-    btn.disabled = false;
-    btn.textContent = "📷 Agregar foto";
-  }
-
-  countEl.textContent = photos.length > 0 ? `${photos.length}/${MAX_PHOTOS_PER_DIM}` : "";
+  // Disable button if max reached
+  const btn = document.getElementById(`btnPhoto_${dimId}`);
+  if (btn) btn.disabled = photos.length >= MAX_PHOTOS_PER_DIM;
 }
 
 function removePhoto(dimId, idx) {
   if (currentPhotos[dimId]) {
     currentPhotos[dimId].splice(idx, 1);
-    if (currentPhotos[dimId].length === 0) delete currentPhotos[dimId];
+    renderPhotoThumbs(dimId);
   }
-  renderPhotoThumbs(dimId);
 }
 
-// ===== Lightbox =====
-function openLightbox(dimId, idx) {
-  const photos = currentPhotos[dimId];
-  if (!photos || !photos[idx]) return;
-  lightboxImg.src = photos[idx];
-  lightbox.classList.add("open");
-  document.body.style.overflow = "hidden";
-}
-
-// Global for history lightbox
-function openLightboxSrc(src) {
+function openLightbox(src) {
   lightboxImg.src = src;
-  lightbox.classList.add("open");
-  document.body.style.overflow = "hidden";
+  lightbox.style.display = "flex";
 }
 
 function closeLightbox() {
-  lightbox.classList.remove("open");
-  document.body.style.overflow = "";
+  lightbox.style.display = "none";
+  lightboxImg.src = "";
 }
 
-// ===== Toggle Descriptors =====
-function toggleDescriptors(btn) {
-  btn.classList.toggle("open");
-  const panel = btn.nextElementSibling;
-  panel.classList.toggle("open");
-  btn.querySelector(".arrow").textContent = panel.classList.contains("open") ? "▼" : "▶";
-}
-
-// ===== Update Result =====
+// ===== Result =====
 function updateResult() {
   const catId = categoriaSelect.value;
   if (!catId) return;
 
   const cat = CATEGORIES.find(c => c.id === catId);
-  let sum = 0, count = 0, hasWarning = false;
+  if (!cat) return;
+
+  let total = 0, count = 0;
+  let hasLowScore = false;
 
   cat.dimensions.forEach(dim => {
     const radio = document.querySelector(`input[name="dim_${dim.id}"]:checked`);
     if (radio && radio.value !== "na") {
-      const v = parseInt(radio.value);
-      sum += v;
+      const val = parseInt(radio.value);
+      total += val;
       count++;
-      if (v <= 2) hasWarning = true;
+      if (val <= 2) hasLowScore = true;
     }
   });
 
-  accionesGroup.style.display = hasWarning ? "block" : "none";
+  // Toggle action section
+  accionesGroup.style.display = hasLowScore ? "block" : "none";
 
   if (count === 0) {
     scoreValue.textContent = "—";
@@ -2343,11 +2453,11 @@ function updateResult() {
     resultBadge.style.background = "var(--bg-glass)";
     resultBadge.style.color = "var(--text-muted)";
     resultAction.textContent = "";
-    resultCard.style.borderColor = "var(--border)";
+    resultCard.style.borderColor = "var(--border-color)";
     return;
   }
 
-  const avg = sum / count;
+  const avg = total / count;
   const cls = getClassification(avg);
 
   scoreValue.textContent = avg.toFixed(2);
@@ -2367,9 +2477,9 @@ function onSubmit(e) {
   if (!catId) { showToast("⚠️ Seleccione una categoría"); return; }
 
   const nombre = document.getElementById("nombre").value.trim();
-  const evaluador = document.getElementById("evaluador").value.trim();
+  const evaluador = evaluadorSelect.value;
   if (!nombre) { showToast("⚠️ Ingrese el nombre del espacio"); return; }
-  if (!evaluador) { showToast("⚠️ Ingrese el nombre del evaluador"); return; }
+  if (!evaluador) { showToast("⚠️ Seleccione un evaluador/a"); return; }
 
   const cat = CATEGORIES.find(c => c.id === catId);
   const scores = {};
@@ -2453,17 +2563,18 @@ function onSubmit(e) {
   const photoMsg = totalPhotos > 0 ? ` (${totalPhotos} foto${totalPhotos > 1 ? 's' : ''})` : '';
   showToast(`✅ Guardado: ${nombre} — ${cls.emoji} ${cls.label} (${avg.toFixed(2)})${photoMsg}`);
 
-  // Preserve evaluator data across resets
-  const savedEvaluador = evaluadorInput.value;
+  // Preserve evaluator and cargo across resets
+  const savedEvaluador = evaluadorSelect.value;
   const savedCargo = cargoInput.value;
 
   form.reset();
   setDefaults();
   resetCascade();
 
-  // Restore evaluator
-  evaluadorInput.value = savedEvaluador;
+  // Restore evaluator and re-trigger category population
+  evaluadorSelect.value = savedEvaluador;
   cargoInput.value = savedCargo;
+  onEvaluadorChange(); // Re-populate categories for the evaluator
 
   dimensionsSection.style.display = "none";
   resultSection.style.display = "none";
@@ -2476,14 +2587,15 @@ function onSubmit(e) {
 
 function onReset() {
   currentPhotos = {};
-  const savedEvaluador = evaluadorInput.value;
+  const savedEvaluador = evaluadorSelect.value;
   const savedCargo = cargoInput.value;
   setTimeout(() => {
     setDefaults();
     resetCascade();
-    // Restore evaluator (form.reset clears all inputs)
-    evaluadorInput.value = savedEvaluador;
+    // Restore evaluator (form.reset clears all selects/inputs)
+    evaluadorSelect.value = savedEvaluador;
     cargoInput.value = savedCargo;
+    onEvaluadorChange(); // Re-populate categories
     dimensionsSection.style.display = "none";
     resultSection.style.display = "none";
     obsSection.style.display = "none";
@@ -2511,282 +2623,290 @@ function updateStorageIndicator() {
     const used = new Blob([localStorage.getItem(STORAGE_KEY) || ""]).size;
     const total = 5 * 1024 * 1024; // Estimate 5MB
     const pct = Math.min(100, Math.round((used / total) * 100));
-
     storageFill.style.width = pct + "%";
     storageText.textContent = pct + "%";
 
-    storageFill.classList.remove("warn", "danger");
     if (pct >= 90) {
-      storageFill.classList.add("danger");
+      storageFill.style.background = "#ef4444";
+      storageText.style.color = "#ef4444";
     } else if (pct >= STORAGE_WARN_PCT) {
-      storageFill.classList.add("warn");
+      storageFill.style.background = "#f97316";
+      storageText.style.color = "#f97316";
+    } else {
+      storageFill.style.background = "";
+      storageText.style.color = "";
     }
-  } catch { /* ignore */ }
+  } catch (e) { /* ignore */ }
 }
 
-// ===== Drawer =====
+// ===== History Drawer =====
 function openDrawer() {
   renderHistory();
   historyDrawer.classList.add("open");
-  drawerOverlay.classList.add("open");
-  document.body.style.overflow = "hidden";
+  drawerOverlay.style.display = "block";
 }
 
 function closeDrawer() {
   historyDrawer.classList.remove("open");
-  drawerOverlay.classList.remove("open");
-  document.body.style.overflow = "";
+  drawerOverlay.style.display = "none";
 }
 
 function renderHistory() {
   const data = getStoredData();
+  historyList.innerHTML = "";
 
   if (data.length === 0) {
-    drawerStats.innerHTML = "No hay evaluaciones registradas.";
-    historyList.innerHTML = `<div class="history-empty">📋 Las evaluaciones guardadas aparecerán aquí.</div>`;
+    drawerStats.innerHTML = '<span style="color:var(--text-muted)">Sin evaluaciones guardadas</span>';
+    historyList.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:2rem">Aún no hay evaluaciones</p>';
     return;
   }
 
-  const totalAvg = data.reduce((s, d) => s + d.promedio, 0) / data.length;
+  // Stats
+  const avgAll = data.reduce((a, b) => a + b.promedio, 0) / data.length;
   const critical = data.filter(d => d.promedio < 2.5).length;
   const good = data.filter(d => d.promedio >= 3.5).length;
-  const totalPhotos = data.reduce((s, d) => s + (d.photoCount || 0), 0);
-
+  const totalPhotos = data.reduce((a, d) => a + (d.photoCount || 0), 0);
   drawerStats.innerHTML = `
-    <strong>${data.length}</strong> evaluaciones · 
-    Promedio: <strong>${totalAvg.toFixed(2)}</strong> · 
-    <span style="color:var(--red)">${critical} crít/def</span> · 
-    <span style="color:var(--green)">${good} bueno/exc</span>
-    ${totalPhotos > 0 ? ` · 📷 ${totalPhotos} fotos` : ''}
+    <span>📊 ${data.length} eval.</span>
+    <span>📈 Prom: ${avgAll.toFixed(2)}</span>
+    ${critical > 0 ? `<span style="color:#ef4444">🔴 ${critical} crít.</span>` : ''}
+    ${good > 0 ? `<span style="color:#22c55e">🟢 ${good} buenos</span>` : ''}
+    ${totalPhotos > 0 ? `<span>📷 ${totalPhotos}</span>` : ''}
   `;
 
-  historyList.innerHTML = data.map(ev => {
+  data.forEach(ev => {
     const cls = getClassification(ev.promedio);
-    const photoInfo = ev.photoCount ? `<div class="history-photos">📷 ${ev.photoCount} foto${ev.photoCount > 1 ? 's' : ''}</div>` : '';
-    return `
-      <div class="history-item" style="border-left-color: ${cls.color}">
-        <div class="history-info">
-          <div class="history-name">${ev.categoriaIcon || ""} ${ev.nombre}</div>
-          <div class="history-meta">${ev.categoriaName || ev.categoria} · ${ev.edificio || "—"} · ${ev.fecha || "—"}</div>
-          ${photoInfo}
-        </div>
-        <div class="history-score" style="color: ${cls.color}">${ev.promedio.toFixed(1)}</div>
-        <button class="history-delete" onclick="deleteEvaluation('${ev.id}')" title="Eliminar">🗑️</button>
+    const item = document.createElement("div");
+    item.className = "history-item";
+    item.innerHTML = `
+      <div class="history-item-header">
+        <span class="history-item-name">${ev.categoriaIcon || ''} ${ev.nombre || ev.codigo}</span>
+        <span class="history-item-score" style="background:${cls.color}22;color:${cls.color}">${cls.emoji} ${ev.promedio.toFixed(2)}</span>
       </div>
+      <div class="history-item-meta">
+        ${ev.edificio ? ev.edificio + ' · ' : ''}${ev.categoriaName || ''} · ${ev.fecha}${ev.photoCount ? ` · 📷${ev.photoCount}` : ''}
+      </div>
+      <div class="history-item-meta" style="font-size:0.7rem;opacity:0.6">
+        ${ev.evaluador || ''}
+      </div>
+      <button class="history-delete" onclick="deleteEvaluation('${ev.id}')">🗑️</button>
     `;
-  }).join("");
+    historyList.appendChild(item);
+  });
 }
 
 function deleteEvaluation(id) {
   if (!confirm("¿Eliminar esta evaluación?")) return;
-  const data = getStoredData().filter(e => e.id !== id);
+  const data = getStoredData().filter(d => d.id !== id);
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   updateBadgeCount();
   updateStorageIndicator();
   renderHistory();
-  showToast("🗑️ Evaluación eliminada");
 }
 
-// ===== Export CSV (data only, no photos) =====
+// ===== Export =====
 function exportCSV() {
   const data = getStoredData();
-  if (data.length === 0) { showToast("No hay datos para exportar"); return; }
+  if (data.length === 0) { showToast("📋 No hay datos para exportar"); return; }
 
-  const headers = ["ID","Código","Nombre","Categoría","Edificio","Piso","Fecha","Hora","Evaluador","Cargo","Promedio","Clasificación","Fotos","Observaciones","Acciones","Percepción","Mejoraría"];
+  // Gather all unique dimension keys
+  const dimKeys = new Set();
+  data.forEach(ev => Object.keys(ev.scores || {}).forEach(k => dimKeys.add(k)));
+  const dimCols = [...dimKeys].sort();
 
-  const allDimKeys = new Set();
-  data.forEach(ev => Object.keys(ev.scores || {}).forEach(k => allDimKeys.add(k)));
-  const dimKeys = [...allDimKeys];
-  const fullHeaders = [...headers, ...dimKeys.map(k => `D_${k}`)];
+  const headers = ["ID", "Código", "Nombre", "Categoría", "CategoríaNombre", "Edificio", "Piso",
+    "Fecha", "Hora", "Evaluador", "Cargo", ...dimCols.map(d => `D_${d}`),
+    "Promedio", "Clasificación", "Percepción", "Observaciones", "Acciones", "Mejoraría"];
 
   const rows = data.map(ev => {
-    const base = [
-      ev.id, ev.codigo, ev.nombre, ev.categoriaName || ev.categoria,
-      ev.edificio, ev.piso, ev.fecha, ev.hora, ev.evaluador, ev.cargo,
-      ev.promedio, ev.clasificacion, ev.photoCount || 0, ev.observaciones, ev.acciones,
-      ev.percepcion || "", ev.mejoraria || ""
-    ];
-    const dims = dimKeys.map(k => ev.scores?.[k] ?? "");
-    return [...base, ...dims];
+    const base = [ev.id, ev.codigo, ev.nombre, ev.categoria, ev.categoriaName, ev.edificio, ev.piso,
+      ev.fecha, ev.hora, ev.evaluador, ev.cargo];
+    const dims = dimCols.map(d => ev.scores?.[d] ?? "");
+    return [...base, ...dims, ev.promedio, ev.clasificacion, ev.percepcion || '',
+      `"${(ev.observaciones || '').replace(/"/g, '""')}"`,
+      `"${(ev.acciones || '').replace(/"/g, '""')}"`,
+      `"${(ev.mejoraria || '').replace(/"/g, '""')}"`];
   });
 
-  const csvContent = [fullHeaders, ...rows]
-    .map(row => row.map(cell => `"${String(cell || "").replace(/"/g, '""')}"`).join(","))
-    .join("\n");
-
-  downloadFile(
-    "\uFEFF" + csvContent,
-    `evaluaciones_uninorte_${new Date().toISOString().slice(0, 10)}.csv`,
-    "text/csv;charset=utf-8;"
-  );
-  showToast(`📥 ${data.length} evaluaciones exportadas (CSV sin fotos)`);
+  const csv = "\uFEFF" + [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+  downloadFile(csv, `evaluaciones_uninorte_${new Date().toISOString().slice(0,10)}.csv`, "text/csv;charset=utf-8");
+  showToast(`📥 CSV exportado (${data.length} evaluaciones, sin fotos)`);
 }
 
-// ===== Export JSON (with photos) =====
 function exportJSON() {
   const data = getStoredData();
-  if (data.length === 0) { showToast("No hay datos para exportar"); return; }
-
-  const totalPhotos = data.reduce((s, d) => s + (d.photoCount || 0), 0);
+  if (data.length === 0) { showToast("📋 No hay datos para exportar"); return; }
 
   const exportObj = {
-    version: "2.0",
+    version: "3.0",
     exportDate: new Date().toISOString(),
-    institution: "Universidad del Norte — Barranquilla",
+    institution: "Universidad del Norte",
     totalEvaluations: data.length,
-    totalPhotos,
+    totalPhotos: data.reduce((a, d) => a + (d.photoCount || 0), 0),
     evaluations: data
   };
 
-  const jsonStr = JSON.stringify(exportObj, null, 2);
-
-  downloadFile(
-    jsonStr,
-    `evaluaciones_uninorte_${new Date().toISOString().slice(0, 10)}.json`,
-    "application/json;charset=utf-8;"
-  );
-  showToast(`📦 ${data.length} evaluaciones exportadas con ${totalPhotos} fotos (JSON)`);
+  const json = JSON.stringify(exportObj, null, 2);
+  downloadFile(json, `evaluaciones_uninorte_${new Date().toISOString().slice(0,10)}.json`, "application/json");
+  showToast(`📥 JSON exportado (${data.length} evaluaciones, con fotos)`);
 }
 
 function downloadFile(content, filename, type) {
   const blob = new Blob([content], { type });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = filename;
-  link.click();
-  URL.revokeObjectURL(link.href);
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
-// ===== Import CSV or JSON =====
+// ===== Import =====
 function importFile(e) {
   const file = e.target.files[0];
   if (!file) return;
-
   const reader = new FileReader();
-  reader.onload = function (ev) {
+  reader.onload = (ev) => {
     const content = ev.target.result;
-
-    if (file.name.endsWith(".json")) {
+    if (file.name.endsWith('.json')) {
       importJSON(content);
-    } else {
+    } else if (file.name.endsWith('.csv')) {
       importCSV(content);
+    } else {
+      showToast("⚠️ Formato no soportado. Use .json o .csv");
     }
   };
-  reader.readAsText(file, "UTF-8");
-  e.target.value = "";
+  reader.readAsText(file);
+  e.target.value = '';
 }
 
 function importJSON(content) {
   try {
-    const obj = JSON.parse(content);
-    const evals = obj.evaluations || (Array.isArray(obj) ? obj : []);
-    if (evals.length === 0) { showToast("⚠️ No se encontraron evaluaciones"); return; }
+    const parsed = JSON.parse(content);
+    const evals = parsed.evaluations || parsed;
+    if (!Array.isArray(evals)) { showToast("⚠️ Formato JSON inválido"); return; }
 
-    const data = getStoredData();
-    let imported = 0;
+    const existing = getStoredData();
+    const existingIds = new Set(existing.map(e => e.id));
 
-    evals.forEach((ev, i) => {
-      ev.id = Date.now().toString(36) + Math.random().toString(36).substr(2, 5) + i;
-      data.push(ev);
-      imported++;
+    let added = 0;
+    evals.forEach(ev => {
+      // Generate new ID to avoid conflicts
+      ev.id = Date.now().toString(36) + Math.random().toString(36).substr(2, 5) + (added++);
+      existing.push(ev);
     });
 
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-      updateBadgeCount();
-      updateStorageIndicator();
-      renderHistory();
-      const totalPhotos = evals.reduce((s, d) => s + (d.photoCount || 0), 0);
-      showToast(`📤 ${imported} evaluaciones importadas${totalPhotos > 0 ? ` con ${totalPhotos} fotos` : ''}`);
-    } catch (err) {
-      showToast("⚠️ Almacenamiento insuficiente para importar con fotos");
-    }
-  } catch (err) {
-    showToast("⚠️ Error al procesar el archivo JSON");
-    console.error(err);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(existing));
+    updateBadgeCount();
+    updateStorageIndicator();
+    showToast(`📥 Importadas ${added} evaluaciones`);
+  } catch (e) {
+    showToast("❌ Error al importar JSON: " + e.message);
   }
 }
 
 function importCSV(content) {
   try {
-    const lines = content.split("\n").filter(l => l.trim());
-    if (lines.length < 2) { showToast("⚠️ Archivo CSV vacío"); return; }
+    const lines = content.split('\n').filter(l => l.trim());
+    if (lines.length < 2) { showToast("⚠️ CSV vacío"); return; }
 
-    const headers = parseCSVLine(lines[0]);
-    const data = getStoredData();
-    let imported = 0;
+    // Remove BOM if present
+    let headerLine = lines[0];
+    if (headerLine.charCodeAt(0) === 0xFEFF) headerLine = headerLine.substr(1);
+
+    const headers = parseCSVLine(headerLine);
+    const existing = getStoredData();
+    let added = 0;
 
     for (let i = 1; i < lines.length; i++) {
       const values = parseCSVLine(lines[i]);
-      if (values.length < 11) continue;
+      if (values.length < 5) continue;
 
       const row = {};
-      headers.forEach((h, idx) => row[h] = values[idx] || "");
+      headers.forEach((h, idx) => { row[h] = values[idx] || ''; });
 
+      // Reconstruct evaluation object
       const scores = {};
-      headers.forEach((h, idx) => {
-        if (h.startsWith("D_")) {
-          const key = h.slice(2);
-          const val = values[idx];
-          scores[key] = val === "N/A" ? "N/A" : (isNaN(val) ? "" : parseFloat(val));
-        }
+      headers.filter(h => h.startsWith('D_')).forEach(h => {
+        const dimId = h.replace('D_', '');
+        const val = row[h];
+        if (val === 'N/A') scores[dimId] = 'N/A';
+        else if (val !== '' && !isNaN(val)) scores[dimId] = parseInt(val);
       });
 
-      const promedio = parseFloat(row["Promedio"]) || 0;
-      const cls = getClassification(promedio);
-
-      data.unshift({
-        id: Date.now().toString(36) + Math.random().toString(36).substr(2, 5) + i,
-        codigo: row["Código"] || row["Codigo"] || "",
-        nombre: row["Nombre"] || `Importado ${i}`,
-        categoria: (row["Categoría"] || row["Categoria"] || "").toLowerCase().replace(/\s/g, "_"),
-        categoriaName: row["Categoría"] || row["Categoria"] || "",
-        categoriaIcon: "",
-        edificio: row["Edificio"] || "",
-        piso: row["Piso"] || "",
-        fecha: row["Fecha"] || "",
-        hora: row["Hora"] || "",
-        evaluador: row["Evaluador"] || "",
-        cargo: row["Cargo"] || "",
+      const evaluation = {
+        id: Date.now().toString(36) + Math.random().toString(36).substr(2, 5) + (added++),
+        codigo: row['Código'] || '',
+        nombre: row['Nombre'] || '',
+        categoria: row['Categoría'] || '',
+        categoriaName: row['CategoríaNombre'] || '',
+        categoriaIcon: '',
+        edificio: row['Edificio'] || '',
+        piso: row['Piso'] || '',
+        fecha: row['Fecha'] || '',
+        hora: row['Hora'] || '',
+        evaluador: row['Evaluador'] || '',
+        cargo: row['Cargo'] || '',
         scores,
         photos: {},
         photoCount: 0,
-        promedio,
-        clasificacion: cls ? cls.label : "",
-        color: cls ? cls.color : "",
-        observaciones: row["Observaciones"] || "",
-        acciones: row["Acciones"] || "",
+        promedio: parseFloat(row['Promedio']) || 0,
+        clasificacion: row['Clasificación'] || '',
+        color: '',
+        observaciones: row['Observaciones'] || '',
+        acciones: row['Acciones'] || '',
+        percepcion: row['Percepción'] ? parseInt(row['Percepción']) : null,
+        mejoraria: row['Mejoraría'] || '',
         timestamp: new Date().toISOString()
-      });
-      imported++;
+      };
+
+      // Re-derive color from classification
+      const cls = getClassification(evaluation.promedio);
+      evaluation.color = cls.color;
+      evaluation.categoriaIcon = (CATEGORIES.find(c => c.id === evaluation.categoria) || {}).icon || '';
+
+      existing.push(evaluation);
+      added++;
     }
 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(existing));
     updateBadgeCount();
     updateStorageIndicator();
-    renderHistory();
-    showToast(`📤 ${imported} evaluaciones importadas (CSV)`);
-  } catch (err) {
-    showToast("⚠️ Error al procesar el archivo CSV");
-    console.error(err);
+    showToast(`📥 Importadas ${added} evaluaciones desde CSV`);
+  } catch (e) {
+    showToast("❌ Error al importar CSV: " + e.message);
   }
 }
 
 function parseCSVLine(line) {
   const result = [];
-  let current = "";
+  let current = '';
   let inQuotes = false;
 
   for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (ch === '"') {
-      if (inQuotes && line[i + 1] === '"') { current += '"'; i++; }
-      else inQuotes = !inQuotes;
-    } else if (ch === "," && !inQuotes) {
-      result.push(current.trim());
-      current = "";
+    const char = line[i];
+    if (inQuotes) {
+      if (char === '"') {
+        if (i + 1 < line.length && line[i + 1] === '"') {
+          current += '"';
+          i++;
+        } else {
+          inQuotes = false;
+        }
+      } else {
+        current += char;
+      }
     } else {
-      current += ch;
+      if (char === '"') {
+        inQuotes = true;
+      } else if (char === ',') {
+        result.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
     }
   }
   result.push(current.trim());
@@ -2795,23 +2915,19 @@ function parseCSVLine(line) {
 
 // ===== Clear All =====
 function clearAll() {
-  const data = getStoredData();
-  if (data.length === 0) { showToast("No hay datos para eliminar"); return; }
-  if (!confirm(`¿Eliminar TODAS las ${data.length} evaluaciones (incluyendo fotos)? Esta acción no se puede deshacer.`)) return;
-
+  if (!confirm("⚠️ ¿Eliminar TODAS las evaluaciones guardadas? Esta acción no se puede deshacer.")) return;
   localStorage.removeItem(STORAGE_KEY);
   updateBadgeCount();
   updateStorageIndicator();
-  renderHistory();
-  showToast("🗑️ Todos los datos eliminados");
+  closeDrawer();
+  showToast("🗑️ Todas las evaluaciones fueron eliminadas");
 }
 
 // ===== Toast =====
 function showToast(message) {
   toast.textContent = message;
   toast.classList.add("show");
-  clearTimeout(toast._timeout);
-  toast._timeout = setTimeout(() => toast.classList.remove("show"), 3500);
+  setTimeout(() => toast.classList.remove("show"), 3500);
 }
     // === FIN_APP ===
   </script>

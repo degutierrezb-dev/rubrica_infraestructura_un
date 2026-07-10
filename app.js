@@ -1,5 +1,5 @@
 // ============================================================
-// app.js — UniNorte Evaluation Form v3 (Cascading Selects)
+// app.js — UniNorte Evaluation Form v4 (Evaluator + Cascading Selects)
 // ============================================================
 
 const STORAGE_KEY = "uninorte_evaluaciones_v2";
@@ -7,6 +7,9 @@ const MAX_PHOTOS_PER_DIM = 2;
 const PHOTO_MAX_SIZE = 1024;   // Max dimension in pixels
 const PHOTO_QUALITY = 0.5;     // JPEG quality (0-1)
 const STORAGE_WARN_PCT = 80;   // Warn when storage is X% full
+
+// Category ID for "Pasillos" (special case: available to all evaluators)
+const PASILLOS_CAT_ID = "pasillo";
 
 // Safe storage wrapper (iOS WebKit blocks localStorage in some contexts)
 let memoryStore = {};
@@ -32,12 +35,12 @@ let activePhotoDimId = null;
 
 // ===== DOM Elements =====
 const form = document.getElementById("evalForm");
+const evaluadorSelect = document.getElementById("evaluador");
 const categoriaSelect = document.getElementById("categoria");
 const edificioSelect = document.getElementById("edificio");
 const codigoSelect = document.getElementById("codigo");
 const pisoInput = document.getElementById("piso");
 const nombreInput = document.getElementById("nombre");
-const evaluadorInput = document.getElementById("evaluador");
 const cargoInput = document.getElementById("cargo");
 const dimensionsSection = document.getElementById("dimensionsSection");
 const dimensionsContainer = document.getElementById("dimensionsContainer");
@@ -70,11 +73,13 @@ const drawerStats = document.getElementById("drawerStats");
 
 // Track whether the current category has ESPACIOS data
 let currentCatHasEspacios = false;
+// Track the currently filtered ESPACIOS for the selected evaluator
+let evaluadorEspacios = [];
 
 // ===== Init =====
 document.addEventListener("DOMContentLoaded", () => {
   initTheme();
-  populateCategories();
+  populateEvaluadores();
   setDefaults();
   loadEvaluadorData();
   updateBadgeCount();
@@ -105,8 +110,22 @@ function updateThemeIcon() {
   if (btn) btn.textContent = document.documentElement.getAttribute("data-theme") === "light" ? "☀️" : "🌙";
 }
 
-function populateCategories() {
+// ===== Populate Evaluadores =====
+function populateEvaluadores() {
+  if (typeof EVALUADORES === 'undefined') return;
+  EVALUADORES.forEach(name => {
+    const opt = document.createElement("option");
+    opt.value = name;
+    opt.textContent = name;
+    evaluadorSelect.appendChild(opt);
+  });
+}
+
+// ===== Populate Categories (filtered by evaluator) =====
+function populateCategories(allowedCatIds) {
+  categoriaSelect.innerHTML = '<option value="">— Seleccionar categoría —</option>';
   CATEGORIES.forEach(cat => {
+    if (allowedCatIds && !allowedCatIds.has(cat.id)) return;
     const opt = document.createElement("option");
     opt.value = cat.id;
     opt.textContent = `${cat.icon} ${cat.name}`;
@@ -125,14 +144,18 @@ function loadEvaluadorData() {
   try {
     const ev = appStorage.getItem("uninorte_evaluador");
     const ca = appStorage.getItem("uninorte_cargo");
-    if (ev) evaluadorInput.value = ev;
+    if (ev) {
+      evaluadorSelect.value = ev;
+      // Trigger change to load their spaces
+      onEvaluadorChange();
+    }
     if (ca) cargoInput.value = ca;
   } catch (e) { /* ignore */ }
 }
 
 function saveEvaluadorData() {
   try {
-    const ev = evaluadorInput.value.trim();
+    const ev = evaluadorSelect.value;
     const ca = cargoInput.value.trim();
     if (ev) appStorage.setItem("uninorte_evaluador", ev);
     if (ca) appStorage.setItem("uninorte_cargo", ca);
@@ -141,6 +164,7 @@ function saveEvaluadorData() {
 
 // ===== Event Bindings =====
 function bindEvents() {
+  evaluadorSelect.addEventListener("change", onEvaluadorChange);
   categoriaSelect.addEventListener("change", onCategoryChange);
   edificioSelect.addEventListener("change", onEdificioChange);
   codigoSelect.addEventListener("change", onCodigoChange);
@@ -186,7 +210,44 @@ function bindEvents() {
   });
 }
 
-// ===== Category Change =====
+// ===== Evaluador Change (cascade step 0) =====
+function onEvaluadorChange() {
+  const selectedEvaluador = evaluadorSelect.value;
+  currentPhotos = {};
+
+  // Reset everything downstream
+  resetCascade();
+  dimensionsSection.style.display = "none";
+  resultSection.style.display = "none";
+  obsSection.style.display = "none";
+  perceptionSection.style.display = "none";
+  formActions.style.display = "none";
+  emptyState.style.display = "block";
+
+  if (!selectedEvaluador) {
+    // No evaluator selected — show empty categories
+    populateCategories(new Set());
+    categoriaSelect.disabled = true;
+    return;
+  }
+
+  // Filter ESPACIOS for this evaluator
+  evaluadorEspacios = (typeof ESPACIOS !== 'undefined')
+    ? ESPACIOS.filter(e => e.ev === selectedEvaluador)
+    : [];
+
+  // Get unique category IDs assigned to this evaluator
+  const assignedCatIds = new Set(evaluadorEspacios.map(e => e.cat));
+
+  // Always add "Pasillos / Escaleras / Áreas Comunes" for all evaluators
+  assignedCatIds.add(PASILLOS_CAT_ID);
+
+  // Populate categories with only the assigned ones
+  populateCategories(assignedCatIds);
+  categoriaSelect.disabled = false;
+}
+
+// ===== Category Change (cascade step 1) =====
 function onCategoryChange() {
   const catId = categoriaSelect.value;
   currentPhotos = {}; // Reset photos when category changes
@@ -207,27 +268,51 @@ function onCategoryChange() {
   const cat = CATEGORIES.find(c => c.id === catId);
   if (!cat) return;
 
-  // Populate edificio dropdown from ESPACIOS
-  const espaciosCat = (typeof ESPACIOS !== 'undefined') ? ESPACIOS.filter(e => e.cat === catId) : [];
-  currentCatHasEspacios = espaciosCat.length > 0;
+  const selectedEvaluador = evaluadorSelect.value;
 
-  if (currentCatHasEspacios) {
-    // Get unique edificios sorted
-    const edificios = [...new Set(espaciosCat.map(e => e.ed))].sort();
-    edificioSelect.innerHTML = '<option value="">— Seleccionar edificio —</option>';
-    edificios.forEach(ed => {
-      const opt = document.createElement("option");
-      opt.value = ed;
-      opt.textContent = ed;
-      edificioSelect.appendChild(opt);
-    });
-    edificioSelect.disabled = false;
-    codigoSelect.innerHTML = '<option value="">— Seleccione edificio primero —</option>';
-    codigoSelect.disabled = true;
+  // Special case: Pasillos — available to all evaluators
+  if (catId === PASILLOS_CAT_ID) {
+    currentCatHasEspacios = false;
+    // Show edificio as a select with ALL unique edificios from the full ESPACIOS
+    const allEdificios = (typeof ESPACIOS !== 'undefined')
+      ? [...new Set(ESPACIOS.map(e => e.ed))].sort()
+      : [];
+
+    if (allEdificios.length > 0) {
+      edificioSelect.innerHTML = '<option value="">— Seleccionar edificio —</option>';
+      allEdificios.forEach(ed => {
+        const opt = document.createElement("option");
+        opt.value = ed;
+        opt.textContent = ed;
+        edificioSelect.appendChild(opt);
+      });
+      edificioSelect.disabled = false;
+    }
+    // Codigo, piso, nombre are free text for Pasillos
+    swapToTextInput('codigoGroup', 'codigo', 'Ej: PAS-01');
   } else {
-    // Category without ESPACIOS data — convert to free text inputs
-    swapToTextInput('edificioGroup', 'edificio', 'Ej: Bloque K1');
-    swapToTextInput('codigoGroup', 'codigo', 'Ej: AUD-01');
+    // Normal category — filter by evaluator
+    const espaciosCat = evaluadorEspacios.filter(e => e.cat === catId);
+    currentCatHasEspacios = espaciosCat.length > 0;
+
+    if (currentCatHasEspacios) {
+      // Get unique edificios sorted
+      const edificios = [...new Set(espaciosCat.map(e => e.ed))].sort();
+      edificioSelect.innerHTML = '<option value="">— Seleccionar edificio —</option>';
+      edificios.forEach(ed => {
+        const opt = document.createElement("option");
+        opt.value = ed;
+        opt.textContent = ed;
+        edificioSelect.appendChild(opt);
+      });
+      edificioSelect.disabled = false;
+      codigoSelect.innerHTML = '<option value="">— Seleccione edificio primero —</option>';
+      codigoSelect.disabled = true;
+    } else {
+      // Category without ESPACIOS data — convert to free text inputs
+      swapToTextInput('edificioGroup', 'edificio', 'Ej: Bloque K1');
+      swapToTextInput('codigoGroup', 'codigo', 'Ej: AUD-01');
+    }
   }
 
   pisoInput.value = '';
@@ -256,14 +341,20 @@ function onEdificioChange() {
   pisoInput.value = '';
   nombreInput.value = '';
 
+  // Special case: Pasillos — edificio is selectable but codigo/piso/nombre are free text
+  if (catId === PASILLOS_CAT_ID) {
+    // Codigo is already a text input for Pasillos, nothing to cascade
+    return;
+  }
+
   if (!edValue || !currentCatHasEspacios) {
     codigoSelect.innerHTML = '<option value="">— Seleccione edificio primero —</option>';
     codigoSelect.disabled = true;
     return;
   }
 
-  // Filter ESPACIOS by cat + edificio
-  const matched = ESPACIOS.filter(e => e.cat === catId && e.ed === edValue);
+  // Filter ESPACIOS by evaluator + cat + edificio
+  const matched = evaluadorEspacios.filter(e => e.cat === catId && e.ed === edValue);
   const codigos = matched.sort((a, b) => a.cod.localeCompare(b.cod));
 
   codigoSelect.innerHTML = '<option value="">— Seleccionar código —</option>';
@@ -281,13 +372,17 @@ function onCodigoChange() {
   const catId = categoriaSelect.value;
   const codValue = codigoSelect.value;
 
-  if (!codValue || !currentCatHasEspacios) {
+  if (!currentCatHasEspacios) {
+    return;
+  }
+
+  if (!codValue) {
     pisoInput.value = '';
     nombreInput.value = '';
     return;
   }
 
-  const esp = ESPACIOS.find(e => e.cat === catId && e.cod === codValue);
+  const esp = evaluadorEspacios.find(e => e.cat === catId && e.cod === codValue);
   if (esp) {
     pisoInput.value = esp.piso || '';
     nombreInput.value = esp.nom || '';
@@ -421,158 +516,126 @@ function renderDimensions(cat) {
   });
 }
 
-// ===== Photo Handling =====
+function toggleDescriptors(btn) {
+  const desc = btn.nextElementSibling;
+  const arrow = btn.querySelector(".arrow");
+  const isOpen = desc.style.display === "block";
+  desc.style.display = isOpen ? "none" : "block";
+  arrow.textContent = isOpen ? "▶" : "▼";
+  btn.classList.toggle("open", !isOpen);
+}
+
+// ===== Photos =====
 function triggerPhoto(dimId) {
   const photos = currentPhotos[dimId] || [];
   if (photos.length >= MAX_PHOTOS_PER_DIM) {
-    showToast(`⚠️ Máximo ${MAX_PHOTOS_PER_DIM} fotos por dimensión`);
+    showToast(`📷 Máximo ${MAX_PHOTOS_PER_DIM} fotos por dimensión`);
     return;
   }
   activePhotoDimId = dimId;
-  photoInput.value = "";
   photoInput.click();
 }
 
-function onPhotoSelected(e) {
-  const file = e.target.files[0];
+function onPhotoSelected() {
+  const file = photoInput.files[0];
   if (!file || !activePhotoDimId) return;
 
-  if (!file.type.startsWith("image/")) {
-    showToast("⚠️ El archivo seleccionado no es una imagen");
-    return;
-  }
-
-  compressImage(file, (base64) => {
-    if (!currentPhotos[activePhotoDimId]) {
-      currentPhotos[activePhotoDimId] = [];
-    }
-    currentPhotos[activePhotoDimId].push(base64);
-    renderPhotoThumbs(activePhotoDimId);
-    activePhotoDimId = null;
-  });
-}
-
-function compressImage(file, callback) {
   const reader = new FileReader();
-  reader.onload = function (e) {
-    const img = new Image();
-    img.onload = function () {
-      const canvas = document.createElement("canvas");
-      let w = img.width;
-      let h = img.height;
-
-      // Resize if larger than max
-      if (w > PHOTO_MAX_SIZE || h > PHOTO_MAX_SIZE) {
-        if (w > h) {
-          h = Math.round(h * PHOTO_MAX_SIZE / w);
-          w = PHOTO_MAX_SIZE;
-        } else {
-          w = Math.round(w * PHOTO_MAX_SIZE / h);
-          h = PHOTO_MAX_SIZE;
-        }
-      }
-
-      canvas.width = w;
-      canvas.height = h;
-      const ctx = canvas.getContext("2d");
-      ctx.drawImage(img, 0, 0, w, h);
-
-      const base64 = canvas.toDataURL("image/jpeg", PHOTO_QUALITY);
-      callback(base64);
-    };
-    img.src = e.target.result;
+  reader.onload = (e) => {
+    compressImage(e.target.result, (compressed) => {
+      if (!currentPhotos[activePhotoDimId]) currentPhotos[activePhotoDimId] = [];
+      currentPhotos[activePhotoDimId].push(compressed);
+      renderPhotoThumbs(activePhotoDimId);
+      activePhotoDimId = null;
+    });
   };
   reader.readAsDataURL(file);
+  photoInput.value = '';
+}
+
+function compressImage(dataUrl, callback) {
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    let w = img.width, h = img.height;
+    if (w > PHOTO_MAX_SIZE || h > PHOTO_MAX_SIZE) {
+      if (w > h) { h = Math.round(h * PHOTO_MAX_SIZE / w); w = PHOTO_MAX_SIZE; }
+      else { w = Math.round(w * PHOTO_MAX_SIZE / h); h = PHOTO_MAX_SIZE; }
+    }
+    canvas.width = w;
+    canvas.height = h;
+    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+    callback(canvas.toDataURL('image/jpeg', PHOTO_QUALITY));
+  };
+  img.src = dataUrl;
 }
 
 function renderPhotoThumbs(dimId) {
   const row = document.getElementById(`photoRow_${dimId}`);
-  const btn = document.getElementById(`btnPhoto_${dimId}`);
-  const countEl = document.getElementById(`photoCount_${dimId}`);
-  const photos = currentPhotos[dimId] || [];
+  if (!row) return;
 
   // Remove existing thumbs
-  row.querySelectorAll(".photo-thumb-wrap").forEach(el => el.remove());
+  row.querySelectorAll('.photo-thumb').forEach(el => el.remove());
+  const countEl = document.getElementById(`photoCount_${dimId}`);
 
-  // Add thumbs
-  photos.forEach((base64, idx) => {
-    const wrap = document.createElement("div");
-    wrap.className = "photo-thumb-wrap";
-    wrap.innerHTML = `
-      <img class="photo-thumb" src="${base64}" alt="Foto ${idx + 1}" onclick="openLightbox('${dimId}', ${idx})" />
-      <button type="button" class="photo-remove" onclick="removePhoto('${dimId}', ${idx})">✕</button>
+  const photos = currentPhotos[dimId] || [];
+  countEl.textContent = photos.length > 0 ? `${photos.length}/${MAX_PHOTOS_PER_DIM}` : '';
+
+  photos.forEach((src, idx) => {
+    const thumb = document.createElement('div');
+    thumb.className = 'photo-thumb';
+    thumb.innerHTML = `
+      <img src="${src}" onclick="openLightbox('${src}')" />
+      <button type="button" class="photo-remove" onclick="removePhoto('${dimId}', ${idx})">×</button>
     `;
-    row.insertBefore(wrap, btn);
+    row.appendChild(thumb);
   });
 
-  // Update button state
-  if (photos.length >= MAX_PHOTOS_PER_DIM) {
-    btn.disabled = true;
-    btn.textContent = "📷 Máximo alcanzado";
-  } else {
-    btn.disabled = false;
-    btn.textContent = "📷 Agregar foto";
-  }
-
-  countEl.textContent = photos.length > 0 ? `${photos.length}/${MAX_PHOTOS_PER_DIM}` : "";
+  // Disable button if max reached
+  const btn = document.getElementById(`btnPhoto_${dimId}`);
+  if (btn) btn.disabled = photos.length >= MAX_PHOTOS_PER_DIM;
 }
 
 function removePhoto(dimId, idx) {
   if (currentPhotos[dimId]) {
     currentPhotos[dimId].splice(idx, 1);
-    if (currentPhotos[dimId].length === 0) delete currentPhotos[dimId];
+    renderPhotoThumbs(dimId);
   }
-  renderPhotoThumbs(dimId);
 }
 
-// ===== Lightbox =====
-function openLightbox(dimId, idx) {
-  const photos = currentPhotos[dimId];
-  if (!photos || !photos[idx]) return;
-  lightboxImg.src = photos[idx];
-  lightbox.classList.add("open");
-  document.body.style.overflow = "hidden";
-}
-
-// Global for history lightbox
-function openLightboxSrc(src) {
+function openLightbox(src) {
   lightboxImg.src = src;
-  lightbox.classList.add("open");
-  document.body.style.overflow = "hidden";
+  lightbox.style.display = "flex";
 }
 
 function closeLightbox() {
-  lightbox.classList.remove("open");
-  document.body.style.overflow = "";
+  lightbox.style.display = "none";
+  lightboxImg.src = "";
 }
 
-// ===== Toggle Descriptors =====
-function toggleDescriptors(btn) {
-  btn.classList.toggle("open");
-  const panel = btn.nextElementSibling;
-  panel.classList.toggle("open");
-  btn.querySelector(".arrow").textContent = panel.classList.contains("open") ? "▼" : "▶";
-}
-
-// ===== Update Result =====
+// ===== Result =====
 function updateResult() {
   const catId = categoriaSelect.value;
   if (!catId) return;
 
   const cat = CATEGORIES.find(c => c.id === catId);
-  let sum = 0, count = 0, hasWarning = false;
+  if (!cat) return;
+
+  let total = 0, count = 0;
+  let hasLowScore = false;
 
   cat.dimensions.forEach(dim => {
     const radio = document.querySelector(`input[name="dim_${dim.id}"]:checked`);
     if (radio && radio.value !== "na") {
-      const v = parseInt(radio.value);
-      sum += v;
+      const val = parseInt(radio.value);
+      total += val;
       count++;
-      if (v <= 2) hasWarning = true;
+      if (val <= 2) hasLowScore = true;
     }
   });
 
-  accionesGroup.style.display = hasWarning ? "block" : "none";
+  // Toggle action section
+  accionesGroup.style.display = hasLowScore ? "block" : "none";
 
   if (count === 0) {
     scoreValue.textContent = "—";
@@ -581,11 +644,11 @@ function updateResult() {
     resultBadge.style.background = "var(--bg-glass)";
     resultBadge.style.color = "var(--text-muted)";
     resultAction.textContent = "";
-    resultCard.style.borderColor = "var(--border)";
+    resultCard.style.borderColor = "var(--border-color)";
     return;
   }
 
-  const avg = sum / count;
+  const avg = total / count;
   const cls = getClassification(avg);
 
   scoreValue.textContent = avg.toFixed(2);
@@ -605,9 +668,9 @@ function onSubmit(e) {
   if (!catId) { showToast("⚠️ Seleccione una categoría"); return; }
 
   const nombre = document.getElementById("nombre").value.trim();
-  const evaluador = document.getElementById("evaluador").value.trim();
+  const evaluador = evaluadorSelect.value;
   if (!nombre) { showToast("⚠️ Ingrese el nombre del espacio"); return; }
-  if (!evaluador) { showToast("⚠️ Ingrese el nombre del evaluador"); return; }
+  if (!evaluador) { showToast("⚠️ Seleccione un evaluador/a"); return; }
 
   const cat = CATEGORIES.find(c => c.id === catId);
   const scores = {};
@@ -691,17 +754,18 @@ function onSubmit(e) {
   const photoMsg = totalPhotos > 0 ? ` (${totalPhotos} foto${totalPhotos > 1 ? 's' : ''})` : '';
   showToast(`✅ Guardado: ${nombre} — ${cls.emoji} ${cls.label} (${avg.toFixed(2)})${photoMsg}`);
 
-  // Preserve evaluator data across resets
-  const savedEvaluador = evaluadorInput.value;
+  // Preserve evaluator and cargo across resets
+  const savedEvaluador = evaluadorSelect.value;
   const savedCargo = cargoInput.value;
 
   form.reset();
   setDefaults();
   resetCascade();
 
-  // Restore evaluator
-  evaluadorInput.value = savedEvaluador;
+  // Restore evaluator and re-trigger category population
+  evaluadorSelect.value = savedEvaluador;
   cargoInput.value = savedCargo;
+  onEvaluadorChange(); // Re-populate categories for the evaluator
 
   dimensionsSection.style.display = "none";
   resultSection.style.display = "none";
@@ -714,14 +778,15 @@ function onSubmit(e) {
 
 function onReset() {
   currentPhotos = {};
-  const savedEvaluador = evaluadorInput.value;
+  const savedEvaluador = evaluadorSelect.value;
   const savedCargo = cargoInput.value;
   setTimeout(() => {
     setDefaults();
     resetCascade();
-    // Restore evaluator (form.reset clears all inputs)
-    evaluadorInput.value = savedEvaluador;
+    // Restore evaluator (form.reset clears all selects/inputs)
+    evaluadorSelect.value = savedEvaluador;
     cargoInput.value = savedCargo;
+    onEvaluadorChange(); // Re-populate categories
     dimensionsSection.style.display = "none";
     resultSection.style.display = "none";
     obsSection.style.display = "none";
@@ -749,282 +814,290 @@ function updateStorageIndicator() {
     const used = new Blob([localStorage.getItem(STORAGE_KEY) || ""]).size;
     const total = 5 * 1024 * 1024; // Estimate 5MB
     const pct = Math.min(100, Math.round((used / total) * 100));
-
     storageFill.style.width = pct + "%";
     storageText.textContent = pct + "%";
 
-    storageFill.classList.remove("warn", "danger");
     if (pct >= 90) {
-      storageFill.classList.add("danger");
+      storageFill.style.background = "#ef4444";
+      storageText.style.color = "#ef4444";
     } else if (pct >= STORAGE_WARN_PCT) {
-      storageFill.classList.add("warn");
+      storageFill.style.background = "#f97316";
+      storageText.style.color = "#f97316";
+    } else {
+      storageFill.style.background = "";
+      storageText.style.color = "";
     }
-  } catch { /* ignore */ }
+  } catch (e) { /* ignore */ }
 }
 
-// ===== Drawer =====
+// ===== History Drawer =====
 function openDrawer() {
   renderHistory();
   historyDrawer.classList.add("open");
-  drawerOverlay.classList.add("open");
-  document.body.style.overflow = "hidden";
+  drawerOverlay.style.display = "block";
 }
 
 function closeDrawer() {
   historyDrawer.classList.remove("open");
-  drawerOverlay.classList.remove("open");
-  document.body.style.overflow = "";
+  drawerOverlay.style.display = "none";
 }
 
 function renderHistory() {
   const data = getStoredData();
+  historyList.innerHTML = "";
 
   if (data.length === 0) {
-    drawerStats.innerHTML = "No hay evaluaciones registradas.";
-    historyList.innerHTML = `<div class="history-empty">📋 Las evaluaciones guardadas aparecerán aquí.</div>`;
+    drawerStats.innerHTML = '<span style="color:var(--text-muted)">Sin evaluaciones guardadas</span>';
+    historyList.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:2rem">Aún no hay evaluaciones</p>';
     return;
   }
 
-  const totalAvg = data.reduce((s, d) => s + d.promedio, 0) / data.length;
+  // Stats
+  const avgAll = data.reduce((a, b) => a + b.promedio, 0) / data.length;
   const critical = data.filter(d => d.promedio < 2.5).length;
   const good = data.filter(d => d.promedio >= 3.5).length;
-  const totalPhotos = data.reduce((s, d) => s + (d.photoCount || 0), 0);
-
+  const totalPhotos = data.reduce((a, d) => a + (d.photoCount || 0), 0);
   drawerStats.innerHTML = `
-    <strong>${data.length}</strong> evaluaciones · 
-    Promedio: <strong>${totalAvg.toFixed(2)}</strong> · 
-    <span style="color:var(--red)">${critical} crít/def</span> · 
-    <span style="color:var(--green)">${good} bueno/exc</span>
-    ${totalPhotos > 0 ? ` · 📷 ${totalPhotos} fotos` : ''}
+    <span>📊 ${data.length} eval.</span>
+    <span>📈 Prom: ${avgAll.toFixed(2)}</span>
+    ${critical > 0 ? `<span style="color:#ef4444">🔴 ${critical} crít.</span>` : ''}
+    ${good > 0 ? `<span style="color:#22c55e">🟢 ${good} buenos</span>` : ''}
+    ${totalPhotos > 0 ? `<span>📷 ${totalPhotos}</span>` : ''}
   `;
 
-  historyList.innerHTML = data.map(ev => {
+  data.forEach(ev => {
     const cls = getClassification(ev.promedio);
-    const photoInfo = ev.photoCount ? `<div class="history-photos">📷 ${ev.photoCount} foto${ev.photoCount > 1 ? 's' : ''}</div>` : '';
-    return `
-      <div class="history-item" style="border-left-color: ${cls.color}">
-        <div class="history-info">
-          <div class="history-name">${ev.categoriaIcon || ""} ${ev.nombre}</div>
-          <div class="history-meta">${ev.categoriaName || ev.categoria} · ${ev.edificio || "—"} · ${ev.fecha || "—"}</div>
-          ${photoInfo}
-        </div>
-        <div class="history-score" style="color: ${cls.color}">${ev.promedio.toFixed(1)}</div>
-        <button class="history-delete" onclick="deleteEvaluation('${ev.id}')" title="Eliminar">🗑️</button>
+    const item = document.createElement("div");
+    item.className = "history-item";
+    item.innerHTML = `
+      <div class="history-item-header">
+        <span class="history-item-name">${ev.categoriaIcon || ''} ${ev.nombre || ev.codigo}</span>
+        <span class="history-item-score" style="background:${cls.color}22;color:${cls.color}">${cls.emoji} ${ev.promedio.toFixed(2)}</span>
       </div>
+      <div class="history-item-meta">
+        ${ev.edificio ? ev.edificio + ' · ' : ''}${ev.categoriaName || ''} · ${ev.fecha}${ev.photoCount ? ` · 📷${ev.photoCount}` : ''}
+      </div>
+      <div class="history-item-meta" style="font-size:0.7rem;opacity:0.6">
+        ${ev.evaluador || ''}
+      </div>
+      <button class="history-delete" onclick="deleteEvaluation('${ev.id}')">🗑️</button>
     `;
-  }).join("");
+    historyList.appendChild(item);
+  });
 }
 
 function deleteEvaluation(id) {
   if (!confirm("¿Eliminar esta evaluación?")) return;
-  const data = getStoredData().filter(e => e.id !== id);
+  const data = getStoredData().filter(d => d.id !== id);
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   updateBadgeCount();
   updateStorageIndicator();
   renderHistory();
-  showToast("🗑️ Evaluación eliminada");
 }
 
-// ===== Export CSV (data only, no photos) =====
+// ===== Export =====
 function exportCSV() {
   const data = getStoredData();
-  if (data.length === 0) { showToast("No hay datos para exportar"); return; }
+  if (data.length === 0) { showToast("📋 No hay datos para exportar"); return; }
 
-  const headers = ["ID","Código","Nombre","Categoría","Edificio","Piso","Fecha","Hora","Evaluador","Cargo","Promedio","Clasificación","Fotos","Observaciones","Acciones","Percepción","Mejoraría"];
+  // Gather all unique dimension keys
+  const dimKeys = new Set();
+  data.forEach(ev => Object.keys(ev.scores || {}).forEach(k => dimKeys.add(k)));
+  const dimCols = [...dimKeys].sort();
 
-  const allDimKeys = new Set();
-  data.forEach(ev => Object.keys(ev.scores || {}).forEach(k => allDimKeys.add(k)));
-  const dimKeys = [...allDimKeys];
-  const fullHeaders = [...headers, ...dimKeys.map(k => `D_${k}`)];
+  const headers = ["ID", "Código", "Nombre", "Categoría", "CategoríaNombre", "Edificio", "Piso",
+    "Fecha", "Hora", "Evaluador", "Cargo", ...dimCols.map(d => `D_${d}`),
+    "Promedio", "Clasificación", "Percepción", "Observaciones", "Acciones", "Mejoraría"];
 
   const rows = data.map(ev => {
-    const base = [
-      ev.id, ev.codigo, ev.nombre, ev.categoriaName || ev.categoria,
-      ev.edificio, ev.piso, ev.fecha, ev.hora, ev.evaluador, ev.cargo,
-      ev.promedio, ev.clasificacion, ev.photoCount || 0, ev.observaciones, ev.acciones,
-      ev.percepcion || "", ev.mejoraria || ""
-    ];
-    const dims = dimKeys.map(k => ev.scores?.[k] ?? "");
-    return [...base, ...dims];
+    const base = [ev.id, ev.codigo, ev.nombre, ev.categoria, ev.categoriaName, ev.edificio, ev.piso,
+      ev.fecha, ev.hora, ev.evaluador, ev.cargo];
+    const dims = dimCols.map(d => ev.scores?.[d] ?? "");
+    return [...base, ...dims, ev.promedio, ev.clasificacion, ev.percepcion || '',
+      `"${(ev.observaciones || '').replace(/"/g, '""')}"`,
+      `"${(ev.acciones || '').replace(/"/g, '""')}"`,
+      `"${(ev.mejoraria || '').replace(/"/g, '""')}"`];
   });
 
-  const csvContent = [fullHeaders, ...rows]
-    .map(row => row.map(cell => `"${String(cell || "").replace(/"/g, '""')}"`).join(","))
-    .join("\n");
-
-  downloadFile(
-    "\uFEFF" + csvContent,
-    `evaluaciones_uninorte_${new Date().toISOString().slice(0, 10)}.csv`,
-    "text/csv;charset=utf-8;"
-  );
-  showToast(`📥 ${data.length} evaluaciones exportadas (CSV sin fotos)`);
+  const csv = "\uFEFF" + [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+  downloadFile(csv, `evaluaciones_uninorte_${new Date().toISOString().slice(0,10)}.csv`, "text/csv;charset=utf-8");
+  showToast(`📥 CSV exportado (${data.length} evaluaciones, sin fotos)`);
 }
 
-// ===== Export JSON (with photos) =====
 function exportJSON() {
   const data = getStoredData();
-  if (data.length === 0) { showToast("No hay datos para exportar"); return; }
-
-  const totalPhotos = data.reduce((s, d) => s + (d.photoCount || 0), 0);
+  if (data.length === 0) { showToast("📋 No hay datos para exportar"); return; }
 
   const exportObj = {
-    version: "2.0",
+    version: "3.0",
     exportDate: new Date().toISOString(),
-    institution: "Universidad del Norte — Barranquilla",
+    institution: "Universidad del Norte",
     totalEvaluations: data.length,
-    totalPhotos,
+    totalPhotos: data.reduce((a, d) => a + (d.photoCount || 0), 0),
     evaluations: data
   };
 
-  const jsonStr = JSON.stringify(exportObj, null, 2);
-
-  downloadFile(
-    jsonStr,
-    `evaluaciones_uninorte_${new Date().toISOString().slice(0, 10)}.json`,
-    "application/json;charset=utf-8;"
-  );
-  showToast(`📦 ${data.length} evaluaciones exportadas con ${totalPhotos} fotos (JSON)`);
+  const json = JSON.stringify(exportObj, null, 2);
+  downloadFile(json, `evaluaciones_uninorte_${new Date().toISOString().slice(0,10)}.json`, "application/json");
+  showToast(`📥 JSON exportado (${data.length} evaluaciones, con fotos)`);
 }
 
 function downloadFile(content, filename, type) {
   const blob = new Blob([content], { type });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = filename;
-  link.click();
-  URL.revokeObjectURL(link.href);
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
-// ===== Import CSV or JSON =====
+// ===== Import =====
 function importFile(e) {
   const file = e.target.files[0];
   if (!file) return;
-
   const reader = new FileReader();
-  reader.onload = function (ev) {
+  reader.onload = (ev) => {
     const content = ev.target.result;
-
-    if (file.name.endsWith(".json")) {
+    if (file.name.endsWith('.json')) {
       importJSON(content);
-    } else {
+    } else if (file.name.endsWith('.csv')) {
       importCSV(content);
+    } else {
+      showToast("⚠️ Formato no soportado. Use .json o .csv");
     }
   };
-  reader.readAsText(file, "UTF-8");
-  e.target.value = "";
+  reader.readAsText(file);
+  e.target.value = '';
 }
 
 function importJSON(content) {
   try {
-    const obj = JSON.parse(content);
-    const evals = obj.evaluations || (Array.isArray(obj) ? obj : []);
-    if (evals.length === 0) { showToast("⚠️ No se encontraron evaluaciones"); return; }
+    const parsed = JSON.parse(content);
+    const evals = parsed.evaluations || parsed;
+    if (!Array.isArray(evals)) { showToast("⚠️ Formato JSON inválido"); return; }
 
-    const data = getStoredData();
-    let imported = 0;
+    const existing = getStoredData();
+    const existingIds = new Set(existing.map(e => e.id));
 
-    evals.forEach((ev, i) => {
-      ev.id = Date.now().toString(36) + Math.random().toString(36).substr(2, 5) + i;
-      data.push(ev);
-      imported++;
+    let added = 0;
+    evals.forEach(ev => {
+      // Generate new ID to avoid conflicts
+      ev.id = Date.now().toString(36) + Math.random().toString(36).substr(2, 5) + (added++);
+      existing.push(ev);
     });
 
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-      updateBadgeCount();
-      updateStorageIndicator();
-      renderHistory();
-      const totalPhotos = evals.reduce((s, d) => s + (d.photoCount || 0), 0);
-      showToast(`📤 ${imported} evaluaciones importadas${totalPhotos > 0 ? ` con ${totalPhotos} fotos` : ''}`);
-    } catch (err) {
-      showToast("⚠️ Almacenamiento insuficiente para importar con fotos");
-    }
-  } catch (err) {
-    showToast("⚠️ Error al procesar el archivo JSON");
-    console.error(err);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(existing));
+    updateBadgeCount();
+    updateStorageIndicator();
+    showToast(`📥 Importadas ${added} evaluaciones`);
+  } catch (e) {
+    showToast("❌ Error al importar JSON: " + e.message);
   }
 }
 
 function importCSV(content) {
   try {
-    const lines = content.split("\n").filter(l => l.trim());
-    if (lines.length < 2) { showToast("⚠️ Archivo CSV vacío"); return; }
+    const lines = content.split('\n').filter(l => l.trim());
+    if (lines.length < 2) { showToast("⚠️ CSV vacío"); return; }
 
-    const headers = parseCSVLine(lines[0]);
-    const data = getStoredData();
-    let imported = 0;
+    // Remove BOM if present
+    let headerLine = lines[0];
+    if (headerLine.charCodeAt(0) === 0xFEFF) headerLine = headerLine.substr(1);
+
+    const headers = parseCSVLine(headerLine);
+    const existing = getStoredData();
+    let added = 0;
 
     for (let i = 1; i < lines.length; i++) {
       const values = parseCSVLine(lines[i]);
-      if (values.length < 11) continue;
+      if (values.length < 5) continue;
 
       const row = {};
-      headers.forEach((h, idx) => row[h] = values[idx] || "");
+      headers.forEach((h, idx) => { row[h] = values[idx] || ''; });
 
+      // Reconstruct evaluation object
       const scores = {};
-      headers.forEach((h, idx) => {
-        if (h.startsWith("D_")) {
-          const key = h.slice(2);
-          const val = values[idx];
-          scores[key] = val === "N/A" ? "N/A" : (isNaN(val) ? "" : parseFloat(val));
-        }
+      headers.filter(h => h.startsWith('D_')).forEach(h => {
+        const dimId = h.replace('D_', '');
+        const val = row[h];
+        if (val === 'N/A') scores[dimId] = 'N/A';
+        else if (val !== '' && !isNaN(val)) scores[dimId] = parseInt(val);
       });
 
-      const promedio = parseFloat(row["Promedio"]) || 0;
-      const cls = getClassification(promedio);
-
-      data.unshift({
-        id: Date.now().toString(36) + Math.random().toString(36).substr(2, 5) + i,
-        codigo: row["Código"] || row["Codigo"] || "",
-        nombre: row["Nombre"] || `Importado ${i}`,
-        categoria: (row["Categoría"] || row["Categoria"] || "").toLowerCase().replace(/\s/g, "_"),
-        categoriaName: row["Categoría"] || row["Categoria"] || "",
-        categoriaIcon: "",
-        edificio: row["Edificio"] || "",
-        piso: row["Piso"] || "",
-        fecha: row["Fecha"] || "",
-        hora: row["Hora"] || "",
-        evaluador: row["Evaluador"] || "",
-        cargo: row["Cargo"] || "",
+      const evaluation = {
+        id: Date.now().toString(36) + Math.random().toString(36).substr(2, 5) + (added++),
+        codigo: row['Código'] || '',
+        nombre: row['Nombre'] || '',
+        categoria: row['Categoría'] || '',
+        categoriaName: row['CategoríaNombre'] || '',
+        categoriaIcon: '',
+        edificio: row['Edificio'] || '',
+        piso: row['Piso'] || '',
+        fecha: row['Fecha'] || '',
+        hora: row['Hora'] || '',
+        evaluador: row['Evaluador'] || '',
+        cargo: row['Cargo'] || '',
         scores,
         photos: {},
         photoCount: 0,
-        promedio,
-        clasificacion: cls ? cls.label : "",
-        color: cls ? cls.color : "",
-        observaciones: row["Observaciones"] || "",
-        acciones: row["Acciones"] || "",
+        promedio: parseFloat(row['Promedio']) || 0,
+        clasificacion: row['Clasificación'] || '',
+        color: '',
+        observaciones: row['Observaciones'] || '',
+        acciones: row['Acciones'] || '',
+        percepcion: row['Percepción'] ? parseInt(row['Percepción']) : null,
+        mejoraria: row['Mejoraría'] || '',
         timestamp: new Date().toISOString()
-      });
-      imported++;
+      };
+
+      // Re-derive color from classification
+      const cls = getClassification(evaluation.promedio);
+      evaluation.color = cls.color;
+      evaluation.categoriaIcon = (CATEGORIES.find(c => c.id === evaluation.categoria) || {}).icon || '';
+
+      existing.push(evaluation);
+      added++;
     }
 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(existing));
     updateBadgeCount();
     updateStorageIndicator();
-    renderHistory();
-    showToast(`📤 ${imported} evaluaciones importadas (CSV)`);
-  } catch (err) {
-    showToast("⚠️ Error al procesar el archivo CSV");
-    console.error(err);
+    showToast(`📥 Importadas ${added} evaluaciones desde CSV`);
+  } catch (e) {
+    showToast("❌ Error al importar CSV: " + e.message);
   }
 }
 
 function parseCSVLine(line) {
   const result = [];
-  let current = "";
+  let current = '';
   let inQuotes = false;
 
   for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (ch === '"') {
-      if (inQuotes && line[i + 1] === '"') { current += '"'; i++; }
-      else inQuotes = !inQuotes;
-    } else if (ch === "," && !inQuotes) {
-      result.push(current.trim());
-      current = "";
+    const char = line[i];
+    if (inQuotes) {
+      if (char === '"') {
+        if (i + 1 < line.length && line[i + 1] === '"') {
+          current += '"';
+          i++;
+        } else {
+          inQuotes = false;
+        }
+      } else {
+        current += char;
+      }
     } else {
-      current += ch;
+      if (char === '"') {
+        inQuotes = true;
+      } else if (char === ',') {
+        result.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
     }
   }
   result.push(current.trim());
@@ -1033,21 +1106,17 @@ function parseCSVLine(line) {
 
 // ===== Clear All =====
 function clearAll() {
-  const data = getStoredData();
-  if (data.length === 0) { showToast("No hay datos para eliminar"); return; }
-  if (!confirm(`¿Eliminar TODAS las ${data.length} evaluaciones (incluyendo fotos)? Esta acción no se puede deshacer.`)) return;
-
+  if (!confirm("⚠️ ¿Eliminar TODAS las evaluaciones guardadas? Esta acción no se puede deshacer.")) return;
   localStorage.removeItem(STORAGE_KEY);
   updateBadgeCount();
   updateStorageIndicator();
-  renderHistory();
-  showToast("🗑️ Todos los datos eliminados");
+  closeDrawer();
+  showToast("🗑️ Todas las evaluaciones fueron eliminadas");
 }
 
 // ===== Toast =====
 function showToast(message) {
   toast.textContent = message;
   toast.classList.add("show");
-  clearTimeout(toast._timeout);
-  toast._timeout = setTimeout(() => toast.classList.remove("show"), 3500);
+  setTimeout(() => toast.classList.remove("show"), 3500);
 }
