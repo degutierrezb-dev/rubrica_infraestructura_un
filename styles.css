@@ -25,6 +25,7 @@
   --radius-sm: 8px;
   --shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
   --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --bg-header: rgba(10, 14, 26, 0.85);
 }
 
 [data-theme="light"] {
@@ -38,6 +39,7 @@
   --text-secondary: #475569;
   --text-muted: #94a3b8;
   --shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  --bg-header: rgba(241, 245, 249, 0.85);
 }
 
 /* Theme Toggle */
@@ -64,7 +66,7 @@ body {
 /* ===== Header ===== */
 .app-header {
   position: sticky; top: 0; z-index: 100;
-  background: rgba(10, 14, 26, 0.85);
+  background: var(--bg-header);
   backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border);
 }
@@ -554,4 +556,5 @@ textarea { resize: vertical; min-height: 70px; }
   .score-label { width: 40px; height: 36px; font-size: 0.8rem; }
   .header-brand h1 { font-size: 0.92rem; }
   .photo-thumb { width: 42px; height: 42px; }
+  input, select, textarea { font-size: 16px; } /* Evita zoom automático en Safari iOS */
 }

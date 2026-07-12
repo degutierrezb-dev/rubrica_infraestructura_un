@@ -4,7 +4,7 @@
 
 const STORAGE_KEY = "uninorte_evaluaciones_v2";
 const MAX_PHOTOS_PER_DIM = 2;
-const PHOTO_MAX_SIZE = 1024;   // Max dimension in pixels
+const PHOTO_MAX_SIZE = 800;   // Max dimension in pixels
 const PHOTO_QUALITY = 0.5;     // JPEG quality (0-1)
 const STORAGE_WARN_PCT = 80;   // Warn when storage is X% full
 
@@ -870,15 +870,18 @@ function renderHistory() {
     const item = document.createElement("div");
     item.className = "history-item";
     item.innerHTML = `
-      <div class="history-item-header">
-        <span class="history-item-name">${ev.categoriaIcon || ''} ${ev.nombre || ev.codigo}</span>
-        <span class="history-item-score" style="background:${cls.color}22;color:${cls.color}">${cls.emoji} ${ev.promedio.toFixed(2)}</span>
+      <div class="history-info">
+        <div class="history-name">${ev.categoriaIcon || ''} ${ev.nombre || ev.codigo}</div>
+        <div class="history-meta">
+          ${ev.edificio ? ev.edificio + ' · ' : ''}${ev.categoriaName || ''} · ${ev.fecha}
+          ${ev.photoCount ? ` · <span class="history-photos">📷 ${ev.photoCount}</span>` : ''}
+        </div>
+        <div class="history-meta" style="font-size:0.68rem;opacity:0.7;margin-top:1px;">
+          👤 ${ev.evaluador || ''}
+        </div>
       </div>
-      <div class="history-item-meta">
-        ${ev.edificio ? ev.edificio + ' · ' : ''}${ev.categoriaName || ''} · ${ev.fecha}${ev.photoCount ? ` · 📷${ev.photoCount}` : ''}
-      </div>
-      <div class="history-item-meta" style="font-size:0.7rem;opacity:0.6">
-        ${ev.evaluador || ''}
+      <div class="history-score" style="background:${cls.color}22;color:${cls.color}">
+        ${ev.promedio.toFixed(2)}
       </div>
       <button class="history-delete" onclick="deleteEvaluation('${ev.id}')">🗑️</button>
     `;
