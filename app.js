@@ -575,7 +575,7 @@ function renderPhotoThumbs(dimId) {
   if (!row) return;
 
   // Remove existing thumbs
-  row.querySelectorAll('.photo-thumb').forEach(el => el.remove());
+  row.querySelectorAll('.photo-thumb-wrap').forEach(el => el.remove());
   const countEl = document.getElementById(`photoCount_${dimId}`);
 
   const photos = currentPhotos[dimId] || [];
@@ -583,9 +583,9 @@ function renderPhotoThumbs(dimId) {
 
   photos.forEach((src, idx) => {
     const thumb = document.createElement('div');
-    thumb.className = 'photo-thumb';
+    thumb.className = 'photo-thumb-wrap';
     thumb.innerHTML = `
-      <img src="${src}" onclick="openLightbox('${src}')" />
+      <img class="photo-thumb" src="${src}" onclick="openLightbox('${src}')" />
       <button type="button" class="photo-remove" onclick="removePhoto('${dimId}', ${idx})">×</button>
     `;
     row.appendChild(thumb);
