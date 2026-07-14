@@ -37,8 +37,8 @@ let activePhotoDimId = null;
 const form = document.getElementById("evalForm");
 const evaluadorSelect = document.getElementById("evaluador");
 const categoriaSelect = document.getElementById("categoria");
-const edificioSelect = document.getElementById("edificio");
-const codigoSelect = document.getElementById("codigo");
+let edificioSelect = document.getElementById("edificio");
+let codigoSelect = document.getElementById("codigo");
 const pisoInput = document.getElementById("piso");
 const nombreInput = document.getElementById("nombre");
 const cargoInput = document.getElementById("cargo");
@@ -418,6 +418,13 @@ function swapToTextInput(groupId, fieldId, placeholder) {
   input.id = fieldId;
   input.placeholder = placeholder;
   if (existing) existing.replaceWith(input);
+
+  // Update global reference
+  if (fieldId === 'edificio') {
+    edificioSelect = input;
+  } else if (fieldId === 'codigo') {
+    codigoSelect = input;
+  }
 }
 
 // Restore a text <input> back to a <select>
@@ -434,10 +441,13 @@ function restoreSelect(groupId, fieldId, defaultText) {
   select.disabled = true;
   select.innerHTML = `<option value="">${defaultText}</option>`;
   if (existing) existing.replaceWith(select);
-  // Re-bind event listener
+
+  // Update global reference and re-bind event listener
   if (fieldId === 'edificio') {
+    edificioSelect = select;
     select.addEventListener('change', onEdificioChange);
   } else if (fieldId === 'codigo') {
+    codigoSelect = select;
     select.addEventListener('change', onCodigoChange);
   }
 }
@@ -1151,10 +1161,15 @@ function clearAll() {
 }
 
 // ===== Toast =====
+let toastTimeout = null;
 function showToast(message) {
+  if (toastTimeout) clearTimeout(toastTimeout);
   toast.textContent = message;
   toast.classList.add("show");
-  setTimeout(() => toast.classList.remove("show"), 3500);
+  toastTimeout = setTimeout(() => {
+    toast.classList.remove("show");
+    toastTimeout = null;
+  }, 3500);
 }
 
 // ===== Edit Mode =====
