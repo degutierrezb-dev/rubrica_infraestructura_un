@@ -482,7 +482,38 @@ textarea { resize: vertical; min-height: 70px; }
 }
 
 .history-delete:hover { color: var(--red); }
+
+.history-edit {
+  background: none; border: none; color: var(--text-muted);
+  cursor: pointer; padding: 4px; font-size: 1rem; transition: color var(--transition); flex-shrink: 0;
+}
+
+.history-edit:hover { color: var(--accent); }
+
 .history-empty { text-align: center; padding: 40px 0; color: var(--text-muted); font-size: 0.85rem; }
+
+/* ===== Edit Mode Banner ===== */
+.edit-banner {
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(14, 165, 233, 0.08);
+  border: 1px solid var(--accent);
+  border-left: 5px solid var(--accent);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  animation: slideDown var(--transition);
+}
+
+.edit-banner-content {
+  display: flex; align-items: center; gap: 8px;
+  color: var(--text-primary);
+  font-size: 0.88rem;
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
 
 /* ===== Toast ===== */
 .toast {
@@ -612,6 +643,14 @@ textarea { resize: vertical; min-height: 70px; }
   <!-- Main Form -->
   <main class="main-content">
     <form id="evalForm" autocomplete="off">
+      <!-- Banner de Edición -->
+      <div id="editBanner" class="edit-banner" style="display: none;">
+        <div class="edit-banner-content">
+          <span>✏️ <strong>Modo Edición:</strong> Actualizando <span id="editSpaceLabel"></span></span>
+        </div>
+        <button type="button" class="btn-sm btn-outline" id="btnCancelEdit">Cancelar</button>
+      </div>
+
       <!-- Section: General Data -->
       <section class="form-section">
         <div class="section-header">
@@ -1887,6 +1926,7 @@ const drawerStats = document.getElementById("drawerStats");
 let currentCatHasEspacios = false;
 // Track the currently filtered ESPACIOS for the selected evaluator
 let evaluadorEspacios = [];
+let editingEvaluationId = null;
 
 // ===== Init =====
 document.addEventListener("DOMContentLoaded", () => {
@@ -1982,6 +2022,7 @@ function bindEvents() {
   codigoSelect.addEventListener("change", onCodigoChange);
   form.addEventListener("submit", onSubmit);
   form.addEventListener("reset", onReset);
+  document.getElementById("btnCancelEdit").addEventListener("click", cancelEditMode);
 
   // Theme toggle
   document.getElementById("btnTheme").addEventListener("click", toggleTheme);
@@ -2540,7 +2581,46 @@ function onSubmit(e) {
 
   // Try to save
   const data = getStoredData();
-  data.unshift(evaluation);
+  const isEdit = editingEvaluationId !== null;
+  const evaluationId = isEdit ? editingEvaluationId : (Date.now().toString(36) + Math.random().toString(36).substr(2, 5));
+  const originalTimestamp = isEdit ? (data.find(item => item.id === editingEvaluationId)?.timestamp || new Date().toISOString()) : new Date().toISOString();
+
+  const evaluation = {
+    id: evaluationId,
+    codigo: codigoVal,
+    nombre,
+    categoria: catId,
+    categoriaName: cat.name,
+    categoriaIcon: cat.icon,
+    edificio: edificioVal,
+    piso: document.getElementById("piso").value.trim(),
+    fecha: document.getElementById("fecha").value,
+    hora: document.getElementById("hora").value,
+    evaluador,
+    cargo: document.getElementById("cargo").value.trim(),
+    scores,
+    photos: Object.keys(currentPhotos).length > 0 ? { ...currentPhotos } : {},
+    photoCount: totalPhotos,
+    promedio: parseFloat(avg.toFixed(2)),
+    clasificacion: cls.label,
+    color: cls.color,
+    observaciones: document.getElementById("observaciones").value.trim(),
+    acciones: document.getElementById("acciones").value.trim(),
+    percepcion: (() => { const r = document.querySelector('input[name="percepcion"]:checked'); return r ? parseInt(r.value) : null; })(),
+    mejoraria: document.getElementById("mejoraria") ? document.getElementById("mejoraria").value.trim() : '',
+    timestamp: originalTimestamp
+  };
+
+  if (isEdit) {
+    const idx = data.findIndex(item => item.id === editingEvaluationId);
+    if (idx !== -1) {
+      data[idx] = evaluation;
+    } else {
+      data.unshift(evaluation);
+    }
+  } else {
+    data.unshift(evaluation);
+  }
 
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
@@ -2549,7 +2629,12 @@ function onSubmit(e) {
     showToast("⚠️ Almacenamiento lleno. Guardando sin fotos...");
     evaluation.photos = {};
     evaluation.photoCount = 0;
-    data[0] = evaluation;
+    if (isEdit) {
+      const idx = data.findIndex(item => item.id === editingEvaluationId);
+      if (idx !== -1) data[idx] = evaluation;
+    } else {
+      data[0] = evaluation;
+    }
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     } catch (err2) {
@@ -2564,49 +2649,35 @@ function onSubmit(e) {
   saveEvaluadorData();
 
   const photoMsg = totalPhotos > 0 ? ` (${totalPhotos} foto${totalPhotos > 1 ? 's' : ''})` : '';
-  showToast(`✅ Guardado: ${nombre} — ${cls.emoji} ${cls.label} (${avg.toFixed(2)})${photoMsg}`);
+  const successMsg = isEdit ? `✅ Actualizado: ${nombre}` : `✅ Guardado: ${nombre} — ${cls.emoji} ${cls.label} (${avg.toFixed(2)})${photoMsg}`;
+  showToast(successMsg);
 
-  // Preserve evaluator and cargo across resets
-  const savedEvaluador = evaluadorSelect.value;
-  const savedCargo = cargoInput.value;
-
-  form.reset();
-  setDefaults();
-  resetCascade();
-
-  // Restore evaluator and re-trigger category population
-  evaluadorSelect.value = savedEvaluador;
-  cargoInput.value = savedCargo;
-  onEvaluadorChange(); // Re-populate categories for the evaluator
-
-  dimensionsSection.style.display = "none";
-  resultSection.style.display = "none";
-  obsSection.style.display = "none";
-  perceptionSection.style.display = "none";
-  perceptionText.textContent = '';
-  formActions.style.display = "none";
-  emptyState.style.display = "block";
+  // Exit edit mode and reset form
+  cancelEditMode();
 }
 
 function onReset() {
-  currentPhotos = {};
-  const savedEvaluador = evaluadorSelect.value;
-  const savedCargo = cargoInput.value;
-  setTimeout(() => {
-    setDefaults();
-    resetCascade();
-    // Restore evaluator (form.reset clears all selects/inputs)
-    evaluadorSelect.value = savedEvaluador;
-    cargoInput.value = savedCargo;
-    onEvaluadorChange(); // Re-populate categories
-    dimensionsSection.style.display = "none";
-    resultSection.style.display = "none";
-    obsSection.style.display = "none";
-    perceptionSection.style.display = "none";
-    perceptionText.textContent = '';
-    formActions.style.display = "none";
-    emptyState.style.display = "block";
-  }, 10);
+  if (editingEvaluationId !== null) {
+    cancelEditMode();
+  } else {
+    currentPhotos = {};
+    const savedEvaluador = evaluadorSelect.value;
+    const savedCargo = cargoInput.value;
+    setTimeout(() => {
+      setDefaults();
+      resetCascade();
+      evaluadorSelect.value = savedEvaluador;
+      cargoInput.value = savedCargo;
+      onEvaluadorChange(); // Re-populate categories
+      dimensionsSection.style.display = "none";
+      resultSection.style.display = "none";
+      obsSection.style.display = "none";
+      perceptionSection.style.display = "none";
+      perceptionText.textContent = '';
+      formActions.style.display = "none";
+      emptyState.style.display = "block";
+    }, 10);
+  }
 }
 
 // ===== Storage =====
@@ -2695,6 +2766,7 @@ function renderHistory() {
       <div class="history-score" style="background:${cls.color}22;color:${cls.color}">
         ${ev.promedio.toFixed(2)}
       </div>
+      <button class="history-edit" onclick="editEvaluation('${ev.id}')" title="Editar">✏️</button>
       <button class="history-delete" onclick="deleteEvaluation('${ev.id}')">🗑️</button>
     `;
     historyList.appendChild(item);
@@ -2934,6 +3006,162 @@ function showToast(message) {
   toast.textContent = message;
   toast.classList.add("show");
   setTimeout(() => toast.classList.remove("show"), 3500);
+}
+
+// ===== Edit Mode =====
+function editEvaluation(id) {
+  const data = getStoredData();
+  const ev = data.find(item => item.id === id);
+  if (!ev) {
+    showToast("❌ No se encontró la evaluación");
+    return;
+  }
+
+  // Set edit state
+  editingEvaluationId = id;
+
+  // Show banner
+  const editBanner = document.getElementById("editBanner");
+  const editSpaceLabel = document.getElementById("editSpaceLabel");
+  if (editBanner && editSpaceLabel) {
+    editSpaceLabel.textContent = ev.nombre || ev.codigo || "Espacio sin nombre";
+    editBanner.style.display = "flex";
+  }
+
+  // Change submit button text
+  const btnSave = document.getElementById("btnSave");
+  if (btnSave) {
+    btnSave.innerHTML = `
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      Actualizar Evaluación
+    `;
+  }
+
+  // Close history drawer
+  closeDrawer();
+
+  // Load General Data
+  evaluadorSelect.value = ev.evaluador || "";
+  // Force evaluation list filter
+  onEvaluadorChange();
+
+  // Cargo
+  cargoInput.value = ev.cargo || "";
+
+  // Category
+  categoriaSelect.value = ev.categoria || "";
+  onCategoryChange();
+
+  // Edificio & Código
+  const edificioEl = document.getElementById("edificio");
+  if (edificioEl) {
+    edificioEl.value = ev.edificio || "";
+    if (edificioEl.tagName === 'SELECT') {
+      onEdificioChange();
+    }
+  }
+
+  const codigoEl = document.getElementById("codigo");
+  if (codigoEl) {
+    codigoEl.value = ev.codigo || "";
+    if (codigoEl.tagName === 'SELECT') {
+      onCodigoChange();
+    }
+  }
+
+  // Floor and Name
+  pisoInput.value = ev.piso || "";
+  nombreInput.value = ev.nombre || "";
+
+  // Date and Time
+  document.getElementById("fecha").value = ev.fecha || "";
+  document.getElementById("hora").value = ev.hora || "";
+
+  // Load scores for dimensions
+  const cat = CATEGORIES.find(c => c.id === ev.categoria);
+  if (cat) {
+    cat.dimensions.forEach(dim => {
+      const score = ev.scores?.[dim.id];
+      if (score !== undefined) {
+        const radioVal = (score === "N/A" || score === "na") ? "na" : score;
+        const radio = document.querySelector(`input[name="dim_${dim.id}"][value="${radioVal}"]`);
+        if (radio) {
+          radio.checked = true;
+          // Trigger change event manually to update badge colors
+          radio.dispatchEvent(new Event('change'));
+        }
+      }
+    });
+  }
+
+  // Observations & Actions & Suggestions
+  document.getElementById("observaciones").value = ev.observaciones || "";
+  if (document.getElementById("acciones")) {
+    document.getElementById("acciones").value = ev.acciones || "";
+  }
+  if (document.getElementById("mejoraria")) {
+    document.getElementById("mejoraria").value = ev.mejoraria || "";
+  }
+
+  // Perception radio button
+  if (ev.percepcion !== undefined && ev.percepcion !== null) {
+    const radio = document.querySelector(`input[name="percepcion"][value="${ev.percepcion}"]`);
+    if (radio) {
+      radio.checked = true;
+      radio.dispatchEvent(new Event('change'));
+    }
+  } else {
+    document.querySelectorAll('input[name="percepcion"]').forEach(r => r.checked = false);
+    document.getElementById("perceptionText").textContent = "";
+  }
+
+  // Photos
+  currentPhotos = ev.photos ? JSON.parse(JSON.stringify(ev.photos)) : {};
+  if (cat) {
+    cat.dimensions.forEach(dim => {
+      renderPhotoThumbs(dim.id);
+    });
+  }
+
+  // Scroll to top
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function cancelEditMode() {
+  editingEvaluationId = null;
+
+  // Hide banner
+  const editBanner = document.getElementById("editBanner");
+  if (editBanner) editBanner.style.display = "none";
+
+  // Revert submit button text
+  const btnSave = document.getElementById("btnSave");
+  if (btnSave) {
+    btnSave.innerHTML = `
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      Guardar Evaluación
+    `;
+  }
+
+  // Reset form but preserve evaluator
+  const savedEvaluador = evaluadorSelect.value;
+  const savedCargo = cargoInput.value;
+
+  form.reset();
+  setDefaults();
+  resetCascade();
+
+  evaluadorSelect.value = savedEvaluador;
+  cargoInput.value = savedCargo;
+  onEvaluadorChange();
+
+  dimensionsSection.style.display = "none";
+  resultSection.style.display = "none";
+  obsSection.style.display = "none";
+  perceptionSection.style.display = "none";
+  perceptionText.textContent = '';
+  formActions.style.display = "none";
+  emptyState.style.display = "block";
 }
     // === FIN_APP ===
   </script>

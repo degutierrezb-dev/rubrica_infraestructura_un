@@ -27,6 +27,12 @@
 - **Optimización de Fotos y Espacio Offline:** Se ajustó la resolución máxima de compresión de las imágenes de `1024px` a `800px` (`PHOTO_MAX_SIZE`), lo cual reduce el peso de cada foto en un ~30-40% sin perder calidad de lectura, permitiendo almacenar casi el doble de evaluaciones en el almacenamiento local del dispositivo.
 - **Corrección de Diseño en Historial:** Se alineó el marcado HTML dinámico del historial con las clases definidas en `styles.css` (`history-info`, `history-name`, `history-meta`, `history-score`). Esto corrige el error de visualización donde las columnas se apretaban en una sola línea y se solapaban en el cajón lateral.
 
+### 7. Edición de Evaluaciones Guardadas
+- **Botón de Edición en Historial:** Cada registro en el historial cuenta ahora con un botón de lápiz (`✏️`) que permite cargarlo nuevamente en el formulario.
+- **Modo Edición:** Al hacer clic en editar, el panel lateral se cierra automáticamente, el formulario se desplaza al inicio y se activa un banner azul superior que indica qué espacio se está editando. Además, el botón de guardado cambia su texto a **"Actualizar Evaluación"**.
+- **Carga de Datos:** Se cargan de vuelta todas las calificaciones asignadas a las dimensiones, observaciones, sugerencias, fecha, hora, fotos asociadas (permitiendo eliminarlas o agregar nuevas) y la percepción de atractividad.
+- **Actualización sin Duplicados:** Al presionar "Actualizar Evaluación", se sobrescribe el registro original en el historial conservando su ID original, y se retorna automáticamente al modo de registro normal. Se puede cancelar la edición en cualquier momento pulsando el botón "Cancelar" del banner.
+
 ---
 
 ## Archivos Modificados
