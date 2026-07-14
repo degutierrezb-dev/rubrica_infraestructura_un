@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <script>
     window.onerror = function (message, url, lineNo, colNo, error) {
+      // Ignorar falsas alarmas de extensiones o del menú nativo de Safari (Script error en línea 0)
+      if (message === "Script error." || lineNo === 0 || !url) {
+        return false;
+      }
       alert("Error de JS detectado:\n" + message + "\nEn: " + url + "\nLínea: " + lineNo + " Col: " + colNo + "\nStack: " + (error ? error.stack : "N/A"));
       return false;
     };
