@@ -2562,33 +2562,6 @@ function onSubmit(e) {
   const edificioEl = document.getElementById("edificio");
   const codigoVal = codigoEl ? codigoEl.value.trim() : '';
   const edificioVal = edificioEl ? edificioEl.value.trim() : '';
-
-  const evaluation = {
-    id: Date.now().toString(36) + Math.random().toString(36).substr(2, 5),
-    codigo: codigoVal,
-    nombre,
-    categoria: catId,
-    categoriaName: cat.name,
-    categoriaIcon: cat.icon,
-    edificio: edificioVal,
-    piso: document.getElementById("piso").value.trim(),
-    fecha: document.getElementById("fecha").value,
-    hora: document.getElementById("hora").value,
-    evaluador,
-    cargo: document.getElementById("cargo").value.trim(),
-    scores,
-    photos: Object.keys(currentPhotos).length > 0 ? { ...currentPhotos } : {},
-    photoCount: totalPhotos,
-    promedio: parseFloat(avg.toFixed(2)),
-    clasificacion: cls.label,
-    color: cls.color,
-    observaciones: document.getElementById("observaciones").value.trim(),
-    acciones: document.getElementById("acciones").value.trim(),
-    percepcion: (() => { const r = document.querySelector('input[name="percepcion"]:checked'); return r ? parseInt(r.value) : null; })(),
-    mejoraria: document.getElementById("mejoraria") ? document.getElementById("mejoraria").value.trim() : '',
-    timestamp: new Date().toISOString()
-  };
-
   // Try to save
   const data = getStoredData();
   const isEdit = editingEvaluationId !== null;
