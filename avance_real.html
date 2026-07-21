@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard de Monitoreo de Avance — UniNorte</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0e1a; --bg2: #111827; --bg-card: rgba(17,24,39,0.7);
+      --glass: rgba(255,255,255,0.04); --border: rgba(255,255,255,0.08);
+      --text: #f1f5f9; --text2: #94a3b8; --muted: #64748b;
+      --accent: #0ea5e9; --accent2: #06b6d4;
+      --green: #22c55e; --blue: #3b82f6; --yellow: #eab308;
+      --orange: #f97316; --red: #ef4444;
+      --radius: 12px;
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding-bottom: 60px;
+    }
+
+    header {
+      background: rgba(10,14,26,0.9);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 20px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .header-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    header h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    header p { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      backdrop-filter: blur(12px);
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-label {
+      font-size: 0.72rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 600;
+    }
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 800;
+      margin-top: 6px;
+      line-height: 1;
+    }
+    .stat-sub {
+      font-size: 0.75rem;
+      color: var(--text2);
+      margin-top: 6px;
+    }
+    .stat-accent {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 60px;
+      height: 60px;
+      border-radius: 0 0 0 60px;
+      opacity: 0.1;
+    }
+
+    /* Search & Controls */
+    .controls-row {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .search-input {
+      flex: 1;
+      min-width: 280px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      padding: 10px 16px;
+      font-family: inherit;
+      font-size: 0.88rem;
+    }
+    .search-input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    .filter-btn {
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--glass);
+      color: var(--text2);
+      transition: all 0.2s;
+    }
+    .filter-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+    .sort-select {
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text2);
+      outline: none;
+      transition: all 0.2s;
+    }
+    .sort-select:focus {
+      border-color: var(--accent);
+    }
+    .sort-select option {
+      background: var(--bg2);
+      color: var(--text);
+    }
+
+    /* Evaluator Row */
+    .ev-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 12px;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+    .ev-card:hover {
+      border-color: rgba(255,255,255,0.15);
+    }
+    .ev-header {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      user-select: none;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .ev-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .ev-status {
+      font-size: 1.25rem;
+    }
+    .ev-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+    .ev-stats-brief {
+      font-size: 0.78rem;
+      color: var(--text2);
+    }
+    .progress-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 250px;
+    }
+    .progress-bar-bg {
+      flex: 1;
+      height: 8px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.5s;
+    }
+    .progress-text {
+      font-size: 0.78rem;
+      font-weight: 700;
+      width: 45px;
+      text-align: right;
+    }
+
+    /* Expandable details */
+    .ev-details {
+      display: none;
+      border-top: 1px solid var(--border);
+      background: rgba(10,14,26,0.5);
+      padding: 20px;
+    }
+    .ev-card.open .ev-details {
+      display: block;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 16px;
+    }
+    .tab {
+      padding: 8px 16px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--muted);
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    .tab:hover {
+      color: var(--text);
+    }
+    .tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.78rem;
+    }
+    thead th {
+      text-align: left;
+      padding: 8px 12px;
+      color: var(--muted);
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      border-bottom: 1px solid var(--border);
+    }
+    tbody tr {
+      border-bottom: 1px solid rgba(255,255,255,0.02);
+    }
+    tbody tr:last-child {
+      border-bottom: none;
+    }
+    td {
+      padding: 8px 12px;
+      vertical-align: middle;
+    }
+    .score-badge {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 0.72rem;
+    }
+    .file-badge {
+      font-size: 0.65rem;
+      color: var(--muted);
+      background: var(--glass);
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+    }
+    
+    .empty-tab {
+      text-align: center;
+      padding: 30px 20px;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-inner">
+      <div>
+        <h1>📊 Monitoreo de Avance en Tiempo Real</h1>
+        <p>Rúbrica de Infraestructura — Universidad del Norte</p>
+      </div>
+      <div>
+        <p style="text-align: right; color: var(--text2);">Actualizado: 21/07/2026 09:12 AM</p>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Espacios Asignados</div>
+        <div class="stat-value">493</div>
+        <div class="stat-sub">Registrados en Excel v3.0</div>
+        <div class="stat-accent" style="background:var(--blue);"></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Evaluados de Asignación</div>
+        <div class="stat-value" style="color: var(--green);">274</div>
+        <div class="stat-sub">Avance general: 55.6%</div>
+        <div class="stat-accent" style="background:var(--green);"></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Avance Global</div>
+        <div class="stat-value" style="color: var(--accent);">55.6%</div>
+        <div class="progress-bar-bg" style="margin-top:10px; height:6px;">
+          <div class="progress-bar-fill" style="width: 55.57809330628803%; background: var(--accent);"></div>
+        </div>
+        <div class="stat-accent" style="background:var(--accent);"></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Espacios Extras Evaluados</div>
+        <div class="stat-value" style="color: var(--yellow);">22</div>
+        <div class="stat-sub">Pasillos y ad-hoc fuera de planilla</div>
+        <div class="stat-accent" style="background:var(--yellow);"></div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls-row">
+      <input type="text" class="search-input" id="searchInput" placeholder="🔍 Buscar evaluador/a..." oninput="filterEvaluators()">
+      <button class="filter-btn active" id="btnFilterAll" onclick="setFilter('all')">Todos</button>
+      <button class="filter-btn" id="btnFilterPending" onclick="setFilter('pending')">Con pendientes</button>
+      <button class="filter-btn" id="btnFilterComplete" onclick="setFilter('complete')">Completados (100%)</button>
+      <select class="sort-select" id="sortSelect" onchange="handleSortChange()">
+        <option value="name_asc">Ordenar: Nombre (A-Z)</option>
+        <option value="name_desc">Ordenar: Nombre (Z-A)</option>
+        <option value="progress_desc">Ordenar: Avance (Mayor a Menor)</option>
+        <option value="progress_asc">Ordenar: Avance (Menor a Mayor)</option>
+      </select>
+    </div>
+
+    <!-- Evaluators List -->
+    <div id="evaluatorsContainer"></div>
+  </main>
+
+  <script>
+    const DATA = [{"name": "ANA KARINA QUINTERO ARTEAGA", "assigned_count": 14, "evaluated_count": 0, "pending_count": 14, "extra_count": 0, "progress_pct": 0.0, "done_list": [], "pending_list": [{"cat": "auditorio", "cat_excel": "Auditorios/Salas de Eventos", "ed": "CAMPUS", "cod": "AUDITORIO", "piso": "1", "nom": "Auditorio Marvel Moreno", "ev": "ANA KARINA QUINTERO ARTEAGA"}, {"cat": "bano", "cat_excel": "Baños", "ed": "BLOQI", "cod": "BATH21", "piso": "1", "nom": "Baño Hombre BLOQI1 - Piso 1", "ev": "ANA KARINA QUINTERO ARTEAGA"}, {"cat": "bano", "cat_excel": "Baños", "ed": "BLOQI", "cod": "BATH22", "piso": "1", "nom": "Baño Mujeres BLOQI1 - Piso 1", "ev": "ANA KARINA QUINTERO ARTEAGA"}, {"cat": "bano", "cat_excel": "Baños", "ed": "BLOQI", "cod": "BATH23", "piso": "2", "nom": "Baño Hombres BLOQI4 - Piso 2", "ev": "ANA KARINA QUINTERO ARTEAGA"}, {"cat": "bano", "cat_excel": "Baños", "ed": "BLOQI", "cod": "BATH24", "piso": "2", "nom": "Baño Mujeres BLOQI4 - Piso 2", "ev": "ANA KARINA QUINTERO ARTEAGA"}, {"cat": "bano", "cat_excel": "Baños", "ed": "BLOQK", "cod": "BATH34", "piso": "1", "nom": "Baño Mujeres BLOQK - Piso 1", "ev": "ANA KARINA QUINTERO ARTEAGA"}, {"cat": "bano", "cat_excel": "Baños", "ed": "BLOQK", "cod": "BATH35", "piso": "2", "nom": "Baño Mujeres BLOQK - Piso 2", "ev": "ANA KARINA QUINTERO ARTEAGA"}, {"cat": "bano", "cat_excel": "Baños", "ed": "BLOQK", "cod": "BATH36", "piso": "3", "nom": "Baño Mujeres BLOQK - Piso 3", "ev": "ANA KARINA QUINTERO ARTEAGA"}, {"cat": "bano", "cat_excel": "Baños", "ed": "BLOQK", "cod": "BATH37", "piso": "4", "nom": "Baño Mujeres BLOQK - Piso 4", "ev": "ANA KARINA QUINTERO ARTEAGA"}, {"cat": "bano", "cat_excel": "Baños", "ed": "BLOQK", "cod": "BATH38", "piso": "5", "nom": "Baño Mujeres BLOQK - Piso 5", "ev": "ANA KARINA QUINTERO ARTEAGA"}, {"cat": "bano", "cat_excel": "Baños", "ed": "BLOQK", "cod": "BATH39", "piso": "6", "nom": "Baño Mujeres BLOQK - Piso 6", "ev": "ANA KARINA QUINTERO ARTEAGA"}, {"cat": "bano", "cat_excel": "Baños", "ed": "BLOQK", "cod": "BATH40", "piso": "7", "nom": "Baño Mujeres BLOQK - Piso 7", "ev": "ANA KARINA QUINTERO ARTEAGA"}, {"cat": "bano", "cat_excel": "Baños", "ed": "BLOQK", "cod": "BATH41", "piso": "8", "nom": "Baño Mujeres BLOQK - Piso 8", "ev": "ANA KARINA QUINTERO ARTEAGA"}, {"cat": "bano", "cat_excel": "Baños", "ed": "BLOQK", "cod": "BATH42", "piso": "9", "nom": "Baño Mujeres BLOQK - Piso 9", "ev": "ANA KARINA QUINTERO ARTEAGA"}], "extra_list": []}, {"name": "ANGELA MERCEDES GONZALEZ VERGARA", "assigned_count": 14, "evaluated_count": 13, "pending_count": 1, "extra_count": 2, "progress_pct": 92.85714285714286, "done_list": [{"cod": "32E", "nom": "Salón 32E", "cat": "Salón de clases", "ed": "BLOQE", "piso": "3", "fecha": "2026-07-17", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-17 - Ángela G.json"}, {"cod": "11E", "nom": "Salón 11E", "cat": "Salón de clases", "ed": "BLOQE", "piso": "1", "fecha": "2026-07-17", "promedio": 4.14, "file": "evaluaciones_uninorte_2026-07-17 - Ángela G.json"}, {"cod": "33E", "nom": "Salón 33E", "cat": "Salón de clases", "ed": "BLOQE", "piso": "3", "fecha": "2026-07-17", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-17 - Ángela G.json"}, {"cod": "22E", "nom": "Salón 22E", "cat": "Salón de clases", "ed": "BLOQE", "piso": "2", "fecha": "2026-07-17", "promedio": 4.86, "file": "evaluaciones_uninorte_2026-07-17 - Ángela G.json"}, {"cod": "23E", "nom": "Salón 23E", "cat": "Salón de clases", "ed": "BLOQE", "piso": "2", "fecha": "2026-07-17", "promedio": 4.57, "file": "evaluaciones_uninorte_2026-07-17 - Ángela G.json"}, {"cod": "12E", "nom": "Salón 12E", "cat": "Salón de clases", "ed": "BLOQE", "piso": "1", "fecha": "2026-07-17", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-17 - Ángela G.json"}, {"cod": "24E", "nom": "Salón 24E", "cat": "Salón de clases", "ed": "BLOQE", "piso": "2", "fecha": "2026-07-17", "promedio": 4.71, "file": "evaluaciones_uninorte_2026-07-17 - Ángela G.json"}, {"cod": "25E", "nom": "Salón 25E", "cat": "Salón de clases", "ed": "BLOQE", "piso": "2", "fecha": "2026-07-17", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-17 - Ángela G.json"}, {"cod": "LE-1", "nom": "Lab. Enfermedades Tropicales", "cat": "Laboratorios", "ed": "BLOQE", "piso": "", "fecha": "2026-07-17", "promedio": 3.6, "file": "evaluaciones_uninorte_2026-07-17 - Ángela G.json"}, {"cod": "LE-3_2", "nom": "Laboratorio de Morfología", "cat": "Laboratorios", "ed": "BLOQE", "piso": "", "fecha": "2026-07-17", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-17 - Ángela G.json"}, {"cod": "LE-4", "nom": "Lab. de Enfermería", "cat": "Laboratorios", "ed": "BLOQE", "piso": "", "fecha": "2026-07-17", "promedio": 4.8, "file": "evaluaciones_uninorte_2026-07-17 - Ángela G.json"}, {"cod": "BATH07", "nom": "Baño Hombres BLOQE - Piso 1", "cat": "Baños", "ed": "BLOQE", "piso": "1", "fecha": "2026-07-15", "promedio": 4, "file": "evaluaciones_uninorte_2026-07-17 - Ángela G.json"}, {"cod": "BATH08", "nom": "Baño Mujeres BLOQE - Piso 2", "cat": "Baños", "ed": "BLOQE", "piso": "2", "fecha": "2026-07-15", "promedio": 4.25, "file": "evaluaciones_uninorte_2026-07-17 - Ángela G.json"}], "pending_list": [{"cat": "laboratorio", "cat_excel": "Laboratorios", "ed": "BLOQE", "cod": "LE-5", "piso": "", "nom": "Lab. de Psicología", "ev": "ANGELA MERCEDES GONZALEZ VERGARA"}], "extra_list": [{"cod": "PAS-03", "nom": "Pasillo 03", "cat": "Pasillo / Escalera / Área Común", "ed": "BLOQE", "piso": "Piso 3", "fecha": "2026-07-17", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-17 - Ángela G.json"}, {"cod": "PAS-01", "nom": "Pasillo piso 1 Bloque E", "cat": "Pasillo / Escalera / Área Común", "ed": "BLOQE", "piso": "1", "fecha": "2026-07-15", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-17 - Ángela G.json"}]}, {"name": "Alexander Villegas Mendoza", "assigned_count": 13, "evaluated_count": 13, "pending_count": 0, "extra_count": 0, "progress_pct": 100.0, "done_list": [{"cod": "5M", "nom": "Salón de clase música 5M", "cat": "Salón de clases", "ed": "BLOQM", "piso": "1", "fecha": "2026-07-16", "promedio": 4.2, "file": "evaluaciones_uninorte_2026-07-17 - Alexander V.json"}, {"cod": "4M", "nom": "4M", "cat": "Salón de clases", "ed": "BLOQM", "piso": "1", "fecha": "2026-07-16", "promedio": 4.14, "file": "evaluaciones_uninorte_2026-07-17 - Alexander V.json"}, {"cod": "1M", "nom": "1M", "cat": "Salón de clases", "ed": "BLOQM", "piso": "1", "fecha": "2026-07-16", "promedio": 4.43, "file": "evaluaciones_uninorte_2026-07-17 - Alexander V.json"}, {"cod": "2M", "nom": "2M", "cat": "Salón de clases", "ed": "BLOQM", "piso": "1", "fecha": "2026-07-16", "promedio": 4.86, "file": "evaluaciones_uninorte_2026-07-17 - Alexander V.json"}, {"cod": "3M", "nom": "3M", "cat": "Salón de clases", "ed": "BLOQM", "piso": "1", "fecha": "2026-07-16", "promedio": 4.57, "file": "evaluaciones_uninorte_2026-07-17 - Alexander V.json"}, {"cod": "BLD-M", "nom": "Edificio Bloque M", "cat": "Fachadas de Edificios", "ed": "BLOQM", "piso": "", "fecha": "2026-07-16", "promedio": 3.5, "file": "evaluaciones_uninorte_2026-07-17 - Alexander V.json"}, {"cod": "PISCINA", "nom": "Piscina", "cat": "Canchas Deportivas", "ed": "CAMPUS", "piso": "", "fecha": "2026-07-16", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-17 - Alexander V.json"}, {"cod": "BATH43", "nom": "Baño Hombres BLOQM", "cat": "Baños", "ed": "BLOQM", "piso": "1", "fecha": "2026-07-16", "promedio": 4, "file": "evaluaciones_uninorte_2026-07-17 - Alexander V.json"}, {"cod": "BATH44", "nom": "Baño Hombres BLOQM", "cat": "Baños", "ed": "BLOQM", "piso": "1", "fecha": "2026-07-16", "promedio": 3.25, "file": "evaluaciones_uninorte_2026-07-17 - Alexander V.json"}, {"cod": "BATH45", "nom": "Baño Hombres BLOQM", "cat": "Baños", "ed": "BLOQM", "piso": "1", "fecha": "2026-07-16", "promedio": 4.5, "file": "evaluaciones_uninorte_2026-07-17 - Alexander V.json"}, {"cod": "BATH46", "nom": "Baño Mujeres BLOQM", "cat": "Baños", "ed": "BLOQM", "piso": "1", "fecha": "2026-07-17", "promedio": 3.75, "file": "evaluaciones_uninorte_2026-07-17 - Alexander V.json"}, {"cod": "BATH47", "nom": "Baño Mujeres BLOQM", "cat": "Baños", "ed": "BLOQM", "piso": "1", "fecha": "2026-07-17", "promedio": 3.25, "file": "evaluaciones_uninorte_2026-07-17 - Alexander V.json"}, {"cod": "BATH48", "nom": "Baño Mujeres BLOQM", "cat": "Baños", "ed": "BLOQM", "piso": "1", "fecha": "2026-07-17", "promedio": 4.5, "file": "evaluaciones_uninorte_2026-07-17 - Alexander V.json"}], "pending_list": [], "extra_list": []}, {"name": "CESAR MANUEL STAND ZAMBRANO", "assigned_count": 13, "evaluated_count": 0, "pending_count": 13, "extra_count": 0, "progress_pct": 0.0, "done_list": [], "pending_list": [{"cat": "laboratorio", "cat_excel": "Laboratorios", "ed": "BLOQK", "cod": "6-4L", "piso": "6", "nom": "Lab Termo Fluidos", "ev": "CESAR MANUEL STAND ZAMBRANO"}, {"cat": "laboratorio", "cat_excel": "Laboratorios", "ed": "BLOQK", "cod": "6-5L", "piso": "6", "nom": "Lab. Biocombustible", "ev": "CESAR MANUEL STAND ZAMBRANO"}, {"cat": "laboratorio", "cat_excel": "Laboratorios", "ed": "BLOQK", "cod": "6-6L", "piso": "6", "nom": "Lab. de Biotecnología", "ev": "CESAR MANUEL STAND ZAMBRANO"}, {"cat": "laboratorio", "cat_excel": "Laboratorios", "ed": "BLOQK", "cod": "6-8L", "piso": "6", "nom": "Laboratorio de Mecatronica", "ev": "CESAR MANUEL STAND ZAMBRANO"}, {"cat": "laboratorio", "cat_excel": "Laboratorios", "ed": "BLOQK", "cod": "6-9L", "piso": "6", "nom": "Lab. Mecánica de Máquinas y Diseños", "ev": "CESAR MANUEL STAND ZAMBRANO"}, {"cat": "laboratorio", "cat_excel": "Laboratorios", "ed": "BLOQK", "cod": "S1-10L", "piso": "S", "nom": "Lab. de Soldadura", "ev": "CESAR MANUEL STAND ZAMBRANO"}, {"cat": "laboratorio", "cat_excel": "Laboratorios", "ed": "BLOQK", "cod": "S1-11L", "piso": "S", "nom": "Lab. Geotecnia y Materiales Constr.", "ev": "CESAR MANUEL STAND ZAMBRANO"}, {"cat": "laboratorio", "cat_excel": "Laboratorios", "ed": "BLOQK", "cod": "S1-4L", "piso": "S", "nom": "Lab. Metalografía", "ev": "CESAR MANUEL STAND ZAMBRANO"}, {"cat": "laboratorio", "cat_excel": "Laboratorios", "ed": "BLOQK", "cod": "S1-5L", "piso": "S", "nom": "Lab. de Ensayos de Materiales", "ev": "CESAR MANUEL STAND ZAMBRANO"}, {"cat": "laboratorio", "cat_excel": "Laboratorios", "ed": "BLOQK", "cod": "S1-6L", "piso": "S", "nom": "Lab. de Prototipos", "ev": "CESAR MANUEL STAND ZAMBRANO"}, {"cat": "laboratorio", "cat_excel": "Laboratorios", "ed": "BLOQK", "cod": "S1-7L", "piso": "S", "nom": "Lab. Centro de Mediciones y Coordenadas", "ev": "CESAR MANUEL STAND ZAMBRANO"}, {"cat": "laboratorio", "cat_excel": "Laboratorios", "ed": "BLOQK", "cod": "S1-8L", "piso": "S", "nom": "Lab. de Manufactura", "ev": "CESAR MANUEL STAND ZAMBRANO"}, {"cat": "laboratorio", "cat_excel": "Laboratorios", "ed": "BLOQK", "cod": "S1-9L", "piso": "S", "nom": "Lab. de Materiales De Ingeniería", "ev": "CESAR MANUEL STAND ZAMBRANO"}], "extra_list": []}, {"name": "DANIEL EDUARDO GUTIERREZ BORRERO", "assigned_count": 13, "evaluated_count": 0, "pending_count": 13, "extra_count": 0, "progress_pct": 0.0, "done_list": [], "pending_list": [{"cat": "auditorio", "cat_excel": "Auditorios/Salas de Eventos", "ed": "CAMPUS", "cod": "SAL_PROYECCION", "piso": "1", "nom": "Salón Gabriel García Márquez", "ev": "DANIEL EDUARDO GUTIERREZ BORRERO"}, {"cat": "bano", "cat_excel": "Baños", "ed": "BLOQJ", "cod": "BATH49", "piso": "1", "nom": "Baño Hombres BLOQJ - Piso 1", "ev": "DANIEL EDUARDO GUTIERREZ BORRERO"}, {"cat": "bano", "cat_excel": "Baños", "ed": "BLOQJ", "cod": "BATH59", "piso": "1", "nom": "Baño Mujeres BLOQJ - Piso 1", "ev": "DANIEL EDUARDO GUTIERREZ BORRERO"}, {"cat": "bano", "cat_excel": "Baños", "ed": "BLOQJ", "cod": "BATH50", "piso": "2", "nom": "Baño Hombres BLOQJ - Piso 2", "ev": "DANIEL EDUARDO GUTIERREZ BORRERO"}, {"cat": "bano", "cat_excel": "Baños", "ed": "BLOQJ", "cod": "BATH60", "piso": "2", "nom": "Baño Mujeres BLOQJ - Piso 2", "ev": "DANIEL EDUARDO GUTIERREZ BORRERO"}, {"cat": "bano", "cat_excel": "Baños", "ed": "BLOQJ", "cod": "BATH51", "piso": "3", "nom": "Baño Hombres BLOQJ - Piso 3", "ev": "DANIEL EDUARDO GUTIERREZ BORRERO"}, {"cat": "bano", "cat_excel": "Baños", "ed": "BLOQJ", "cod": "BATH61", "piso": "3", "nom": "Baño Mujeres BLOQJ - Piso 3", "ev": "DANIEL EDUARDO GUTIERREZ BORRERO"}, {"cat": "bano", "cat_excel": "Baños", "ed": "BLOQJ", "cod": "BATH52", "piso": "4", "nom": "Baño Hombres BLOQJ - Piso 4", "ev": "DANIEL EDUARDO GUTIERREZ BORRERO"}, {"cat": "bano", "cat_excel": "Baños", "ed": "BLOQJ", "cod": "BATH62", "piso": "4", "nom": "Baño Mujeres BLOQJ - Piso 4", "ev": "DANIEL EDUARDO GUTIERREZ BORRERO"}, {"cat": "bano", "cat_excel": "Baños", "ed": "BLOQJ", "cod": "BATH53", "piso": "5", "nom": "Baño Hombres BLOQJ - Piso 5", "ev": "DANIEL EDUARDO GUTIERREZ BORRERO"}, {"cat": "bano", "cat_excel": "Baños", "ed": "BLOQJ", "cod": "BATH63", "piso": "5", "nom": "Baño Mujeres BLOQJ - Piso 5", "ev": "DANIEL EDUARDO GUTIERREZ BORRERO"}, {"cat": "bano", "cat_excel": "Baños", "ed": "BLOQJ", "cod": "BATH54", "piso": "6", "nom": "Baño Hombres BLOQJ - Piso 6", "ev": "DANIEL EDUARDO GUTIERREZ BORRERO"}, {"cat": "bano", "cat_excel": "Baños", "ed": "BLOQJ", "cod": "BATH64", "piso": "6", "nom": "Baño Mujeres BLOQJ - Piso 6", "ev": "DANIEL EDUARDO GUTIERREZ BORRERO"}], "extra_list": []}, {"name": "DIANA CAROLINA CASTRO HERNANDEZ", "assigned_count": 11, "evaluated_count": 11, "pending_count": 0, "extra_count": 0, "progress_pct": 100.0, "done_list": [{"cod": "25D", "nom": "Salón 25D", "cat": "Salón de clases", "ed": "BLOQD", "piso": "2", "fecha": "2026-07-17", "promedio": 4.14, "file": "evaluaciones_uninorte_2026-07-17 - Diana C.json"}, {"cod": "24D", "nom": "Salón 24D", "cat": "Salón de clases", "ed": "BLOQD", "piso": "2", "fecha": "2026-07-17", "promedio": 3.83, "file": "evaluaciones_uninorte_2026-07-17 - Diana C.json"}, {"cod": "23D", "nom": "Salón 23D", "cat": "Salón de clases", "ed": "BLOQD", "piso": "2", "fecha": "2026-07-17", "promedio": 3.86, "file": "evaluaciones_uninorte_2026-07-17 - Diana C.json"}, {"cod": "31D", "nom": "Salón 31D", "cat": "Salón de clases", "ed": "BLOQD", "piso": "3", "fecha": "2026-07-17", "promedio": 3.71, "file": "evaluaciones_uninorte_2026-07-17 - Diana C.json"}, {"cod": "22D", "nom": "Salón 22D", "cat": "Salón de clases", "ed": "BLOQD", "piso": "2", "fecha": "2026-07-17", "promedio": 3.71, "file": "evaluaciones_uninorte_2026-07-17 - Diana C.json"}, {"cod": "SIN2", "nom": "Sala de Internet 2", "cat": "Salas de Computadores", "ed": "BLOQD", "piso": "", "fecha": "2026-07-17", "promedio": 3.67, "file": "evaluaciones_uninorte_2026-07-17 - Diana C.json"}, {"cod": "SDU4", "nom": "Sala de Usuarios No. 4", "cat": "Salas de Computadores", "ed": "BLOQD", "piso": "3", "fecha": "2026-07-17", "promedio": 4, "file": "evaluaciones_uninorte_2026-07-17 - Diana C.json"}, {"cod": "21D", "nom": "Salón 21D", "cat": "Laboratorios", "ed": "BLOQD", "piso": "2", "fecha": "2026-07-17", "promedio": 4.2, "file": "evaluaciones_uninorte_2026-07-17 - Diana C.json"}, {"cod": "LD1", "nom": "Laboratorio de economia experimental", "cat": "Laboratorios", "ed": "BLOQD", "piso": "S", "fecha": "2026-07-17", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-17 - Diana C.json"}, {"cod": "BLD-D", "nom": "Edificio Bloque D", "cat": "Fachadas de Edificios", "ed": "BLOQD", "piso": "", "fecha": "2026-07-17", "promedio": 4.5, "file": "evaluaciones_uninorte_2026-07-17 - Diana C.json"}, {"cod": "SAES03", "nom": "Sala de Estudio BLOQD", "cat": "Bibliotecas / Salas de Estudio", "ed": "BLOQD", "piso": "1", "fecha": "2026-07-17", "promedio": 4.33, "file": "evaluaciones_uninorte_2026-07-17 - Diana C.json"}], "pending_list": [], "extra_list": []}, {"name": "EDWIN LUIS ANGULO LUGO", "assigned_count": 13, "evaluated_count": 13, "pending_count": 0, "extra_count": 0, "progress_pct": 100.0, "done_list": [{"cod": "SAL1", "nom": "Salón De Música No.1.", "cat": "Salón de clases", "ed": "COLIS", "piso": "1", "fecha": "2026-07-14", "promedio": 4.57, "file": "evaluaciones_uninorte_2026-07-17 - Edwin A.json"}, {"cod": "BLD-COLIS", "nom": "Coliseo", "cat": "Fachadas de Edificios", "ed": "COLIS", "piso": "", "fecha": "2026-07-16", "promedio": 4, "file": "evaluaciones_uninorte_2026-07-17 - Edwin A.json"}, {"cod": "CAMP-FIELD02", "nom": "Cancha Multiple cubierta", "cat": "Canchas Deportivas", "ed": "CAMPUS", "piso": "", "fecha": "2026-07-16", "promedio": 2.75, "file": "evaluaciones_uninorte_2026-07-17 - Edwin A.json"}, {"cod": "CAMP-FIELD03", "nom": "Cancha de raquetball 1", "cat": "Canchas Deportivas", "ed": "CAMPUS", "piso": "", "fecha": "2026-07-16", "promedio": 3.75, "file": "evaluaciones_uninorte_2026-07-17 - Edwin A.json"}, {"cod": "CAMP-FIELD04", "nom": "Cancha de raquetball 2", "cat": "Canchas Deportivas", "ed": "CAMPUS", "piso": "", "fecha": "2026-07-16", "promedio": 3.75, "file": "evaluaciones_uninorte_2026-07-17 - Edwin A.json"}, {"cod": "CAMP-FIELD05", "nom": "Cancha de raquetball 3", "cat": "Canchas Deportivas", "ed": "CAMPUS", "piso": "", "fecha": "2026-07-16", "promedio": 3.67, "file": "evaluaciones_uninorte_2026-07-17 - Edwin A.json"}, {"cod": "CAMP-FIELD06", "nom": "Cancha fútbol", "cat": "Canchas Deportivas", "ed": "CAMPUS", "piso": "", "fecha": "2026-07-16", "promedio": 3.5, "file": "evaluaciones_uninorte_2026-07-17 - Edwin A.json"}, {"cod": "CAMP-FIELD07", "nom": "Cancha Tenis 1", "cat": "Canchas Deportivas", "ed": "CAMPUS", "piso": "", "fecha": "2026-07-16", "promedio": 4.5, "file": "evaluaciones_uninorte_2026-07-17 - Edwin A.json"}, {"cod": "CAMP-FIELD08", "nom": "Cancha Tenis 2", "cat": "Canchas Deportivas", "ed": "CAMPUS", "piso": "", "fecha": "2026-07-16", "promedio": 3.75, "file": "evaluaciones_uninorte_2026-07-17 - Edwin A.json"}, {"cod": "CAMP-FIELD09", "nom": "Cancha Multiple 1", "cat": "Canchas Deportivas", "ed": "CAMPUS", "piso": "", "fecha": "2026-07-16", "promedio": 3.33, "file": "evaluaciones_uninorte_2026-07-17 - Edwin A.json"}, {"cod": "CAMP-FIELD10", "nom": "Cancha Multiple 2", "cat": "Canchas Deportivas", "ed": "CAMPUS", "piso": "", "fecha": "2026-07-16", "promedio": 4, "file": "evaluaciones_uninorte_2026-07-17 - Edwin A.json"}, {"cod": "CAMP-FIELD11", "nom": "Cancha fútbol sintético", "cat": "Canchas Deportivas", "ed": "CAMPUS", "piso": "", "fecha": "2026-07-16", "promedio": 3.25, "file": "evaluaciones_uninorte_2026-07-17 - Edwin A.json"}, {"cod": "CSEO-FIELD01", "nom": "Cancha Deportiva", "cat": "Canchas Deportivas", "ed": "COLIS", "piso": "", "fecha": "2026-07-16", "promedio": 4, "file": "evaluaciones_uninorte_2026-07-17 - Edwin A.json"}], "pending_list": [], "extra_list": []}, {"name": "ELMA CRISTINA MORALES CORTINA", "assigned_count": 11, "evaluated_count": 11, "pending_count": 0, "extra_count": 0, "progress_pct": 100.0, "done_list": [{"cod": "14J", "nom": "Salon de clases 14J", "cat": "Salón de clases", "ed": "BLOQJ1", "piso": "1", "fecha": "2026-07-16", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-16-Elma Morales.json"}, {"cod": "17J", "nom": "Salon de clases 17J", "cat": "Salón de clases", "ed": "BLOQJ1", "piso": "1", "fecha": "2026-07-16", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-16-Elma Morales.json"}, {"cod": "16J", "nom": "Salon de clases 16J", "cat": "Salón de clases", "ed": "BLOQJ1", "piso": "1", "fecha": "2026-07-16", "promedio": 4.71, "file": "evaluaciones_uninorte_2026-07-16-Elma Morales.json"}, {"cod": "15J", "nom": "Salon de clases 15J", "cat": "Salón de clases", "ed": "BLOQJ1", "piso": "1", "fecha": "2026-07-16", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-16-Elma Morales.json"}, {"cod": "18J", "nom": "Salon de clases 18J", "cat": "Salón de clases", "ed": "BLOQJ1", "piso": "1", "fecha": "2026-07-16", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-16-Elma Morales.json"}, {"cod": "3L-10", "nom": "Salón 3L-10", "cat": "Laboratorios", "ed": "1L6", "piso": "1", "fecha": "2026-07-16", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-16-Elma Morales.json"}, {"cod": "3L-11", "nom": "Salón 3L-11", "cat": "Laboratorios", "ed": "1L6", "piso": "1", "fecha": "2026-07-16", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-16-Elma Morales.json"}, {"cod": "J-CAMPUS03", "nom": "Jardín de alrededor de comedor funcionarios", "cat": "Jardines y Zonas Verdes", "ed": "CAMPUS", "piso": "", "fecha": "2026-07-16", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-16-Elma Morales.json"}, {"cod": "J-CAMPUS08", "nom": "Jardín administrativo 2", "cat": "Jardines y Zonas Verdes", "ed": "CAMPUS", "piso": "", "fecha": "2026-07-16", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-16-Elma Morales.json"}, {"cod": "ZOEST01", "nom": "Zona de Estudiantes - Bambú 1", "cat": "Bibliotecas / Salas de Estudio", "ed": "CAMPUS", "piso": "1", "fecha": "2026-07-16", "promedio": 4.25, "file": "evaluaciones_uninorte_2026-07-16-Elma Morales.json"}, {"cod": "ZOEST02", "nom": "Zona de Estudiantes - Bambú 2", "cat": "Bibliotecas / Salas de Estudio", "ed": "CAMPUS", "piso": "1", "fecha": "2026-07-16", "promedio": 4.25, "file": "evaluaciones_uninorte_2026-07-16-Elma Morales.json"}], "pending_list": [], "extra_list": []}, {"name": "EYLEEN GIOBET CASTILLO MENDOZA", "assigned_count": 14, "evaluated_count": 0, "pending_count": 14, "extra_count": 0, "progress_pct": 0.0, "done_list": [], "pending_list": [{"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOI4", "cod": "I4-12", "piso": "1", "nom": "Salón I4-12", "ev": "EYLEEN GIOBET CASTILLO MENDOZA"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOI4", "cod": "I4-25", "piso": "2", "nom": "Salón I4-25", "ev": "EYLEEN GIOBET CASTILLO MENDOZA"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOI4", "cod": "I4-13", "piso": "1", "nom": "Salón I4-13", "ev": "EYLEEN GIOBET CASTILLO MENDOZA"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOI4", "cod": "I4-11", "piso": "1", "nom": "Salón I4-11", "ev": "EYLEEN GIOBET CASTILLO MENDOZA"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOI4", "cod": "I4-21", "piso": "2", "nom": "Salón I4-21", "ev": "EYLEEN GIOBET CASTILLO MENDOZA"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOI4", "cod": "I4-15", "piso": "1", "nom": "Salón I4-15", "ev": "EYLEEN GIOBET CASTILLO MENDOZA"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOI4", "cod": "I4-28", "piso": "2", "nom": "Salón I4-28", "ev": "EYLEEN GIOBET CASTILLO MENDOZA"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOI4", "cod": "I4-22", "piso": "2", "nom": "Salón I4-22", "ev": "EYLEEN GIOBET CASTILLO MENDOZA"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOI4", "cod": "I4-14", "piso": "1", "nom": "Salón I4-14", "ev": "EYLEEN GIOBET CASTILLO MENDOZA"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOI4", "cod": "I4-23", "piso": "2", "nom": "Salón I4-23", "ev": "EYLEEN GIOBET CASTILLO MENDOZA"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOI4", "cod": "I4-27", "piso": "2", "nom": "Salón I4-27", "ev": "EYLEEN GIOBET CASTILLO MENDOZA"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOI4", "cod": "I4-26", "piso": "2", "nom": "Salón I4-26", "ev": "EYLEEN GIOBET CASTILLO MENDOZA"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOI4", "cod": "I4-24", "piso": "2", "nom": "Salón I4-24", "ev": "EYLEEN GIOBET CASTILLO MENDOZA"}, {"cat": "laboratorio", "cat_excel": "Laboratorios", "ed": "BLOI4", "cod": "LI4-4", "piso": "1", "nom": "Lab. LI4-4", "ev": "EYLEEN GIOBET CASTILLO MENDOZA"}], "extra_list": []}, {"name": "GRACE MARIA SANCHEZ PATERNOSTRO", "assigned_count": 11, "evaluated_count": 11, "pending_count": 0, "extra_count": 0, "progress_pct": 100.0, "done_list": [{"cod": "BLB2", "nom": "Biblab 2", "cat": "Salas de Computadores", "ed": "BKCP", "piso": "1", "fecha": "2026-07-16", "promedio": 4, "file": "evaluaciones_uninorte_2026-07-16-BKCP.json"}, {"cod": "BLB1", "nom": "Biblab 1", "cat": "Salas de Computadores", "ed": "BKCP", "piso": "1", "fecha": "2026-07-16", "promedio": 4.33, "file": "evaluaciones_uninorte_2026-07-16-BKCP.json"}, {"cod": "BLD-BKCP", "nom": "Biblioteca Karl C. Parrish Jr.", "cat": "Fachadas de Edificios", "ed": "BKCP", "piso": "", "fecha": "2026-07-16", "promedio": 2.5, "file": "evaluaciones_uninorte_2026-07-16-BKCP.json"}, {"cod": "SAES11", "nom": "Sala de Estudio BKCP", "cat": "Bibliotecas / Salas de Estudio", "ed": "BKCP", "piso": "S", "fecha": "2026-07-16", "promedio": 4, "file": "evaluaciones_uninorte_2026-07-16-BKCP.json"}, {"cod": "SAES12", "nom": "Sala de Estudio BKCP", "cat": "Bibliotecas / Salas de Estudio", "ed": "BKCP", "piso": "1", "fecha": "2026-07-16", "promedio": 4, "file": "evaluaciones_uninorte_2026-07-16-BKCP.json"}, {"cod": "SAES13", "nom": "Sala de Estudio BKCP", "cat": "Bibliotecas / Salas de Estudio", "ed": "BKCP", "piso": "2", "fecha": "2026-07-16", "promedio": 3.33, "file": "evaluaciones_uninorte_2026-07-16-BKCP.json"}, {"cod": "SAES14", "nom": "Sala de Estudio BKCP", "cat": "Bibliotecas / Salas de Estudio", "ed": "BKCP", "piso": "3", "fecha": "2026-07-16", "promedio": 4, "file": "evaluaciones_uninorte_2026-07-16-BKCP.json"}, {"cod": "SAES15", "nom": "Sala de Estudio BKCP", "cat": "Bibliotecas / Salas de Estudio", "ed": "BKCP", "piso": "4", "fecha": "2026-07-16", "promedio": 3, "file": "evaluaciones_uninorte_2026-07-16-BKCP.json"}, {"cod": "BATH92", "nom": "Baño Mujeres Biblioteca - Piso 1", "cat": "Baños", "ed": "BKCP", "piso": "S", "fecha": "2026-07-16", "promedio": 3.5, "file": "evaluaciones_uninorte_2026-07-16-BKCP.json"}, {"cod": "BATH93", "nom": "Baño Mujeres Biblioteca - Piso 2", "cat": "Baños", "ed": "BKCP", "piso": "1", "fecha": "2026-07-16", "promedio": 3.75, "file": "evaluaciones_uninorte_2026-07-16-BKCP.json"}, {"cod": "BATH94", "nom": "Baño Mujeres Biblioteca - Piso 3", "cat": "Baños", "ed": "BKCP", "piso": "2", "fecha": "2026-07-16", "promedio": 4, "file": "evaluaciones_uninorte_2026-07-16-BKCP.json"}], "pending_list": [], "extra_list": []}, {"name": "GUSTAVO ADOLFO LOPEZ HENRIQUEZ", "assigned_count": 13, "evaluated_count": 13, "pending_count": 0, "extra_count": 0, "progress_pct": 100.0, "done_list": [{"cod": "1L6-11", "nom": "Lab. de Desarrollo de modelos y prototipos", "cat": "Laboratorios", "ed": "1L6", "piso": "1", "fecha": "2026-07-15", "promedio": 2.8, "file": "evaluaciones_uninorte_2026-07-16 - Gustavo López.json"}, {"cod": "1L6-21", "nom": "Sala de Diseño Estudiantes", "cat": "Laboratorios", "ed": "1L6", "piso": "2", "fecha": "2026-07-15", "promedio": 4, "file": "evaluaciones_uninorte_2026-07-16 - Gustavo López.json"}, {"cod": "1L6-22", "nom": "Sala Diseño de Estudiantes", "cat": "Laboratorios", "ed": "1L6", "piso": "2", "fecha": "2026-07-15", "promedio": 3.6, "file": "evaluaciones_uninorte_2026-07-16 - Gustavo López.json"}, {"cod": "1L6-31", "nom": "Lab. de Sistemas Digitales", "cat": "Laboratorios", "ed": "1L6", "piso": "3", "fecha": "2026-07-15", "promedio": 4.4, "file": "evaluaciones_uninorte_2026-07-16 - Gustavo López.json"}, {"cod": "1L6-32", "nom": "Sala 2 Investigación y Desarrollo", "cat": "Laboratorios", "ed": "1L6", "piso": "3", "fecha": "2026-07-15", "promedio": 4.8, "file": "evaluaciones_uninorte_2026-07-16 - Gustavo López.json"}, {"cod": "1L6-33", "nom": "Sala 3 Investigación y Desarrollo", "cat": "Laboratorios", "ed": "1L6", "piso": "3", "fecha": "2026-07-15", "promedio": 3.6, "file": "evaluaciones_uninorte_2026-07-16 - Gustavo López.json"}, {"cod": "1L6-34", "nom": "Sala 4 Investigación y Desarrollo", "cat": "Laboratorios", "ed": "1L6", "piso": "3", "fecha": "2026-07-15", "promedio": 4.4, "file": "evaluaciones_uninorte_2026-07-16 - Gustavo López.json"}, {"cod": "1L6-35", "nom": "Sala 5 Investigación - Lab.Telemática", "cat": "Laboratorios", "ed": "1L6", "piso": "3", "fecha": "2026-07-15", "promedio": 3.6, "file": "evaluaciones_uninorte_2026-07-16 - Gustavo López.json"}, {"cod": "1L6-36", "nom": "Sala 6 Investigación y Desarrollo", "cat": "Laboratorios", "ed": "1L6", "piso": "3", "fecha": "2026-07-15", "promedio": 4.6, "file": "evaluaciones_uninorte_2026-07-16 - Gustavo López.json"}, {"cod": "1L6-37", "nom": "Sala 7 Investigación y Desarrollo", "cat": "Laboratorios", "ed": "1L6", "piso": "3", "fecha": "2026-07-15", "promedio": 4.4, "file": "evaluaciones_uninorte_2026-07-16 - Gustavo López.json"}, {"cod": "1L6-38", "nom": "Sala 8 Investigación y Desarrollo", "cat": "Laboratorios", "ed": "1L6", "piso": "3", "fecha": "2026-07-15", "promedio": 4, "file": "evaluaciones_uninorte_2026-07-16 - Gustavo López.json"}, {"cod": "1L6-39", "nom": "Sala 9 Investigación y Desarrollo", "cat": "Laboratorios", "ed": "1L6", "piso": "3", "fecha": "2026-07-15", "promedio": 4.4, "file": "evaluaciones_uninorte_2026-07-16 - Gustavo López.json"}, {"cod": "3L-12", "nom": "Laboratorio Investigacion departamento de fisica", "cat": "Laboratorios", "ed": "1L6", "piso": "1", "fecha": "2026-07-15", "promedio": 2.67, "file": "evaluaciones_uninorte_2026-07-16 - Gustavo López.json"}], "pending_list": [], "extra_list": []}, {"name": "HAROLD JOSE RIOS BRUGES", "assigned_count": 13, "evaluated_count": 0, "pending_count": 13, "extra_count": 0, "progress_pct": 0.0, "done_list": [], "pending_list": [{"cat": "laboratorio", "cat_excel": "Laboratorios", "ed": "BLOQK", "cod": "1-1L", "piso": "1", "nom": "Lab. de Aprendizaje Estudiantes", "ev": "HAROLD JOSE RIOS BRUGES"}, {"cat": "laboratorio", "cat_excel": "Laboratorios", "ed": "BLOQK", "cod": "1-2L", "piso": "1", "nom": "Lab. de Aprendizaje Docente", "ev": "HAROLD JOSE RIOS BRUGES"}, {"cat": "laboratorio", "cat_excel": "Laboratorios", "ed": "BLOQK", "cod": "4-1L", "piso": "4", "nom": "Diseño Digital", "ev": "HAROLD JOSE RIOS BRUGES"}, {"cat": "laboratorio", "cat_excel": "Laboratorios", "ed": "BLOQK", "cod": "4-2L", "piso": "4", "nom": "Estudio de Fotografia", "ev": "HAROLD JOSE RIOS BRUGES"}, {"cat": "laboratorio", "cat_excel": "Laboratorios", "ed": "BLOQK", "cod": "L4-1", "piso": "4", "nom": "Lab. Robótica Industrial", "ev": "HAROLD JOSE RIOS BRUGES"}, {"cat": "laboratorio", "cat_excel": "Laboratorios", "ed": "BLOQK", "cod": "5-2L", "piso": "5", "nom": "Sala de Computo Ing civil", "ev": "HAROLD JOSE RIOS BRUGES"}, {"cat": "laboratorio", "cat_excel": "Laboratorios", "ed": "BLOQK", "cod": "6-2L", "piso": "6", "nom": "Lab Mediciones y Control", "ev": "HAROLD JOSE RIOS BRUGES"}, {"cat": "laboratorio", "cat_excel": "Laboratorios", "ed": "BLOQK", "cod": "6-3L", "piso": "6", "nom": "Lab Ciencias de la Computacion", "ev": "HAROLD JOSE RIOS BRUGES"}, {"cat": "laboratorio", "cat_excel": "Laboratorios", "ed": "BLOQK", "cod": "7-1L", "piso": "7", "nom": "Lab. Computacional Ing. Industrial", "ev": "HAROLD JOSE RIOS BRUGES"}, {"cat": "laboratorio", "cat_excel": "Laboratorios", "ed": "BLOQK", "cod": "7-2L", "piso": "7", "nom": "Lab. Investigación de Operaciones", "ev": "HAROLD JOSE RIOS BRUGES"}, {"cat": "laboratorio", "cat_excel": "Laboratorios", "ed": "BLOQK", "cod": "7-3L", "piso": "7", "nom": "Lab Higiene y seguridad Industrial", "ev": "HAROLD JOSE RIOS BRUGES"}, {"cat": "laboratorio", "cat_excel": "Laboratorios", "ed": "BLOQK", "cod": "7-4L", "piso": "7", "nom": "Lab. Operaciones y Logística", "ev": "HAROLD JOSE RIOS BRUGES"}, {"cat": "laboratorio", "cat_excel": "Laboratorios", "ed": "BLOQK", "cod": "ECO", "piso": "", "nom": "Centro de escritura", "ev": "HAROLD JOSE RIOS BRUGES"}], "extra_list": []}, {"name": "HOLLY ANDREA DE LA ROSA RODRIGUEZ", "assigned_count": 11, "evaluated_count": 5, "pending_count": 6, "extra_count": 1, "progress_pct": 45.45454545454545, "done_list": [{"cod": "J-CAMPUS33", "nom": "Jardín Casa Blanca (Administrativo 1)", "cat": "Jardines y Zonas Verdes", "ed": "CAMPUS", "piso": "", "fecha": "2026-07-16", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-16 - Holly D.json"}, {"cod": "BLD-A", "nom": "Edificio Bloque A", "cat": "Fachadas de Edificios", "ed": "BLOQA", "piso": "", "fecha": "2026-07-16", "promedio": 4.5, "file": "evaluaciones_uninorte_2026-07-16 - Holly D.json"}, {"cod": "SAES01", "nom": "Sala de Estudio BLOQA", "cat": "Bibliotecas / Salas de Estudio", "ed": "BLOQA", "piso": "1", "fecha": "2026-07-16", "promedio": 4.25, "file": "evaluaciones_uninorte_2026-07-16 - Holly D.json"}, {"cod": "BATH01", "nom": "Baño Hombres BLOQA - Piso 2", "cat": "Baños", "ed": "BLOQA", "piso": "2", "fecha": "2026-07-16", "promedio": 4.25, "file": "evaluaciones_uninorte_2026-07-16 - Holly D.json"}, {"cod": "BATH02", "nom": "Baño Mujeres BLOQA - Piso 2", "cat": "Baños", "ed": "BLOQA", "piso": "2", "fecha": "2026-07-16", "promedio": 4, "file": "evaluaciones_uninorte_2026-07-16 - Holly D.json"}], "pending_list": [{"cat": "jardin", "cat_excel": "Jardines y Zonas Verdes", "ed": "CAMPUS", "cod": "J-CAMPUS01", "piso": "", "nom": "Jardín frente Biblioteca", "ev": "HOLLY ANDREA DE LA ROSA RODRIGUEZ"}, {"cat": "jardin", "cat_excel": "Jardines y Zonas Verdes", "ed": "CAMPUS", "cod": "J-CAMPUS02", "piso": "", "nom": "Jardín posterior Biblioteca", "ev": "HOLLY ANDREA DE LA ROSA RODRIGUEZ"}, {"cat": "jardin", "cat_excel": "Jardines y Zonas Verdes", "ed": "CAMPUS", "cod": "J-CAMPUS04", "piso": "", "nom": "Jardín Laboratorio 1", "ev": "HOLLY ANDREA DE LA ROSA RODRIGUEZ"}, {"cat": "jardin", "cat_excel": "Jardines y Zonas Verdes", "ed": "CAMPUS", "cod": "J-CAMPUS05", "piso": "", "nom": "Jardín Laboratorio 2", "ev": "HOLLY ANDREA DE LA ROSA RODRIGUEZ"}, {"cat": "jardin", "cat_excel": "Jardines y Zonas Verdes", "ed": "CAMPUS", "cod": "J-CAMPUS14", "piso": "", "nom": "Jardín entre Bloque B y Bloque C", "ev": "HOLLY ANDREA DE LA ROSA RODRIGUEZ"}, {"cat": "jardin", "cat_excel": "Jardines y Zonas Verdes", "ed": "CAMPUS", "cod": "J-CAMPUS40", "piso": "", "nom": "Jardín Bancolombia", "ev": "HOLLY ANDREA DE LA ROSA RODRIGUEZ"}], "extra_list": [{"cod": "Pasillo gestión humana", "nom": "Piso 2", "cat": "Pasillo / Escalera / Área Común", "ed": "BLOQA", "piso": "2", "fecha": "2026-07-16", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-16 - Holly D.json"}]}, {"name": "Hailyn Kelly Mejia Piedris", "assigned_count": 12, "evaluated_count": 12, "pending_count": 0, "extra_count": 2, "progress_pct": 100.0, "done_list": [{"cod": "I1-22", "nom": "Salón I1-22", "cat": "Salón de clases", "ed": "BLOI1", "piso": "2", "fecha": "2026-07-15", "promedio": 3.71, "file": "evaluaciones_uninorte_2026-07-16- Hailyn.json"}, {"cod": "I1-26", "nom": "Salón I1-26", "cat": "Salón de clases", "ed": "BLOI1", "piso": "2", "fecha": "2026-07-15", "promedio": 4.29, "file": "evaluaciones_uninorte_2026-07-16- Hailyn.json"}, {"cod": "I1-23", "nom": "Salón I1-23", "cat": "Salón de clases", "ed": "BLOI1", "piso": "2", "fecha": "2026-07-15", "promedio": 4, "file": "evaluaciones_uninorte_2026-07-16- Hailyn.json"}, {"cod": "I1-24", "nom": "Salón I1-24", "cat": "Salón de clases", "ed": "BLOI1", "piso": "2", "fecha": "2026-07-16", "promedio": 4, "file": "evaluaciones_uninorte_2026-07-16- Hailyn.json"}, {"cod": "I1-27", "nom": "Salón I1-27", "cat": "Salón de clases", "ed": "BLOI1", "piso": "2", "fecha": "2026-07-15", "promedio": 3.86, "file": "evaluaciones_uninorte_2026-07-16- Hailyn.json"}, {"cod": "I1-25", "nom": "Salón I1-25", "cat": "Salón de clases", "ed": "BLOI1", "piso": "2", "fecha": "2026-07-15", "promedio": 4.14, "file": "evaluaciones_uninorte_2026-07-16- Hailyn.json"}, {"cod": "I1-21", "nom": "Salón I1-21", "cat": "Salón de clases", "ed": "BLOI1", "piso": "2", "fecha": "2026-07-15", "promedio": 4.29, "file": "evaluaciones_uninorte_2026-07-16- Hailyn.json"}, {"cod": "12G2", "nom": "Salón 12G2", "cat": "Salón de clases", "ed": "BLOQG2", "piso": "1", "fecha": "2026-07-15", "promedio": 4.29, "file": "evaluaciones_uninorte_2026-07-16- Hailyn.json"}, {"cod": "21K", "nom": "SALON 21K", "cat": "Salón de clases", "ed": "BLOQK", "piso": "2", "fecha": "2026-07-15", "promedio": 4.57, "file": "evaluaciones_uninorte_2026-07-16- Hailyn.json"}, {"cod": "31K", "nom": "SALON 31K", "cat": "Salón de clases", "ed": "BLOQK", "piso": "3", "fecha": "2026-07-15", "promedio": 4.71, "file": "evaluaciones_uninorte_2026-07-16- Hailyn.json"}, {"cod": "LI1-1", "nom": "Lab. de Idiomas 1", "cat": "Laboratorios", "ed": "BLOI1", "piso": "1", "fecha": "2026-07-15", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-16- Hailyn.json"}, {"cod": "LI1-2", "nom": "Lab. de Idiomas 2", "cat": "Laboratorios", "ed": "BLOI1", "piso": "1", "fecha": "2026-07-15", "promedio": 4.33, "file": "evaluaciones_uninorte_2026-07-16- Hailyn.json"}], "pending_list": [], "extra_list": [{"cod": "Segundo piso de idiomas", "nom": "Techo entre los baños del I1 e I 3", "cat": "Pasillo / Escalera / Área Común", "ed": "", "piso": "2", "fecha": "2026-07-16", "promedio": 4.33, "file": "evaluaciones_uninorte_2026-07-16- Hailyn.json"}, {"cod": "Pasillo 2 piso bloque I1", "nom": "Instituto de idiomas", "cat": "Pasillo / Escalera / Área Común", "ed": "BLOI1", "piso": "2", "fecha": "2026-07-16", "promedio": 4, "file": "evaluaciones_uninorte_2026-07-16- Hailyn.json"}]}, {"name": "IRMINA DEL CARMEN RICAURTE MARTINEZ", "assigned_count": 11, "evaluated_count": 11, "pending_count": 0, "extra_count": 0, "progress_pct": 100.0, "done_list": [{"cod": "L11M", "nom": "Lab de producción y composición músical", "cat": "Laboratorios", "ed": "BLOQM", "piso": "1", "fecha": "2026-07-17", "promedio": 3.6, "file": "evaluaciones_uninorte_2026-07-17 - Irmina R.json"}, {"cod": "CDA-1L", "nom": "Arquitectura Tropical", "cat": "Laboratorios", "ed": "CANCH", "piso": "1", "fecha": "2026-07-17", "promedio": 3, "file": "evaluaciones_uninorte_2026-07-17 - Irmina R.json"}, {"cod": "CDA-2L", "nom": "Lab Energia Renovables", "cat": "Laboratorios", "ed": "CANCH", "piso": "1", "fecha": "2026-07-17", "promedio": 4.4, "file": "evaluaciones_uninorte_2026-07-17 - Irmina R.json"}, {"cod": "2-1 L4", "nom": "Laboratorio simulacion preclinica odontologica", "cat": "Laboratorios", "ed": "L4", "piso": "2", "fecha": "2026-07-16", "promedio": 4.4, "file": "evaluaciones_uninorte_2026-07-17 - Irmina R.json"}, {"cod": "2-2 L4", "nom": "Laboratorio multifuncional de Materiales dentales", "cat": "Laboratorios", "ed": "L4", "piso": "2", "fecha": "2026-07-16", "promedio": 4.4, "file": "evaluaciones_uninorte_2026-07-17 - Irmina R.json"}, {"cod": "2-3 L4", "nom": "Laboratorio rayos X odontologicos", "cat": "Laboratorios", "ed": "L4", "piso": "2", "fecha": "2026-07-16", "promedio": 4, "file": "evaluaciones_uninorte_2026-07-17 - Irmina R.json"}, {"cod": "2-4 L4", "nom": "Laboratorio simulacion preclinica odontologica", "cat": "Laboratorios", "ed": "L4", "piso": "2", "fecha": "2026-07-16", "promedio": 4, "file": "evaluaciones_uninorte_2026-07-17 - Irmina R.json"}, {"cod": "L5-11", "nom": "Sala de Computadores de Pedagogia Infantil", "cat": "Laboratorios", "ed": "L5", "piso": "1", "fecha": "2026-07-17", "promedio": 4.8, "file": "evaluaciones_uninorte_2026-07-17 - Irmina R.json"}, {"cod": "L5-12", "nom": "Lab. virologia", "cat": "Laboratorios", "ed": "L5", "piso": "1", "fecha": "2026-07-17", "promedio": 2.6, "file": "evaluaciones_uninorte_2026-07-17 - Irmina R.json"}, {"cod": "LJ-1", "nom": "Lab. Lic. En Pedagogía Infantil", "cat": "Laboratorios", "ed": "L5", "piso": "1", "fecha": "2026-07-17", "promedio": 4.6, "file": "evaluaciones_uninorte_2026-07-17 - Irmina R.json"}, {"cod": "J-CAMPUS28", "nom": "Jardín Bloque de la Salud", "cat": "Jardines y Zonas Verdes", "ed": "CAMPUS", "piso": "", "fecha": "2026-07-17", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-17 - Irmina R.json"}], "pending_list": [], "extra_list": []}, {"name": "ISABELLA SIR VALDES", "assigned_count": 14, "evaluated_count": 13, "pending_count": 1, "extra_count": 0, "progress_pct": 92.85714285714286, "done_list": [{"cod": "J-CAMPUS09", "nom": "Jardín alrededor del Edificio Santo Domingo (Bloque J)", "cat": "Jardines y Zonas Verdes", "ed": "CAMPUS", "piso": "", "fecha": "2026-07-17", "promedio": 4, "file": "evaluaciones_uninorte_2026-07-17 - Isabella S.json"}, {"cod": "J-CAMPUS12", "nom": "Jardín Media Torta Coliseo (Frente a Cancha de Tennis)", "cat": "Jardines y Zonas Verdes", "ed": "CAMPUS", "piso": "", "fecha": "2026-07-16", "promedio": 3.5, "file": "evaluaciones_uninorte_2026-07-17 - Isabella S.json"}, {"cod": "J-CAMPUS13", "nom": "Jardín Escaleras Coliseo", "cat": "Jardines y Zonas Verdes", "ed": "CAMPUS", "piso": "", "fecha": "2026-07-16", "promedio": 4.25, "file": "evaluaciones_uninorte_2026-07-17 - Isabella S.json"}, {"cod": "J-CAMPUS15", "nom": "Jardín Casa Estudio", "cat": "Jardines y Zonas Verdes", "ed": "CAMPUS", "piso": "", "fecha": "2026-07-17", "promedio": 4.75, "file": "evaluaciones_uninorte_2026-07-17 - Isabella S.json"}, {"cod": "J-CAMPUS17", "nom": "Jardín Central de Frío 2 (Frente Laboratorios ING Civil atras de Bloque K)", "cat": "Jardines y Zonas Verdes", "ed": "CAMPUS", "piso": "", "fecha": "2026-07-16", "promedio": 4, "file": "evaluaciones_uninorte_2026-07-17 - Isabella S.json"}, {"cod": "J-CAMPUS19", "nom": "Jardín Zona Martillo (Alrededor de la Zona Multiple de Estudiantes 2)", "cat": "Jardines y Zonas Verdes", "ed": "CAMPUS", "piso": "", "fecha": "2026-07-17", "promedio": 4.5, "file": "evaluaciones_uninorte_2026-07-17 - Isabella S.json"}, {"cod": "J-CAMPUS21", "nom": "Jardín Bloque Idiomas 4 (Bloque I4)", "cat": "Jardines y Zonas Verdes", "ed": "CAMPUS", "piso": "", "fecha": "2026-07-16", "promedio": 4.5, "file": "evaluaciones_uninorte_2026-07-17 - Isabella S.json"}, {"cod": "J-CAMPUS23", "nom": "Jardín Emisora (Bloque D)", "cat": "Jardines y Zonas Verdes", "ed": "CAMPUS", "piso": "", "fecha": "2026-07-17", "promedio": 4.5, "file": "evaluaciones_uninorte_2026-07-17 - Isabella S.json"}, {"cod": "J-CAMPUS27", "nom": "Jardín Ptar Principal (Frente a la bodega de mantenimiento)", "cat": "Jardines y Zonas Verdes", "ed": "CAMPUS", "piso": "", "fecha": "2026-07-16", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-17 - Isabella S.json"}, {"cod": "J-CAMPUS29", "nom": "Jardín Zona Multiple Estudiantes 1", "cat": "Jardines y Zonas Verdes", "ed": "CAMPUS", "piso": "", "fecha": "2026-07-17", "promedio": 4, "file": "evaluaciones_uninorte_2026-07-17 - Isabella S.json"}, {"cod": "J-CAMPUS30", "nom": "Jardín Almacen (Frente a Cancha de Tennis)", "cat": "Jardines y Zonas Verdes", "ed": "CAMPUS", "piso": "", "fecha": "2026-07-16", "promedio": 3.75, "file": "evaluaciones_uninorte_2026-07-17 - Isabella S.json"}, {"cod": "J-CAMPUS31", "nom": "Jardín Coliseo", "cat": "Jardines y Zonas Verdes", "ed": "CAMPUS", "piso": "", "fecha": "2026-07-16", "promedio": 4, "file": "evaluaciones_uninorte_2026-07-17 - Isabella S.json"}, {"cod": "J-CAMPUS32", "nom": "Jardín Lobby Norte (Coliseo)", "cat": "Jardines y Zonas Verdes", "ed": "CAMPUS", "piso": "", "fecha": "2026-07-16", "promedio": 4.75, "file": "evaluaciones_uninorte_2026-07-17 - Isabella S.json"}], "pending_list": [{"cat": "jardin", "cat_excel": "Jardines y Zonas Verdes", "ed": "CAMPUS", "cod": "J-CAMPUS18", "piso": "", "nom": "Jardín Central de Acopio", "ev": "ISABELLA SIR VALDES"}], "extra_list": []}, {"name": "IVAN JOSE DE JESUS LUZARDO LUNA", "assigned_count": 13, "evaluated_count": 0, "pending_count": 13, "extra_count": 0, "progress_pct": 0.0, "done_list": [], "pending_list": [{"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQG", "cod": "51G", "piso": "5", "nom": "Sala de Doctorado 1", "ev": "IVAN JOSE DE JESUS LUZARDO LUNA"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQG", "cod": "52G", "piso": "5", "nom": "Sala de Doctorado 2", "ev": "IVAN JOSE DE JESUS LUZARDO LUNA"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQG", "cod": "53G", "piso": "5", "nom": "Sala de Doctorado 3", "ev": "IVAN JOSE DE JESUS LUZARDO LUNA"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQG2", "cod": "11G2", "piso": "1", "nom": "Salón 11G2", "ev": "IVAN JOSE DE JESUS LUZARDO LUNA"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQG2", "cod": "25G2", "piso": "2", "nom": "Salón Harvard 2 -salón magistral", "ev": "IVAN JOSE DE JESUS LUZARDO LUNA"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQG2", "cod": "23G2", "piso": "2", "nom": "Salón Harvard- salón magistral", "ev": "IVAN JOSE DE JESUS LUZARDO LUNA"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQG2", "cod": "54G2", "piso": "5", "nom": "Sala de Doctorado 4", "ev": "IVAN JOSE DE JESUS LUZARDO LUNA"}, {"cat": "fachada", "cat_excel": "Fachadas de Edificios", "ed": "BLOQG", "cod": "BLD-G", "piso": "", "nom": "Edificio Álvaro Jaramillo Vengoechea", "ev": "IVAN JOSE DE JESUS LUZARDO LUNA"}, {"cat": "bano", "cat_excel": "Baños", "ed": "BLOQG", "cod": "BATH11", "piso": "1", "nom": "Baño Hombres BLOQG - Piso 1", "ev": "IVAN JOSE DE JESUS LUZARDO LUNA"}, {"cat": "bano", "cat_excel": "Baños", "ed": "BLOQG", "cod": "BATH12", "piso": "2", "nom": "Baño Hombres BLOQG - Piso 2", "ev": "IVAN JOSE DE JESUS LUZARDO LUNA"}, {"cat": "bano", "cat_excel": "Baños", "ed": "BLOQG", "cod": "BATH13", "piso": "3", "nom": "Baño Hombres BLOQG - Piso 3", "ev": "IVAN JOSE DE JESUS LUZARDO LUNA"}, {"cat": "bano", "cat_excel": "Baños", "ed": "BLOQG", "cod": "BATH14", "piso": "4", "nom": "Baño Hombres BLOQG - Piso 4", "ev": "IVAN JOSE DE JESUS LUZARDO LUNA"}, {"cat": "bano", "cat_excel": "Baños", "ed": "BLOQG", "cod": "BATH15", "piso": "5", "nom": "Baño Hombres BLOQG - Piso 5", "ev": "IVAN JOSE DE JESUS LUZARDO LUNA"}], "extra_list": []}, {"name": "JOAQUIN JESUS PINTO ROMERO", "assigned_count": 14, "evaluated_count": 0, "pending_count": 14, "extra_count": 0, "progress_pct": 0.0, "done_list": [], "pending_list": [{"cat": "sala_pc", "cat_excel": "Salas de Computadores", "ed": "BACA", "cod": "BLB3", "piso": "", "nom": "Biblab 3", "ev": "JOAQUIN JESUS PINTO ROMERO"}, {"cat": "fachada", "cat_excel": "Fachadas de Edificios", "ed": "BACA", "cod": "BLD-BACA", "piso": "", "nom": "Casa Estudio Alfredo Correa De Andreis", "ev": "JOAQUIN JESUS PINTO ROMERO"}, {"cat": "biblioteca", "cat_excel": "Bibliotecas / Salas de Estudio", "ed": "BACA", "cod": "SAES08", "piso": "1", "nom": "Sala de Estudio BACA", "ev": "JOAQUIN JESUS PINTO ROMERO"}, {"cat": "biblioteca", "cat_excel": "Bibliotecas / Salas de Estudio", "ed": "BACA", "cod": "SAES09", "piso": "2", "nom": "Sala de Estudio BACA", "ev": "JOAQUIN JESUS PINTO ROMERO"}, {"cat": "biblioteca", "cat_excel": "Bibliotecas / Salas de Estudio", "ed": "BACA", "cod": "SAES10", "piso": "3", "nom": "Sala de Estudio BACA", "ev": "JOAQUIN JESUS PINTO ROMERO"}, {"cat": "bano", "cat_excel": "Baños", "ed": "BACA", "cod": "BATH83", "piso": "1", "nom": "Baño Hombres Casa Estudio - Piso 1", "ev": "JOAQUIN JESUS PINTO ROMERO"}, {"cat": "bano", "cat_excel": "Baños", "ed": "BACA", "cod": "BATH84", "piso": "2", "nom": "Baño Hombres Casa Estudio - Piso 2", "ev": "JOAQUIN JESUS PINTO ROMERO"}, {"cat": "bano", "cat_excel": "Baños", "ed": "BACA", "cod": "BATH85", "piso": "3", "nom": "Baño Hombres Casa Estudio - Piso 3", "ev": "JOAQUIN JESUS PINTO ROMERO"}, {"cat": "bano", "cat_excel": "Baños", "ed": "BACA", "cod": "BATH86", "piso": "1", "nom": "Baño Mujeres Casa Estudio - Piso 1", "ev": "JOAQUIN JESUS PINTO ROMERO"}, {"cat": "bano", "cat_excel": "Baños", "ed": "BACA", "cod": "BATH87", "piso": "2", "nom": "Baño Mujeres Casa Estudio - Piso 2", "ev": "JOAQUIN JESUS PINTO ROMERO"}, {"cat": "bano", "cat_excel": "Baños", "ed": "BACA", "cod": "BATH88", "piso": "3", "nom": "Baño Mujeres Casa Estudio - Piso 3", "ev": "JOAQUIN JESUS PINTO ROMERO"}, {"cat": "bano", "cat_excel": "Baños", "ed": "BKCP", "cod": "BATH89", "piso": "S", "nom": "Baño Hombres Biblioteca - Piso 1", "ev": "JOAQUIN JESUS PINTO ROMERO"}, {"cat": "bano", "cat_excel": "Baños", "ed": "BKCP", "cod": "BATH90", "piso": "1", "nom": "Baño Hombres Biblioteca - Piso 2", "ev": "JOAQUIN JESUS PINTO ROMERO"}, {"cat": "bano", "cat_excel": "Baños", "ed": "BKCP", "cod": "BATH91", "piso": "2", "nom": "Baño Hombres Biblioteca - Piso 3", "ev": "JOAQUIN JESUS PINTO ROMERO"}], "extra_list": []}, {"name": "JOHANNA HELENA MORENO MONTAÑEZ", "assigned_count": 11, "evaluated_count": 0, "pending_count": 11, "extra_count": 0, "progress_pct": 0.0, "done_list": [], "pending_list": [{"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQG2", "cod": "31G2", "piso": "3", "nom": "Salón 31G2", "ev": "JOHANNA HELENA MORENO MONTAÑEZ"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQG2", "cod": "32G2", "piso": "3", "nom": "Salón 32G2", "ev": "JOHANNA HELENA MORENO MONTAÑEZ"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQG2", "cod": "36G2", "piso": "3", "nom": "Salón 36G2", "ev": "JOHANNA HELENA MORENO MONTAÑEZ"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQG2", "cod": "33G2", "piso": "3", "nom": "Salón 33G2", "ev": "JOHANNA HELENA MORENO MONTAÑEZ"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQG2", "cod": "37G2", "piso": "3", "nom": "Salón 37G2", "ev": "JOHANNA HELENA MORENO MONTAÑEZ"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQG2", "cod": "38G2", "piso": "3", "nom": "Salón 38G2", "ev": "JOHANNA HELENA MORENO MONTAÑEZ"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQG2", "cod": "35G2", "piso": "3", "nom": "Salón 35G2", "ev": "JOHANNA HELENA MORENO MONTAÑEZ"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQG2", "cod": "34G2", "piso": "3", "nom": "Salón 34G2", "ev": "JOHANNA HELENA MORENO MONTAÑEZ"}, {"cat": "jardin", "cat_excel": "Jardines y Zonas Verdes", "ed": "CAMPUS", "cod": "J-CAMPUS11", "piso": "", "nom": "Jardín Alrededor de la Rampa de Posgrados (Bloque G)", "ev": "JOHANNA HELENA MORENO MONTAÑEZ"}, {"cat": "jardin", "cat_excel": "Jardines y Zonas Verdes", "ed": "CAMPUS", "cod": "J-CAMPUS26", "piso": "", "nom": "Jardín Izquierdo Plazoleta Posgrados (Frente Bloque G)", "ev": "JOHANNA HELENA MORENO MONTAÑEZ"}, {"cat": "biblioteca", "cat_excel": "Bibliotecas / Salas de Estudio", "ed": "L1", "cod": "SAES07", "piso": "1", "nom": "Sala de Estudio Bloque Laboratorio N° 1", "ev": "JOHANNA HELENA MORENO MONTAÑEZ"}], "extra_list": []}, {"name": "JOSE MAURICIO VILLEGAS ROJAS", "assigned_count": 12, "evaluated_count": 0, "pending_count": 12, "extra_count": 0, "progress_pct": 0.0, "done_list": [], "pending_list": [{"cat": "jardin", "cat_excel": "Jardines y Zonas Verdes", "ed": "CAMPUS", "cod": "J-CAMPUS16", "piso": "", "nom": "Jardín Portería 04", "ev": "JOSE MAURICIO VILLEGAS ROJAS"}, {"cat": "jardin", "cat_excel": "Jardines y Zonas Verdes", "ed": "CAMPUS", "cod": "J-CAMPUS34", "piso": "", "nom": "Jardín Portería 01", "ev": "JOSE MAURICIO VILLEGAS ROJAS"}, {"cat": "jardin", "cat_excel": "Jardines y Zonas Verdes", "ed": "CAMPUS", "cod": "J-CAMPUS35", "piso": "", "nom": "Jardín Portería 02", "ev": "JOSE MAURICIO VILLEGAS ROJAS"}, {"cat": "jardin", "cat_excel": "Jardines y Zonas Verdes", "ed": "CAMPUS", "cod": "J-CAMPUS36", "piso": "", "nom": "Jardín Campestre (Izquierda de porteria 01)", "ev": "JOSE MAURICIO VILLEGAS ROJAS"}, {"cat": "jardin", "cat_excel": "Jardines y Zonas Verdes", "ed": "FUERA", "cod": "J-EXTER05", "piso": "", "nom": "Jardín Exterior Portería 11 a Portería 11B", "ev": "JOSE MAURICIO VILLEGAS ROJAS"}, {"cat": "jardin", "cat_excel": "Jardines y Zonas Verdes", "ed": "FUERA", "cod": "J-EXTER06", "piso": "", "nom": "Jardín Exterior Portería 05 a Portería 07", "ev": "JOSE MAURICIO VILLEGAS ROJAS"}, {"cat": "acceso", "cat_excel": "Entradas y Salidas", "ed": "CAMPUS", "cod": "C-ACCES01", "piso": "", "nom": "Portería 1", "ev": "JOSE MAURICIO VILLEGAS ROJAS"}, {"cat": "acceso", "cat_excel": "Entradas y Salidas", "ed": "CAMPUS", "cod": "C-ACCES04", "piso": "", "nom": "Portería 4", "ev": "JOSE MAURICIO VILLEGAS ROJAS"}, {"cat": "acceso", "cat_excel": "Entradas y Salidas", "ed": "CAMPUS", "cod": "C-ACCES07", "piso": "", "nom": "Portería 7", "ev": "JOSE MAURICIO VILLEGAS ROJAS"}, {"cat": "acceso", "cat_excel": "Entradas y Salidas", "ed": "CAMPUS", "cod": "C-ACCES11", "piso": "", "nom": "Portería 11", "ev": "JOSE MAURICIO VILLEGAS ROJAS"}, {"cat": "acceso", "cat_excel": "Entradas y Salidas", "ed": "CAMPUS", "cod": "C-ACCES11B", "piso": "", "nom": "Portería 11B", "ev": "JOSE MAURICIO VILLEGAS ROJAS"}, {"cat": "acceso", "cat_excel": "Entradas y Salidas", "ed": "CAMPUS", "cod": "C-ACCES09", "piso": "", "nom": "Portería 09 peatonal (hacia bloque M)", "ev": "JOSE MAURICIO VILLEGAS ROJAS"}], "extra_list": []}, {"name": "JUAN CAMILO PERALTA", "assigned_count": 12, "evaluated_count": 12, "pending_count": 0, "extra_count": 0, "progress_pct": 100.0, "done_list": [{"cod": "P8", "nom": "Parqueadero Exterior N° 8", "cat": "Parqueaderos", "ed": "FUERA", "piso": "", "fecha": "2026-07-16", "promedio": 4, "file": "evaluaciones_uninorte_2026-07-17 - Juan Camilo P.json"}, {"cod": "P9", "nom": "Parqueadero Exterior N° 9", "cat": "Parqueaderos", "ed": "FUERA", "piso": "", "fecha": "2026-07-16", "promedio": 3, "file": "evaluaciones_uninorte_2026-07-17 - Juan Camilo P.json"}, {"cod": "P12", "nom": "Parqueadero Exterior N° 12", "cat": "Parqueaderos", "ed": "FUERA", "piso": "", "fecha": "2026-07-16", "promedio": 3, "file": "evaluaciones_uninorte_2026-07-17 - Juan Camilo P.json"}, {"cod": "J-CAMPUS41", "nom": "Jardín Campos Deportivos", "cat": "Jardines y Zonas Verdes", "ed": "CAMPUS", "piso": "", "fecha": "2026-07-16", "promedio": 4, "file": "evaluaciones_uninorte_2026-07-17 - Juan Camilo P.json"}, {"cod": "J-CAMPUS42", "nom": "Jardínes Bloque M", "cat": "Jardines y Zonas Verdes", "ed": "CAMPUS", "piso": "", "fecha": "2026-07-16", "promedio": 4.25, "file": "evaluaciones_uninorte_2026-07-17 - Juan Camilo P.json"}, {"cod": "J-EXTER01", "nom": "Jardín Parqueadero 08-Vía Colegio San José", "cat": "Jardines y Zonas Verdes", "ed": "FUERA", "piso": "", "fecha": "2026-07-16", "promedio": 3.75, "file": "evaluaciones_uninorte_2026-07-17 - Juan Camilo P.json"}, {"cod": "J-EXTER02", "nom": "Jardín Parqueadero 08", "cat": "Jardines y Zonas Verdes", "ed": "FUERA", "piso": "", "fecha": "2026-07-16", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-17 - Juan Camilo P.json"}, {"cod": "J-EXTER03", "nom": "Jardín Parqueadero 09", "cat": "Jardines y Zonas Verdes", "ed": "FUERA", "piso": "", "fecha": "2026-07-16", "promedio": 4.33, "file": "evaluaciones_uninorte_2026-07-17 - Juan Camilo P.json"}, {"cod": "J-EXTER04", "nom": "Jardín Parqueadero 12", "cat": "Jardines y Zonas Verdes", "ed": "FUERA", "piso": "", "fecha": "2026-07-16", "promedio": 2.33, "file": "evaluaciones_uninorte_2026-07-17 - Juan Camilo P.json"}, {"cod": "BLD-J", "nom": "Edificio Mario Santo Domingo", "cat": "Fachadas de Edificios", "ed": "BLOQJ", "piso": "", "fecha": "2026-07-16", "promedio": 4.25, "file": "evaluaciones_uninorte_2026-07-17 - Juan Camilo P.json"}, {"cod": "ZONALI06", "nom": "Du Nord Terrasse", "cat": "Cafeterías / Zonas de Alimentación", "ed": "COLIS", "piso": "3", "fecha": "2026-07-16", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-17 - Juan Camilo P.json"}, {"cod": "BATH95", "nom": "Baño Hombres Coliseo", "cat": "Baños", "ed": "COLIS", "piso": "1", "fecha": "2026-07-16", "promedio": 4.25, "file": "evaluaciones_uninorte_2026-07-17 - Juan Camilo P.json"}], "pending_list": [], "extra_list": []}, {"name": "JUAN CARLOS GALEANO MUÑOZ", "assigned_count": 11, "evaluated_count": 0, "pending_count": 11, "extra_count": 0, "progress_pct": 0.0, "done_list": [], "pending_list": [{"cat": "laboratorio", "cat_excel": "Laboratorios", "ed": "BLOQK", "cod": "3-1L", "piso": "3", "nom": "Lab Mecanica Computacional y Diseño", "ev": "JUAN CARLOS GALEANO MUÑOZ"}, {"cat": "laboratorio", "cat_excel": "Laboratorios", "ed": "BLOQK", "cod": "3-2L", "piso": "3", "nom": "Lab. de Hidráulica e Ing. Ambiental", "ev": "JUAN CARLOS GALEANO MUÑOZ"}, {"cat": "laboratorio", "cat_excel": "Laboratorios", "ed": "BLOQK", "cod": "S1-1L", "piso": "S", "nom": "Lab. de Tratamientos Térmicos", "ev": "JUAN CARLOS GALEANO MUÑOZ"}, {"cat": "laboratorio", "cat_excel": "Laboratorios", "ed": "BLOQK", "cod": "S1-2L", "piso": "S", "nom": "Lab. Corrosión", "ev": "JUAN CARLOS GALEANO MUÑOZ"}, {"cat": "laboratorio", "cat_excel": "Laboratorios", "ed": "BLOQK", "cod": "S1-3L", "piso": "S", "nom": "Lab. de Microscopia Electrónica", "ev": "JUAN CARLOS GALEANO MUÑOZ"}, {"cat": "jardin", "cat_excel": "Jardines y Zonas Verdes", "ed": "CAMPUS", "cod": "J-CAMPUS10", "piso": "", "nom": "Jardín Café Du Nord", "ev": "JUAN CARLOS GALEANO MUÑOZ"}, {"cat": "jardin", "cat_excel": "Jardines y Zonas Verdes", "ed": "CAMPUS", "cod": "J-CAMPUS20", "piso": "", "nom": "Jardín Bloque K", "ev": "JUAN CARLOS GALEANO MUÑOZ"}, {"cat": "fachada", "cat_excel": "Fachadas de Edificios", "ed": "BLOQK", "cod": "BLD-K", "piso": "", "nom": "Edificio Bloque K - Ingenierías", "ev": "JUAN CARLOS GALEANO MUÑOZ"}, {"cat": "cafeteria", "cat_excel": "Cafeterías / Zonas de Alimentación", "ed": "BLOQK", "cod": "ZONALI04", "piso": "4", "nom": "Le Petit", "ev": "JUAN CARLOS GALEANO MUÑOZ"}, {"cat": "cafeteria", "cat_excel": "Cafeterías / Zonas de Alimentación", "ed": "CAMPUS", "cod": "ZONALI07", "piso": "", "nom": "Café Du Nord", "ev": "JUAN CARLOS GALEANO MUÑOZ"}, {"cat": "biblioteca", "cat_excel": "Bibliotecas / Salas de Estudio", "ed": "BLOQE", "cod": "SAES04", "piso": "1", "nom": "Sala de Estudio BLOQE", "ev": "JUAN CARLOS GALEANO MUÑOZ"}], "extra_list": []}, {"name": "JULIO ALFREDO JIMENEZ MARTINEZ", "assigned_count": 14, "evaluated_count": 14, "pending_count": 0, "extra_count": 1, "progress_pct": 100.0, "done_list": [{"cod": "33C", "nom": "Salón 33C", "cat": "Salón de clases", "ed": "BLOQC", "piso": "3", "fecha": "2026-07-15", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-15 - Julio Jiménez.json"}, {"cod": "14C", "nom": "Salón 14C", "cat": "Salón de clases", "ed": "BLOQC", "piso": "1", "fecha": "2026-07-15", "promedio": 4, "file": "evaluaciones_uninorte_2026-07-15 - Julio Jiménez.json"}, {"cod": "34C", "nom": "Salón 34C", "cat": "Salón de clases", "ed": "BLOQC", "piso": "3", "fecha": "2026-07-15", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-15 - Julio Jiménez.json"}, {"cod": "38C", "nom": "Salón 38C", "cat": "Salón de clases", "ed": "BLOQC", "piso": "3", "fecha": "2026-07-15", "promedio": 4.86, "file": "evaluaciones_uninorte_2026-07-15 - Julio Jiménez.json"}, {"cod": "24C", "nom": "Salón 24C", "cat": "Salón de clases", "ed": "BLOQC", "piso": "2", "fecha": "2026-07-15", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-15 - Julio Jiménez.json"}, {"cod": "31C", "nom": "Salón 31C", "cat": "Salón de clases", "ed": "BLOQC", "piso": "3", "fecha": "2026-07-15", "promedio": 4.57, "file": "evaluaciones_uninorte_2026-07-15 - Julio Jiménez.json"}, {"cod": "35C", "nom": "Salón 35C", "cat": "Salón de clases", "ed": "BLOQC", "piso": "3", "fecha": "2026-07-15", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-15 - Julio Jiménez.json"}, {"cod": "13C", "nom": "Salón 13C", "cat": "Salón de clases", "ed": "BLOQC", "piso": "1", "fecha": "2026-07-15", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-15 - Julio Jiménez.json"}, {"cod": "32C", "nom": "Salón 32C", "cat": "Salón de clases", "ed": "BLOQC", "piso": "3", "fecha": "2026-07-15", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-15 - Julio Jiménez.json"}, {"cod": "26C", "nom": "Salón 26C", "cat": "Salón de clases", "ed": "BLOQC", "piso": "2", "fecha": "2026-07-15", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-15 - Julio Jiménez.json"}, {"cod": "22C", "nom": "Salón 22C", "cat": "Salón de clases", "ed": "BLOQC", "piso": "2", "fecha": "2026-07-15", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-15 - Julio Jiménez.json"}, {"cod": "36C", "nom": "Salón 36C", "cat": "Salón de clases", "ed": "BLOQC", "piso": "3", "fecha": "2026-07-15", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-15 - Julio Jiménez.json"}, {"cod": "23C", "nom": "Salón 23C", "cat": "Salón de clases", "ed": "BLOQC", "piso": "2", "fecha": "2026-07-15", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-15 - Julio Jiménez.json"}, {"cod": "A1C", "nom": "Salón A1C", "cat": "Salón de clases", "ed": "BLOQC", "piso": "1", "fecha": "2026-07-15", "promedio": 3, "file": "evaluaciones_uninorte_2026-07-15 - Julio Jiménez.json"}], "pending_list": [], "extra_list": [{"cod": "Pas-03", "nom": "Pasillo", "cat": "Pasillo / Escalera / Área Común", "ed": "BLOQC", "piso": "Piso 3", "fecha": "2026-07-15", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-15 - Julio Jiménez.json"}]}, {"name": "LEILA ANGELA MLAYES HADDAD", "assigned_count": 14, "evaluated_count": 0, "pending_count": 14, "extra_count": 0, "progress_pct": 0.0, "done_list": [], "pending_list": [{"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQG1", "cod": "22G1", "piso": "2", "nom": "Salón 22G1", "ev": "LEILA ANGELA MLAYES HADDAD"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQG2", "cod": "21G2", "piso": "2", "nom": "Salón 21G2", "ev": "LEILA ANGELA MLAYES HADDAD"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQG2", "cod": "22G2", "piso": "2", "nom": "Oralidad- salón magistral", "ev": "LEILA ANGELA MLAYES HADDAD"}, {"cat": "sala_pc", "cat_excel": "Salas de Computadores", "ed": "BLOQG", "cod": "5-0G", "piso": "5", "nom": "Aula Digital", "ev": "LEILA ANGELA MLAYES HADDAD"}, {"cat": "sala_pc", "cat_excel": "Salas de Computadores", "ed": "BLOQG", "cod": "SDU6", "piso": "5", "nom": "Sala de Usuarios No. 6", "ev": "LEILA ANGELA MLAYES HADDAD"}, {"cat": "sala_pc", "cat_excel": "Salas de Computadores", "ed": "BLOQG2", "cod": "SDU7", "piso": "5", "nom": "Sala de Usuarios No. 7", "ev": "LEILA ANGELA MLAYES HADDAD"}, {"cat": "laboratorio", "cat_excel": "Laboratorios", "ed": "BLOQG2", "cod": "LG2-51", "piso": "5", "nom": "Lab. Relaciones Internacionales", "ev": "LEILA ANGELA MLAYES HADDAD"}, {"cat": "laboratorio", "cat_excel": "Laboratorios", "ed": "BLOQG2", "cod": "LG2-52", "piso": "5", "nom": "Lab. Comunicación Social", "ev": "LEILA ANGELA MLAYES HADDAD"}, {"cat": "biblioteca", "cat_excel": "Bibliotecas / Salas de Estudio", "ed": "BLOQG", "cod": "SAES05", "piso": "1", "nom": "Sala de Estudio BLOQG", "ev": "LEILA ANGELA MLAYES HADDAD"}, {"cat": "bano", "cat_excel": "Baños", "ed": "BLOQG", "cod": "BATH16", "piso": "1", "nom": "Baño Mujeres BLOQG - Piso 1", "ev": "LEILA ANGELA MLAYES HADDAD"}, {"cat": "bano", "cat_excel": "Baños", "ed": "BLOQG", "cod": "BATH17", "piso": "2", "nom": "Baño Mujeres BLOQG - Piso 2", "ev": "LEILA ANGELA MLAYES HADDAD"}, {"cat": "bano", "cat_excel": "Baños", "ed": "BLOQG", "cod": "BATH18", "piso": "3", "nom": "Baño Mujeres BLOQG - Piso 3", "ev": "LEILA ANGELA MLAYES HADDAD"}, {"cat": "bano", "cat_excel": "Baños", "ed": "BLOQG", "cod": "BATH19", "piso": "4", "nom": "Baño Mujeres BLOQG - Piso 4", "ev": "LEILA ANGELA MLAYES HADDAD"}, {"cat": "bano", "cat_excel": "Baños", "ed": "BLOQG", "cod": "BATH20", "piso": "5", "nom": "Baño Mujeres BLOQG - Piso 5", "ev": "LEILA ANGELA MLAYES HADDAD"}], "extra_list": []}, {"name": "MARGARITA ROSA DE ALBA AVENDAÑO", "assigned_count": 14, "evaluated_count": 14, "pending_count": 0, "extra_count": 1, "progress_pct": 100.0, "done_list": [{"cod": "33J", "nom": "Salon de clases 33J", "cat": "Salón de clases", "ed": "BLOQJ1", "piso": "3", "fecha": "2026-07-16", "promedio": 4.71, "file": "evaluaciones_uninorte_2026-07-16 -Margarita De Alba.json"}, {"cod": "38J", "nom": "Salon de clases 38J", "cat": "Salón de clases", "ed": "BLOQJ1", "piso": "3", "fecha": "2026-07-16", "promedio": 4.86, "file": "evaluaciones_uninorte_2026-07-16 -Margarita De Alba.json"}, {"cod": "36J", "nom": "Salon de clases 36J", "cat": "Salón de clases", "ed": "BLOQJ1", "piso": "3", "fecha": "2026-07-16", "promedio": 4.43, "file": "evaluaciones_uninorte_2026-07-16 -Margarita De Alba.json"}, {"cod": "35J", "nom": "Salon de clases 35J", "cat": "Salón de clases", "ed": "BLOQJ1", "piso": "3", "fecha": "2026-07-16", "promedio": 4.71, "file": "evaluaciones_uninorte_2026-07-16 -Margarita De Alba.json"}, {"cod": "34J", "nom": "Salon de clases 34J", "cat": "Salón de clases", "ed": "BLOQJ1", "piso": "3", "fecha": "2026-07-16", "promedio": 4.71, "file": "evaluaciones_uninorte_2026-07-16 -Margarita De Alba.json"}, {"cod": "31J", "nom": "Salon de clases 31J", "cat": "Salón de clases", "ed": "BLOQJ1", "piso": "3", "fecha": "2026-07-16", "promedio": 4.71, "file": "evaluaciones_uninorte_2026-07-16 -Margarita De Alba.json"}, {"cod": "37J", "nom": "Salon de clases 37J", "cat": "Salón de clases", "ed": "BLOQJ1", "piso": "3", "fecha": "2026-07-16", "promedio": 4.71, "file": "evaluaciones_uninorte_2026-07-16 -Margarita De Alba.json"}, {"cod": "32J", "nom": "Salon de clases 32J", "cat": "Salón de clases", "ed": "BLOQJ1", "piso": "3", "fecha": "2026-07-16", "promedio": 4.71, "file": "evaluaciones_uninorte_2026-07-16 -Margarita De Alba.json"}, {"cod": "L-41J", "nom": "Laboratorio Instituto de Idiomas No 5", "cat": "Laboratorios", "ed": "BLOQJ1", "piso": "4", "fecha": "2026-07-16", "promedio": 4.5, "file": "evaluaciones_uninorte_2026-07-16 -Margarita De Alba.json"}, {"cod": "L-42J", "nom": "Laboratorio Instituto de Idiomas No 6", "cat": "Laboratorios", "ed": "BLOQJ1", "piso": "4", "fecha": "2026-07-16", "promedio": 4.25, "file": "evaluaciones_uninorte_2026-07-16 -Margarita De Alba.json"}, {"cod": "L-43J", "nom": "Laboratorio Experimental de Matematicas", "cat": "Laboratorios", "ed": "BLOQJ1", "piso": "4", "fecha": "2026-07-16", "promedio": 4.5, "file": "evaluaciones_uninorte_2026-07-16 -Margarita De Alba.json"}, {"cod": "L-S1J", "nom": "Laboratorio de Petrografia óptica", "cat": "Laboratorios", "ed": "BLOQJ1", "piso": "S", "fecha": "2026-07-16", "promedio": 4.2, "file": "evaluaciones_uninorte_2026-07-16 -Margarita De Alba.json"}, {"cod": "L-S2J", "nom": "Laboratorio de Cartografia y Geomorfologia", "cat": "Laboratorios", "ed": "BLOQJ1", "piso": "S", "fecha": "2026-07-16", "promedio": 4.2, "file": "evaluaciones_uninorte_2026-07-16 -Margarita De Alba.json"}, {"cod": "L-S5J", "nom": "Laboratorio de Geología Física", "cat": "Laboratorios", "ed": "BLOQJ1", "piso": "S", "fecha": "2026-07-16", "promedio": 4, "file": "evaluaciones_uninorte_2026-07-16 -Margarita De Alba.json"}], "pending_list": [], "extra_list": [{"cod": "Pasillo s1j", "nom": "Pasillo sj1", "cat": "Pasillo / Escalera / Área Común", "ed": "BLOQJ", "piso": "Sj 1", "fecha": "2026-07-16", "promedio": 4, "file": "evaluaciones_uninorte_2026-07-16 -Margarita De Alba.json"}]}, {"name": "MARIA ALEJANDRA SOCARRAS MEDRANO", "assigned_count": 12, "evaluated_count": 0, "pending_count": 12, "extra_count": 0, "progress_pct": 0.0, "done_list": [], "pending_list": [{"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQJ1", "cod": "11J", "piso": "1", "nom": "Salon de clases 11J", "ev": "MARIA ALEJANDRA SOCARRAS MEDRANO"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQJ1", "cod": "13J", "piso": "1", "nom": "Salon de clases 13J", "ev": "MARIA ALEJANDRA SOCARRAS MEDRANO"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQJ1", "cod": "12J", "piso": "1", "nom": "Salon de clases 12J", "ev": "MARIA ALEJANDRA SOCARRAS MEDRANO"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQJ1", "cod": "25J", "piso": "2", "nom": "Salon de clases 25J", "ev": "MARIA ALEJANDRA SOCARRAS MEDRANO"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQJ1", "cod": "22J", "piso": "2", "nom": "Salon de clases 22J", "ev": "MARIA ALEJANDRA SOCARRAS MEDRANO"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQJ1", "cod": "24J", "piso": "2", "nom": "Salon de clases 24J", "ev": "MARIA ALEJANDRA SOCARRAS MEDRANO"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQJ1", "cod": "21J", "piso": "2", "nom": "Salon de clases 21J", "ev": "MARIA ALEJANDRA SOCARRAS MEDRANO"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQJ1", "cod": "26J", "piso": "2", "nom": "Salon de clases 26J", "ev": "MARIA ALEJANDRA SOCARRAS MEDRANO"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQJ1", "cod": "23J", "piso": "2", "nom": "Salon de clases 23J", "ev": "MARIA ALEJANDRA SOCARRAS MEDRANO"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQJ1", "cod": "28J", "piso": "2", "nom": "Salon de clases 28J", "ev": "MARIA ALEJANDRA SOCARRAS MEDRANO"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQJ1", "cod": "27J", "piso": "2", "nom": "Salon de clases27J", "ev": "MARIA ALEJANDRA SOCARRAS MEDRANO"}, {"cat": "biblioteca", "cat_excel": "Bibliotecas / Salas de Estudio", "ed": "BLOQJ", "cod": "SAES06", "piso": "1", "nom": "Sala de Estudio BLOQJ", "ev": "MARIA ALEJANDRA SOCARRAS MEDRANO"}], "extra_list": []}, {"name": "MARIA AUXILIADORA HEMER NARVAEZ", "assigned_count": 14, "evaluated_count": 0, "pending_count": 14, "extra_count": 0, "progress_pct": 0.0, "done_list": [], "pending_list": [{"cat": "bano", "cat_excel": "Baños", "ed": "1L6", "cod": "BATH77", "piso": "", "nom": "Baño Hombres Bloque Laboratorios N° 6", "ev": "MARIA AUXILIADORA HEMER NARVAEZ"}, {"cat": "bano", "cat_excel": "Baños", "ed": "1L6", "cod": "BATH78", "piso": "", "nom": "Baño Hombres Bloque Laboratorios N° 6", "ev": "MARIA AUXILIADORA HEMER NARVAEZ"}, {"cat": "bano", "cat_excel": "Baños", "ed": "1L6", "cod": "BATH79", "piso": "", "nom": "Baño Hombres Bloque Laboratorios N° 6", "ev": "MARIA AUXILIADORA HEMER NARVAEZ"}, {"cat": "bano", "cat_excel": "Baños", "ed": "1L6", "cod": "BATH80", "piso": "", "nom": "Baño Mujeres Bloque Laboratorios N° 6", "ev": "MARIA AUXILIADORA HEMER NARVAEZ"}, {"cat": "bano", "cat_excel": "Baños", "ed": "1L6", "cod": "BATH81", "piso": "", "nom": "Baño Mujeres Bloque Laboratorios N° 6", "ev": "MARIA AUXILIADORA HEMER NARVAEZ"}, {"cat": "bano", "cat_excel": "Baños", "ed": "1L6", "cod": "BATH82", "piso": "", "nom": "Baño Mujeres Bloque Laboratorios N° 6", "ev": "MARIA AUXILIADORA HEMER NARVAEZ"}, {"cat": "bano", "cat_excel": "Baños", "ed": "L4", "cod": "BATH69", "piso": "", "nom": "Baño Hombres Bloque Laboratorios N° 4", "ev": "MARIA AUXILIADORA HEMER NARVAEZ"}, {"cat": "bano", "cat_excel": "Baños", "ed": "L4", "cod": "BATH70", "piso": "", "nom": "Baño Hombres Bloque Laboratorios N° 4", "ev": "MARIA AUXILIADORA HEMER NARVAEZ"}, {"cat": "bano", "cat_excel": "Baños", "ed": "L4", "cod": "BATH71", "piso": "", "nom": "Baño Hombres Bloque Laboratorios N° 4", "ev": "MARIA AUXILIADORA HEMER NARVAEZ"}, {"cat": "bano", "cat_excel": "Baños", "ed": "L4", "cod": "BATH72", "piso": "", "nom": "Baño Mujeres Bloque Laboratorios N° 4", "ev": "MARIA AUXILIADORA HEMER NARVAEZ"}, {"cat": "bano", "cat_excel": "Baños", "ed": "L4", "cod": "BATH73", "piso": "", "nom": "Baño Mujeres Bloque Laboratorios N° 4", "ev": "MARIA AUXILIADORA HEMER NARVAEZ"}, {"cat": "bano", "cat_excel": "Baños", "ed": "L4", "cod": "BATH74", "piso": "", "nom": "Baño Mujeres Bloque Laboratorios N° 4", "ev": "MARIA AUXILIADORA HEMER NARVAEZ"}, {"cat": "bano", "cat_excel": "Baños", "ed": "L5", "cod": "BATH75", "piso": "1", "nom": "Baño Hombres Bloque Laboratorios N° 5", "ev": "MARIA AUXILIADORA HEMER NARVAEZ"}, {"cat": "bano", "cat_excel": "Baños", "ed": "L5", "cod": "BATH76", "piso": "1", "nom": "Baño Mujeres Bloque Laboratorios N° 5", "ev": "MARIA AUXILIADORA HEMER NARVAEZ"}], "extra_list": []}, {"name": "MARIBEL DEL SOCORRO PEREZ ROMERO", "assigned_count": 14, "evaluated_count": 14, "pending_count": 0, "extra_count": 2, "progress_pct": 100.0, "done_list": [{"cod": "A2C", "nom": "Salón A2C", "cat": "Salón de clases", "ed": "BLOQC", "piso": "2", "fecha": "2026-07-15", "promedio": 2.57, "file": "evaluaciones_uninorte_2026-07-16 - Maribel Pérez Día 2.json"}, {"cod": "25C", "nom": "Salón 25C", "cat": "Salón de clases", "ed": "BLOQC", "piso": "2", "fecha": "2026-07-15", "promedio": 4.67, "file": "evaluaciones_uninorte_2026-07-16 - Maribel Pérez Día 2.json"}, {"cod": "SDU1", "nom": "Sala de Usuario / Sala de Usuarios 1", "cat": "Salas de Computadores", "ed": "BLOQC", "piso": "1", "fecha": "2026-07-16", "promedio": 4.67, "file": "evaluaciones_uninorte_2026-07-16 - Maribel Pérez Día 2.json"}, {"cod": "21C", "nom": "Taller Arquitectura", "cat": "Laboratorios", "ed": "BLOQC", "piso": "2", "fecha": "2026-07-16", "promedio": 4.5, "file": "evaluaciones_uninorte_2026-07-16 - Maribel Pérez Día 2.json"}, {"cod": "37C", "nom": "Taller de Diseño y Arquitectura", "cat": "Laboratorios", "ed": "BLOQC", "piso": "3", "fecha": "2026-07-16", "promedio": 4, "file": "evaluaciones_uninorte_2026-07-16 - Maribel Pérez Día 2.json"}, {"cod": "LC-1", "nom": "Lab. Ing. de Control", "cat": "Laboratorios", "ed": "BLOQC", "piso": "S", "fecha": "2026-07-15", "promedio": 3.2, "file": "evaluaciones_uninorte_2026-07-16 - Maribel Pérez Día 2.json"}, {"cod": "LC-2", "nom": "Lab. de Ing Electrónica y comunicaciones", "cat": "Laboratorios", "ed": "BLOQC", "piso": "S", "fecha": "2026-07-15", "promedio": 3.8, "file": "evaluaciones_uninorte_2026-07-16 - Maribel Pérez Día 2.json"}, {"cod": "LC-3", "nom": "Lab. diseño de sofware y redes", "cat": "Laboratorios", "ed": "BLOQC", "piso": "S", "fecha": "2026-07-15", "promedio": 4.8, "file": "evaluaciones_uninorte_2026-07-16 - Maribel Pérez Día 2.json"}, {"cod": "LC-4", "nom": "Laboratorio / Sala de usuario-Lab. Circuitos y Maq. Eléctricas", "cat": "Laboratorios", "ed": "BLOQC", "piso": "S", "fecha": "2026-07-15", "promedio": 3.6, "file": "evaluaciones_uninorte_2026-07-16 - Maribel Pérez Día 2.json"}, {"cod": "LC-5", "nom": "Laboratorio / Sala de Usuario -Lab. de Transmisión", "cat": "Laboratorios", "ed": "BLOQC", "piso": "S", "fecha": "2026-07-15", "promedio": 4, "file": "evaluaciones_uninorte_2026-07-16 - Maribel Pérez Día 2.json"}, {"cod": "LC-6", "nom": "Lab. de Infraestructura Tecnologica Informatica", "cat": "Laboratorios", "ed": "BLOQC", "piso": "S", "fecha": "2026-07-15", "promedio": 4.8, "file": "evaluaciones_uninorte_2026-07-16 - Maribel Pérez Día 2.json"}, {"cod": "BLD-C", "nom": "Edificio Bloque C", "cat": "Fachadas de Edificios", "ed": "BLOQC", "piso": "", "fecha": "2026-07-15", "promedio": 4, "file": "evaluaciones_uninorte_2026-07-16 - Maribel Pérez Día 2.json"}, {"cod": "BATH05", "nom": "Baño Hombres BLOQC - Piso 2", "cat": "Baños", "ed": "BLOQC", "piso": "2", "fecha": "2026-07-16", "promedio": 4.25, "file": "evaluaciones_uninorte_2026-07-16 - Maribel Pérez Día 2.json"}, {"cod": "BATH06", "nom": "Baño Mujeres BLOQC - Piso 2", "cat": "Baños", "ed": "BLOQC", "piso": "2", "fecha": "2026-07-16", "promedio": 4.5, "file": "evaluaciones_uninorte_2026-07-16 - Maribel Pérez Día 2.json"}], "pending_list": [], "extra_list": [{"cod": "Pasillo bloque c 1er piso interior camino hacia los parqueaderos", "nom": "Pasillo bloque c 1er piso interior camino hacia los parqueaderos", "cat": "Pasillo / Escalera / Área Común", "ed": "BLOQC", "piso": "1", "fecha": "2026-07-16", "promedio": 4, "file": "evaluaciones_uninorte_2026-07-16 - Maribel Pérez Día 2.json"}, {"cod": "Area comun laboratorios bloque c sotano", "nom": "Pasillo de los lab bloque c sotano", "cat": "Pasillo / Escalera / Área Común", "ed": "BLOQC", "piso": "Sotano", "fecha": "2026-07-15", "promedio": 3, "file": "evaluaciones_uninorte_2026-07-16 - Maribel Pérez Día 2.json"}]}, {"name": "MELISSA DEL CARMEN DELUQUE BASTIDAS", "assigned_count": 14, "evaluated_count": 0, "pending_count": 14, "extra_count": 0, "progress_pct": 0.0, "done_list": [], "pending_list": [{"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQG1", "cod": "25G1", "piso": "2", "nom": "Salón 25G1", "ev": "MELISSA DEL CARMEN DELUQUE BASTIDAS"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQG1", "cod": "21G1", "piso": "2", "nom": "Salón 21G1", "ev": "MELISSA DEL CARMEN DELUQUE BASTIDAS"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQG1", "cod": "24G1", "piso": "2", "nom": "Salón 24G1", "ev": "MELISSA DEL CARMEN DELUQUE BASTIDAS"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQG1", "cod": "23G1", "piso": "2", "nom": "Salón 23G1", "ev": "MELISSA DEL CARMEN DELUQUE BASTIDAS"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQG1", "cod": "31G1", "piso": "3", "nom": "Salón 31G1", "ev": "MELISSA DEL CARMEN DELUQUE BASTIDAS"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQG1", "cod": "34G1", "piso": "3", "nom": "Salón 34G1", "ev": "MELISSA DEL CARMEN DELUQUE BASTIDAS"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQG1", "cod": "33G1", "piso": "3", "nom": "Salón 33G1", "ev": "MELISSA DEL CARMEN DELUQUE BASTIDAS"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQG1", "cod": "32G1", "piso": "3", "nom": "Salón 32G1", "ev": "MELISSA DEL CARMEN DELUQUE BASTIDAS"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQG1", "cod": "35G1", "piso": "3", "nom": "Salón 35G1", "ev": "MELISSA DEL CARMEN DELUQUE BASTIDAS"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQG1", "cod": "42G1", "piso": "4", "nom": "Salón 42G1", "ev": "MELISSA DEL CARMEN DELUQUE BASTIDAS"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQG1", "cod": "45G1", "piso": "4", "nom": "Salón 45G1", "ev": "MELISSA DEL CARMEN DELUQUE BASTIDAS"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQG1", "cod": "43G1", "piso": "4", "nom": "Salón 43G1", "ev": "MELISSA DEL CARMEN DELUQUE BASTIDAS"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQG1", "cod": "41G1", "piso": "4", "nom": "Salón 41G1", "ev": "MELISSA DEL CARMEN DELUQUE BASTIDAS"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQG1", "cod": "44G1", "piso": "4", "nom": "Salón 44G1", "ev": "MELISSA DEL CARMEN DELUQUE BASTIDAS"}], "extra_list": []}, {"name": "MILENA MERCEDES VARELA CARDONA", "assigned_count": 11, "evaluated_count": 11, "pending_count": 0, "extra_count": 1, "progress_pct": 100.0, "done_list": [{"cod": "54G1", "nom": "Salón 54G1", "cat": "Salón de clases", "ed": "BLOQG1", "piso": "5", "fecha": "2026-07-15", "promedio": 4.43, "file": "evaluaciones_uninorte_2026-07-17 - Milena V.json"}, {"cod": "55G1", "nom": "Salón 55G1", "cat": "Salón de clases", "ed": "BLOQG1", "piso": "5", "fecha": "2026-07-15", "promedio": 4.29, "file": "evaluaciones_uninorte_2026-07-17 - Milena V.json"}, {"cod": "51G1", "nom": "Salón 51G1", "cat": "Salón de clases", "ed": "BLOQG1", "piso": "5", "fecha": "2026-07-15", "promedio": 4.71, "file": "evaluaciones_uninorte_2026-07-17 - Milena V.json"}, {"cod": "52G1", "nom": "Salón 52G1", "cat": "Salón de clases", "ed": "BLOQG1", "piso": "5", "fecha": "2026-07-15", "promedio": 4.57, "file": "evaluaciones_uninorte_2026-07-17 - Milena V.json"}, {"cod": "53G1", "nom": "Salón 53G1", "cat": "Salón de clases", "ed": "BLOQG1", "piso": "5", "fecha": "2026-07-15", "promedio": 4.43, "file": "evaluaciones_uninorte_2026-07-17 - Milena V.json"}, {"cod": "13G2", "nom": "Salón 13G2", "cat": "Salón de clases", "ed": "BLOQG2", "piso": "1", "fecha": "2026-07-15", "promedio": 4, "file": "evaluaciones_uninorte_2026-07-17 - Milena V.json"}, {"cod": "51G2", "nom": "Salón 51G2", "cat": "Salón de clases", "ed": "BLOQG2", "piso": "5", "fecha": "2026-07-15", "promedio": 4.57, "file": "evaluaciones_uninorte_2026-07-17 - Milena V.json"}, {"cod": "4L-1", "nom": "Salón 4L-1 Diseño digital", "cat": "Laboratorios", "ed": "1L6", "piso": "4", "fecha": "2026-07-17", "promedio": 3.67, "file": "evaluaciones_uninorte_2026-07-17 - Milena V.json"}, {"cod": "4L-2", "nom": "Salón 4L-2 Diseño digital", "cat": "Laboratorios", "ed": "1L6", "piso": "4", "fecha": "2026-07-17", "promedio": 3.67, "file": "evaluaciones_uninorte_2026-07-17 - Milena V.json"}, {"cod": "4L-3", "nom": "Salón 4L-3 Diseño digital", "cat": "Laboratorios", "ed": "1L6", "piso": "4", "fecha": "2026-07-17", "promedio": 3, "file": "evaluaciones_uninorte_2026-07-17 - Milena V.json"}, {"cod": "BATH96", "nom": "Baño Mujeres Coliseo", "cat": "Baños", "ed": "COLIS", "piso": "1", "fecha": "2026-07-11", "promedio": 2.75, "file": "evaluaciones_uninorte_2026-07-17 - Milena V.json"}], "pending_list": [], "extra_list": [{"cod": "Recepción laboratorios 4 to piso", "nom": "Recepción 4 to piso laboratorio", "cat": "Pasillo / Escalera / Área Común", "ed": "1L6", "piso": "4", "fecha": "2026-07-17", "promedio": 4, "file": "evaluaciones_uninorte_2026-07-17 - Milena V.json"}]}, {"name": "NITZIA GISELA CARABALLO CABRERA", "assigned_count": 11, "evaluated_count": 10, "pending_count": 1, "extra_count": 0, "progress_pct": 90.9090909090909, "done_list": [{"cod": "21F", "nom": "Salón 21F", "cat": "Salón de clases", "ed": "BLOQF", "piso": "2", "fecha": "2026-07-16", "promedio": 1, "file": "evaluaciones_uninorte_2026-07-17-1 - Nitzia C.json"}, {"cod": "22F", "nom": "Salón 22F", "cat": "Salón de clases", "ed": "BLOQF", "piso": "2", "fecha": "2026-07-16", "promedio": 1, "file": "evaluaciones_uninorte_2026-07-17-1 - Nitzia C.json"}, {"cod": "25F", "nom": "Salón 25F", "cat": "Salón de clases", "ed": "BLOQF", "piso": "2", "fecha": "2026-07-16", "promedio": 1, "file": "evaluaciones_uninorte_2026-07-17-1 - Nitzia C.json"}, {"cod": "24F", "nom": "Salón 24F", "cat": "Salón de clases", "ed": "BLOQF", "piso": "2", "fecha": "2026-07-16", "promedio": 1, "file": "evaluaciones_uninorte_2026-07-17-1 - Nitzia C.json"}, {"cod": "23F", "nom": "Salón 23F", "cat": "Salón de clases", "ed": "BLOQF", "piso": "2", "fecha": "2026-07-16", "promedio": 1, "file": "evaluaciones_uninorte_2026-07-17-1 - Nitzia C.json"}, {"cod": "J-CAMPUS22", "nom": "Jardín KM5 hacia Instituto de Idiomas", "cat": "Jardines y Zonas Verdes", "ed": "CAMPUS", "piso": "", "fecha": "2026-07-16", "promedio": 2.5, "file": "evaluaciones_uninorte_2026-07-17-1 - Nitzia C.json"}, {"cod": "J-CAMPUS24", "nom": "Jardín Auditorio (Bloque F)", "cat": "Jardines y Zonas Verdes", "ed": "CAMPUS", "piso": "", "fecha": "2026-07-16", "promedio": 4, "file": "evaluaciones_uninorte_2026-07-17-1 - Nitzia C.json"}, {"cod": "J-CAMPUS25", "nom": "Jardín Palmeras 1966 (Frente)", "cat": "Jardines y Zonas Verdes", "ed": "CAMPUS", "piso": "", "fecha": "2026-07-16", "promedio": 3.5, "file": "evaluaciones_uninorte_2026-07-17-1 - Nitzia C.json"}, {"cod": "BATH09", "nom": "Baño Hombres BLOQF - Piso 2", "cat": "Baños", "ed": "BLOQF", "piso": "2", "fecha": "2026-07-16", "promedio": 3.5, "file": "evaluaciones_uninorte_2026-07-17-1 - Nitzia C.json"}, {"cod": "BATH10", "nom": "Baño Mujeres BLOQF - Piso 2", "cat": "Baños", "ed": "BLOQF", "piso": "2", "fecha": "2026-07-16", "promedio": 4.25, "file": "evaluaciones_uninorte_2026-07-17-1 - Nitzia C.json"}], "pending_list": [{"cat": "laboratorio", "cat_excel": "Laboratorios", "ed": "BLOQF", "cod": "LF-1", "piso": "", "nom": "Lab. Fisiología e Histología y Microbiologia", "ev": "NITZIA GISELA CARABALLO CABRERA"}], "extra_list": []}, {"name": "OSVALDO DE JESUS GAMARRA AMARIS", "assigned_count": 13, "evaluated_count": 11, "pending_count": 2, "extra_count": 4, "progress_pct": 84.61538461538461, "done_list": [{"cod": "SDU8", "nom": "Sala de Usuarios No. 8", "cat": "Salas de Computadores", "ed": "BLOQK", "piso": "", "fecha": "2026-07-15", "promedio": 4.33, "file": "evaluaciones_uninorte_2026-07-15 - Osvaldo G.json"}, {"cod": "SDU10", "nom": "Sala de Usuarios No. 10", "cat": "Salas de Computadores", "ed": "BLOQK", "piso": "", "fecha": "2026-07-15", "promedio": 4.33, "file": "evaluaciones_uninorte_2026-07-15 - Osvaldo G.json"}, {"cod": "SDU9", "nom": "Sala de Usuarios No. 9", "cat": "Salas de Computadores", "ed": "BLOQK", "piso": "", "fecha": "2026-07-15", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-15 - Osvaldo G.json"}, {"cod": "BATH25", "nom": "Baño Hombres BLOQK - Piso 1", "cat": "Baños", "ed": "BLOQK", "piso": "1", "fecha": "2026-07-15", "promedio": 3.75, "file": "evaluaciones_uninorte_2026-07-15 - Osvaldo G.json"}, {"cod": "BATH27", "nom": "Baño Hombres BLOQK - Piso 3", "cat": "Baños", "ed": "BLOQK", "piso": "3", "fecha": "2026-07-15", "promedio": 3.25, "file": "evaluaciones_uninorte_2026-07-15 - Osvaldo G.json"}, {"cod": "BATH28", "nom": "Baño Hombres BLOQK - Piso 4", "cat": "Baños", "ed": "BLOQK", "piso": "4", "fecha": "2026-07-15", "promedio": 4.75, "file": "evaluaciones_uninorte_2026-07-15 - Osvaldo G.json"}, {"cod": "BATH29", "nom": "Baño Hombres BLOQK - Piso 5", "cat": "Baños", "ed": "BLOQK", "piso": "5", "fecha": "2026-07-15", "promedio": 4.5, "file": "evaluaciones_uninorte_2026-07-15 - Osvaldo G.json"}, {"cod": "BATH30", "nom": "Baño Hombres BLOQK - Piso 6", "cat": "Baños", "ed": "BLOQK", "piso": "6", "fecha": "2026-07-15", "promedio": 4, "file": "evaluaciones_uninorte_2026-07-15 - Osvaldo G.json"}, {"cod": "BATH31", "nom": "Baño Hombres BLOQK - Piso 7", "cat": "Baños", "ed": "BLOQK", "piso": "7", "fecha": "2026-07-15", "promedio": 4.25, "file": "evaluaciones_uninorte_2026-07-15 - Osvaldo G.json"}, {"cod": "BATH32", "nom": "Baño Hombres BLOQK - Piso 8", "cat": "Baños", "ed": "BLOQK", "piso": "8", "fecha": "2026-07-15", "promedio": 4.5, "file": "evaluaciones_uninorte_2026-07-15 - Osvaldo G.json"}, {"cod": "BATH33", "nom": "Baño Hombres BLOQK - Piso 9", "cat": "Baños", "ed": "BLOQK", "piso": "9", "fecha": "2026-07-15", "promedio": 4.75, "file": "evaluaciones_uninorte_2026-07-15 - Osvaldo G.json"}], "pending_list": [{"cat": "cafeteria", "cat_excel": "Cafeterías / Zonas de Alimentación", "ed": "CAMPUS", "cod": "ZONALI08", "piso": "", "nom": "El Contenedor", "ev": "OSVALDO DE JESUS GAMARRA AMARIS"}, {"cat": "bano", "cat_excel": "Baños", "ed": "BLOQK", "cod": "BATH26", "piso": "2", "nom": "Baño Hombres BLOQK - Piso 2", "ev": "OSVALDO DE JESUS GAMARRA AMARIS"}], "extra_list": [{"cod": "PAS-01", "nom": "Pasillo piso 1", "cat": "Pasillo / Escalera / Área Común", "ed": "BLOQK", "piso": "1", "fecha": "2026-07-15", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-15 - Osvaldo G.json"}, {"cod": "PAS-05", "nom": "Pasillo 5 bloque K", "cat": "Pasillo / Escalera / Área Común", "ed": "BLOQK", "piso": "5", "fecha": "2026-07-15", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-15 - Osvaldo G.json"}, {"cod": "PAS-09", "nom": "Pasillo piso 9", "cat": "Pasillo / Escalera / Área Común", "ed": "BLOQK", "piso": "9", "fecha": "2026-07-15", "promedio": 4.75, "file": "evaluaciones_uninorte_2026-07-15 - Osvaldo G.json"}, {"cod": "PAS-07", "nom": "Pasillo piso 7", "cat": "Pasillo / Escalera / Área Común", "ed": "BLOQK", "piso": "7", "fecha": "2026-07-15", "promedio": 4.75, "file": "evaluaciones_uninorte_2026-07-15 - Osvaldo G.json"}]}, {"name": "PATRICIA JAIMES TABOADA", "assigned_count": 13, "evaluated_count": 7, "pending_count": 6, "extra_count": 0, "progress_pct": 53.84615384615385, "done_list": [{"cod": "45K", "nom": "Salón 45K", "cat": "Salón de clases", "ed": "BLOQK", "piso": "4", "fecha": "2026-07-15", "promedio": 4.14, "file": "evaluaciones_uninorte_2026-07-16 - Patricia J.json"}, {"cod": "41K", "nom": "Salón 41K", "cat": "Salón de clases", "ed": "BLOQK", "piso": "4", "fecha": "2026-07-15", "promedio": 3.43, "file": "evaluaciones_uninorte_2026-07-16 - Patricia J.json"}, {"cod": "43K", "nom": "Salón 43K", "cat": "Salón de clases", "ed": "BLOQK", "piso": "4", "fecha": "2026-07-15", "promedio": 4.43, "file": "evaluaciones_uninorte_2026-07-16 - Patricia J.json"}, {"cod": "46K", "nom": "Salón 46K", "cat": "Salón de clases", "ed": "BLOQK", "piso": "4", "fecha": "2026-07-15", "promedio": 4.43, "file": "evaluaciones_uninorte_2026-07-16 - Patricia J.json"}, {"cod": "91K", "nom": "Salón 91K", "cat": "Salón de clases", "ed": "BLOQK", "piso": "9", "fecha": "2026-07-15", "promedio": 4, "file": "evaluaciones_uninorte_2026-07-16 - Patricia J.json"}, {"cod": "44K", "nom": "Salón 44K", "cat": "Salón de clases", "ed": "BLOQK", "piso": "4", "fecha": "2026-07-15", "promedio": 4.29, "file": "evaluaciones_uninorte_2026-07-16 - Patricia J.json"}, {"cod": "42K", "nom": "Salón 42K", "cat": "Salón de clases", "ed": "BLOQK", "piso": "4", "fecha": "2026-07-15", "promedio": 4, "file": "evaluaciones_uninorte_2026-07-16 - Patricia J.json"}], "pending_list": [{"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQK", "cod": "92K", "piso": "9", "nom": "Salón 92K", "ev": "PATRICIA JAIMES TABOADA"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQK", "cod": "93K", "piso": "9", "nom": "Salón 93K", "ev": "PATRICIA JAIMES TABOADA"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQK", "cod": "94K", "piso": "9", "nom": "Salón 94K", "ev": "PATRICIA JAIMES TABOADA"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQK", "cod": "95K", "piso": "9", "nom": "Salón 95K", "ev": "PATRICIA JAIMES TABOADA"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQK", "cod": "97K", "piso": "9", "nom": "Salón 97K", "ev": "PATRICIA JAIMES TABOADA"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOQK", "cod": "96K", "piso": "9", "nom": "Salón 96K", "ev": "PATRICIA JAIMES TABOADA"}], "extra_list": []}, {"name": "SAMIRA DEL CARMEN CONSUEGRA BETTER", "assigned_count": 11, "evaluated_count": 11, "pending_count": 0, "extra_count": 0, "progress_pct": 100.0, "done_list": [{"cod": "J-CAMPUS06", "nom": "Jardín Laboratorio 5", "cat": "Jardines y Zonas Verdes", "ed": "CAMPUS", "piso": "", "fecha": "2026-07-14", "promedio": 3.75, "file": "evaluaciones_uninorte_2026-07-14_Samira.json"}, {"cod": "J-CAMPUS07", "nom": "Jardín Laboratorio 6", "cat": "Jardines y Zonas Verdes", "ed": "CAMPUS", "piso": "", "fecha": "2026-07-14", "promedio": 3, "file": "evaluaciones_uninorte_2026-07-14_Samira.json"}, {"cod": "J-CAMPUS37", "nom": "Jardín Du Nord Plaza", "cat": "Jardines y Zonas Verdes", "ed": "CAMPUS", "piso": "", "fecha": "2026-07-14", "promedio": 4.25, "file": "evaluaciones_uninorte_2026-07-14_Samira.json"}, {"cod": "J-CAMPUS38", "nom": "Jardín Graphique", "cat": "Jardines y Zonas Verdes", "ed": "CAMPUS", "piso": "", "fecha": "2026-07-14", "promedio": 4.25, "file": "evaluaciones_uninorte_2026-07-14_Samira.json"}, {"cod": "J-CAMPUS39", "nom": "Jardín Express", "cat": "Jardines y Zonas Verdes", "ed": "CAMPUS", "piso": "", "fecha": "2026-07-14", "promedio": 4.25, "file": "evaluaciones_uninorte_2026-07-14_Samira.json"}, {"cod": "J-CAMPUS43", "nom": "Fuente de la Rectitud, Alegría y Verdad", "cat": "Jardines y Zonas Verdes", "ed": "CAMPUS", "piso": "", "fecha": "2026-07-14", "promedio": 3.75, "file": "evaluaciones_uninorte_2026-07-14_Samira.json"}, {"cod": "ZONALI01", "nom": "Du Nord Plaza", "cat": "Cafeterías / Zonas de Alimentación", "ed": "BLOQF", "piso": "1", "fecha": "2026-07-14", "promedio": 3.67, "file": "evaluaciones_uninorte_2026-07-14_Samira.json"}, {"cod": "ZONALI02", "nom": "La Crepería", "cat": "Cafeterías / Zonas de Alimentación", "ed": "BLOQF", "piso": "2", "fecha": "2026-07-14", "promedio": 4, "file": "evaluaciones_uninorte_2026-07-14_Samira.json"}, {"cod": "ZONALI03", "nom": "1966", "cat": "Cafeterías / Zonas de Alimentación", "ed": "BLOQF", "piso": "2", "fecha": "2026-07-14", "promedio": 4.5, "file": "evaluaciones_uninorte_2026-07-14_Samira.json"}, {"cod": "ZONALI09", "nom": "La Esquina", "cat": "Cafeterías / Zonas de Alimentación", "ed": "CAMPUS", "piso": "", "fecha": "2026-07-14", "promedio": 4, "file": "evaluaciones_uninorte_2026-07-14_Samira.json"}, {"cod": "ZONALI10", "nom": "El Express", "cat": "Cafeterías / Zonas de Alimentación", "ed": "CAMPUS", "piso": "", "fecha": "2026-07-14", "promedio": 3.5, "file": "evaluaciones_uninorte_2026-07-14_Samira.json"}], "pending_list": [], "extra_list": []}, {"name": "SANDRA PAOLA PEÑA CASTELLANO", "assigned_count": 11, "evaluated_count": 11, "pending_count": 0, "extra_count": 5, "progress_pct": 100.0, "done_list": [{"cod": "I3-11", "nom": "Salón I3-11", "cat": "Salón de clases", "ed": "BLOI3", "piso": "1", "fecha": "2026-07-16", "promedio": 4, "file": "evaluaciones_uninorte_2026-07-16 - Sandra Peña.json"}, {"cod": "I3-13", "nom": "Salón I3-13", "cat": "Salón de clases", "ed": "BLOI3", "piso": "1", "fecha": "2026-07-16", "promedio": 4.57, "file": "evaluaciones_uninorte_2026-07-16 - Sandra Peña.json"}, {"cod": "I3-12", "nom": "Salón I3-12", "cat": "Salón de clases", "ed": "BLOI3", "piso": "1", "fecha": "2026-07-16", "promedio": 4.43, "file": "evaluaciones_uninorte_2026-07-16 - Sandra Peña.json"}, {"cod": "I4-S13", "nom": "Salón I4-S13", "cat": "Salón de clases", "ed": "BLOI4", "piso": "S", "fecha": "2026-07-16", "promedio": 4.57, "file": "evaluaciones_uninorte_2026-07-16 - Sandra Peña.json"}, {"cod": "I4-S11", "nom": "Salón I4-S11", "cat": "Salón de clases", "ed": "BLOI4", "piso": "S", "fecha": "2026-07-16", "promedio": 4.57, "file": "evaluaciones_uninorte_2026-07-16 - Sandra Peña.json"}, {"cod": "I4-S12", "nom": "Salón I4-S12", "cat": "Salón de clases", "ed": "BLOI4", "piso": "S", "fecha": "2026-07-16", "promedio": 4.57, "file": "evaluaciones_uninorte_2026-07-16 - Sandra Peña.json"}, {"cod": "L5-1", "nom": "Lab. de Fotografía", "cat": "Laboratorios", "ed": "BKCP", "piso": "S", "fecha": "2026-07-16", "promedio": 4.2, "file": "evaluaciones_uninorte_2026-07-16 - Sandra Peña.json"}, {"cod": "L5-2", "nom": "Estudio de Televisión", "cat": "Laboratorios", "ed": "BKCP", "piso": "S", "fecha": "2026-07-16", "promedio": 4.6, "file": "evaluaciones_uninorte_2026-07-16 - Sandra Peña.json"}, {"cod": "BLD-E", "nom": "Edificio Bloque E", "cat": "Fachadas de Edificios", "ed": "BLOQE", "piso": "", "fecha": "2026-07-16", "promedio": 4.25, "file": "evaluaciones_uninorte_2026-07-16 - Sandra Peña.json"}, {"cod": "BLD-F", "nom": "Edificio Bloque F", "cat": "Fachadas de Edificios", "ed": "BLOQF", "piso": "", "fecha": "2026-07-16", "promedio": 4.25, "file": "evaluaciones_uninorte_2026-07-16 - Sandra Peña.json"}, {"cod": "BLD-I", "nom": "Edificio Bloque I", "cat": "Fachadas de Edificios", "ed": "BLOQI", "piso": "", "fecha": "2026-07-16", "promedio": 3, "file": "evaluaciones_uninorte_2026-07-16 - Sandra Peña.json"}], "pending_list": [], "extra_list": [{"cod": "Pasillo 2do piso", "nom": "Pasillo piso 2", "cat": "Pasillo / Escalera / Área Común", "ed": "BLOQE", "piso": "Piso 2", "fecha": "2026-07-16", "promedio": 4, "file": "evaluaciones_uninorte_2026-07-16 - Sandra Peña.json"}, {"cod": "Pas-01", "nom": "Pasillo bloque I piso 1", "cat": "Pasillo / Escalera / Área Común", "ed": "BLOI1", "piso": "Pasillo bloque I piso 1", "fecha": "2026-07-16", "promedio": 4.33, "file": "evaluaciones_uninorte_2026-07-16 - Sandra Peña.json"}, {"cod": "Pas-02", "nom": "Pasillo bloque I piso 2", "cat": "Pasillo / Escalera / Área Común", "ed": "BLOI2", "piso": "Pasillo bloque I piso 2", "fecha": "2026-07-16", "promedio": 4.33, "file": "evaluaciones_uninorte_2026-07-16 - Sandra Peña.json"}, {"cod": "Pas-03", "nom": "Pasillo bloque I piso 3", "cat": "Pasillo / Escalera / Área Común", "ed": "BLOI3", "piso": "Pasillo bloque I piso 3", "fecha": "2026-07-16", "promedio": 3.67, "file": "evaluaciones_uninorte_2026-07-16 - Sandra Peña.json"}, {"cod": "Pas-04", "nom": "Pasillo bloque I piso 4", "cat": "Pasillo / Escalera / Área Común", "ed": "BLOI4", "piso": "Pasillo bloque I piso 4", "fecha": "2026-07-16", "promedio": 4, "file": "evaluaciones_uninorte_2026-07-16 - Sandra Peña.json"}]}, {"name": "VALERIA MELISSA FONTALVO QUINTERO", "assigned_count": 14, "evaluated_count": 11, "pending_count": 3, "extra_count": 0, "progress_pct": 78.57142857142857, "done_list": [{"cod": "SDU-51J", "nom": "Sala de usuarios No. 11", "cat": "Salas de Computadores", "ed": "BLOQJ1", "piso": "5", "fecha": "2026-07-16", "promedio": 4.33, "file": "evaluaciones_uninorte_2026-07-17 - Valeria F.json"}, {"cod": "L-51J", "nom": "Laboratorio Aula Taller de Comunicación Social y Periodismo", "cat": "Laboratorios", "ed": "BLOQJ1", "piso": "5", "fecha": "2026-07-16", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-17 - Valeria F.json"}, {"cod": "L-52J", "nom": "Laboratorio de Educación", "cat": "Laboratorios", "ed": "BLOQJ1", "piso": "5", "fecha": "2026-07-16", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-17 - Valeria F.json"}, {"cod": "L-53J", "nom": "Laboratorio de Arqueologia", "cat": "Laboratorios", "ed": "BLOQJ1", "piso": "5", "fecha": "2026-07-17", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-17 - Valeria F.json"}, {"cod": "ZONALI05", "nom": "Bocas de Ceniza", "cat": "Cafeterías / Zonas de Alimentación", "ed": "BLOQJ", "piso": "9", "fecha": "2026-07-16", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-17 - Valeria F.json"}, {"cod": "BATH55", "nom": "Baño Hombres BLOQJ - Piso 7", "cat": "Baños", "ed": "BLOQJ", "piso": "7", "fecha": "2026-07-16", "promedio": 4.75, "file": "evaluaciones_uninorte_2026-07-17 - Valeria F.json"}, {"cod": "BATH65", "nom": "Baño Mujeres BLOQJ - Piso 7", "cat": "Baños", "ed": "BLOQJ", "piso": "7", "fecha": "2026-07-16", "promedio": 4.75, "file": "evaluaciones_uninorte_2026-07-17 - Valeria F.json"}, {"cod": "BATH56", "nom": "Baño Hombres BLOQJ - Piso 8", "cat": "Baños", "ed": "BLOQJ", "piso": "8", "fecha": "2026-07-16", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-17 - Valeria F.json"}, {"cod": "BATH66", "nom": "Baño Mujeres BLOQJ - Piso 8", "cat": "Baños", "ed": "BLOQJ", "piso": "8", "fecha": "2026-07-16", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-17 - Valeria F.json"}, {"cod": "BATH58", "nom": "Baño Hombres BLOQJ - Piso 10", "cat": "Baños", "ed": "BLOQJ", "piso": "10", "fecha": "2026-07-16", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-17 - Valeria F.json"}, {"cod": "BATH68", "nom": "Baño Mujeres BLOQJ - Piso 10", "cat": "Baños", "ed": "BLOQJ", "piso": "10", "fecha": "2026-07-16", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-17 - Valeria F.json"}], "pending_list": [{"cat": "laboratorio", "cat_excel": "Laboratorios", "ed": "BLOQJ", "cod": "LJ-5", "piso": "", "nom": "Pendiente", "ev": "VALERIA MELISSA FONTALVO QUINTERO"}, {"cat": "bano", "cat_excel": "Baños", "ed": "BLOQJ", "cod": "BATH57", "piso": "9", "nom": "Baño Hombres BLOQJ - Piso 9", "ev": "VALERIA MELISSA FONTALVO QUINTERO"}, {"cat": "bano", "cat_excel": "Baños", "ed": "BLOQJ", "cod": "BATH67", "piso": "9", "nom": "Baño Mujeres BLOQJ - Piso 9", "ev": "VALERIA MELISSA FONTALVO QUINTERO"}], "extra_list": []}, {"name": "VIVIANA CARREÑO DURAN", "assigned_count": 12, "evaluated_count": 10, "pending_count": 2, "extra_count": 2, "progress_pct": 83.33333333333334, "done_list": [{"cod": "32B", "nom": "Salón de Clases / Salón 32B", "cat": "Salón de clases", "ed": "BLOQB", "piso": "3", "fecha": "2026-07-14", "promedio": 4, "file": "evaluaciones_uninorte_2026-07-15 - Viviana Carreño.json"}, {"cod": "33B", "nom": "Salón de Clases / Salón 33B", "cat": "Salón de clases", "ed": "BLOQB", "piso": "3", "fecha": "2026-07-14", "promedio": 3.86, "file": "evaluaciones_uninorte_2026-07-15 - Viviana Carreño.json"}, {"cod": "SDU3", "nom": "Sala de Usuario / Sala de Usuarios No. 3", "cat": "Salas de Computadores", "ed": "BLOQB", "piso": "2", "fecha": "2026-07-14", "promedio": 3.33, "file": "evaluaciones_uninorte_2026-07-15 - Viviana Carreño.json"}, {"cod": "SDU5", "nom": "Sala de Usuario/ Sala de Usuarios No. 5", "cat": "Salas de Computadores", "ed": "BLOQB", "piso": "3", "fecha": "2026-07-14", "promedio": 3.67, "file": "evaluaciones_uninorte_2026-07-15 - Viviana Carreño.json"}, {"cod": "SIN1", "nom": "sala de usuario / Sala de Internet 1", "cat": "Salas de Computadores", "ed": "BLOQB", "piso": "", "fecha": "2026-07-14", "promedio": 4.33, "file": "evaluaciones_uninorte_2026-07-15 - Viviana Carreño.json"}, {"cod": "SDU2", "nom": "Sala de usuario /Sala de Usuarios No. 2", "cat": "Salas de Computadores", "ed": "BLOQB", "piso": "2", "fecha": "2026-07-14", "promedio": 3.33, "file": "evaluaciones_uninorte_2026-07-15 - Viviana Carreño.json"}, {"cod": "34B", "nom": "Salón de Dibujo", "cat": "Laboratorios", "ed": "BLOQB", "piso": "3", "fecha": "2026-07-14", "promedio": 3.8, "file": "evaluaciones_uninorte_2026-07-15 - Viviana Carreño.json"}, {"cod": "ZONALI11", "nom": "Hot Dogs", "cat": "Cafeterías / Zonas de Alimentación", "ed": "BLOQB", "piso": "1", "fecha": "2026-07-14", "promedio": 4, "file": "evaluaciones_uninorte_2026-07-15 - Viviana Carreño.json"}, {"cod": "SAES02", "nom": "Sala de Estudio BLOQB", "cat": "Bibliotecas / Salas de Estudio", "ed": "BLOQB", "piso": "1", "fecha": "2026-07-14", "promedio": 3.5, "file": "evaluaciones_uninorte_2026-07-15 - Viviana Carreño.json"}, {"cod": "BATH03", "nom": "Baño Hombres BLOQB - Piso 1", "cat": "Baños", "ed": "BLOQB", "piso": "1", "fecha": "2026-07-14", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-15 - Viviana Carreño.json"}], "pending_list": [{"cat": "fachada", "cat_excel": "Fachadas de Edificios", "ed": "BLOQB", "cod": "BLD-B", "piso": "", "nom": "Edificio Bloque B", "ev": "VIVIANA CARREÑO DURAN"}, {"cat": "bano", "cat_excel": "Baños", "ed": "BLOQB", "cod": "BATH04", "piso": "1", "nom": "Baño Mujeres BLOQB - Piso 1", "ev": "VIVIANA CARREÑO DURAN"}], "extra_list": [{"cod": "Techo área de estudio", "nom": "Techo área de estudio bloque B", "cat": "Pasillo / Escalera / Área Común", "ed": "BLOQB", "piso": "Piso 1", "fecha": "2026-07-15", "promedio": 3, "file": "evaluaciones_uninorte_2026-07-15 - Viviana Carreño.json"}, {"cod": "Tercer piso", "nom": "Pasillo", "cat": "Pasillo / Escalera / Área Común", "ed": "BLOQB", "piso": "Piso 3 frente al observatorio de educación del caribe colombiano", "fecha": "2026-07-14", "promedio": 3.67, "file": "evaluaciones_uninorte_2026-07-15 - Viviana Carreño.json"}]}, {"name": "YOSIRIS YOHANA YEPES MIRANDA", "assigned_count": 14, "evaluated_count": 0, "pending_count": 14, "extra_count": 0, "progress_pct": 0.0, "done_list": [], "pending_list": [{"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOI2", "cod": "I2-24", "piso": "2", "nom": "Salón I2-24", "ev": "YOSIRIS YOHANA YEPES MIRANDA"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOI2", "cod": "I2-12", "piso": "1", "nom": "Salón I2-12", "ev": "YOSIRIS YOHANA YEPES MIRANDA"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOI2", "cod": "I2-23", "piso": "2", "nom": "Salón I2-23", "ev": "YOSIRIS YOHANA YEPES MIRANDA"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOI2", "cod": "I2-15", "piso": "1", "nom": "Salón I2-15", "ev": "YOSIRIS YOHANA YEPES MIRANDA"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOI2", "cod": "I2-21", "piso": "2", "nom": "Salón I2-21", "ev": "YOSIRIS YOHANA YEPES MIRANDA"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOI2", "cod": "I2-11", "piso": "1", "nom": "Salón I2-11", "ev": "YOSIRIS YOHANA YEPES MIRANDA"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOI2", "cod": "I2-22", "piso": "2", "nom": "Salón I2-22", "ev": "YOSIRIS YOHANA YEPES MIRANDA"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOI2", "cod": "I2-13", "piso": "1", "nom": "Salón I2-13", "ev": "YOSIRIS YOHANA YEPES MIRANDA"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOI2", "cod": "I2-25", "piso": "2", "nom": "Salón I2-25", "ev": "YOSIRIS YOHANA YEPES MIRANDA"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOI2", "cod": "I2-14", "piso": "1", "nom": "Salón I2-14", "ev": "YOSIRIS YOHANA YEPES MIRANDA"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOI3", "cod": "I3-21", "piso": "2", "nom": "Salón I3-21", "ev": "YOSIRIS YOHANA YEPES MIRANDA"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOI3", "cod": "I3-24", "piso": "2", "nom": "Salón I3-24", "ev": "YOSIRIS YOHANA YEPES MIRANDA"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOI3", "cod": "I3-23", "piso": "2", "nom": "Salón I3-23", "ev": "YOSIRIS YOHANA YEPES MIRANDA"}, {"cat": "salon", "cat_excel": "Salón de clases", "ed": "BLOI3", "cod": "I3-22", "piso": "2", "nom": "Salón I3-22", "ev": "YOSIRIS YOHANA YEPES MIRANDA"}], "extra_list": []}, {"name": "YULEINE YANIET MORENO FONTALVO", "assigned_count": 13, "evaluated_count": 12, "pending_count": 1, "extra_count": 1, "progress_pct": 92.3076923076923, "done_list": [{"cod": "L1-1", "nom": "Lab. de Química", "cat": "Laboratorios", "ed": "L1", "piso": "1", "fecha": "2026-07-16", "promedio": 4.5, "file": "evaluaciones_uninorte_2026-07-17 - Yuleine M.json"}, {"cod": "L1-2", "nom": "Lab. de Fitoquímica", "cat": "Laboratorios", "ed": "L1", "piso": "1", "fecha": "2026-07-16", "promedio": 4.5, "file": "evaluaciones_uninorte_2026-07-17 - Yuleine M.json"}, {"cod": "L1-3", "nom": "Lab. de Física Calor", "cat": "Laboratorios", "ed": "L1", "piso": "1", "fecha": "2026-07-16", "promedio": 4.5, "file": "evaluaciones_uninorte_2026-07-17 - Yuleine M.json"}, {"cod": "L1-4", "nom": "Lab. Física Mecánica", "cat": "Laboratorios", "ed": "L1", "piso": "1", "fecha": "2026-07-16", "promedio": 3.33, "file": "evaluaciones_uninorte_2026-07-17 - Yuleine M.json"}, {"cod": "L1-5", "nom": "Lab. de Física Eléctrica", "cat": "Laboratorios", "ed": "L1", "piso": "1", "fecha": "2026-07-16", "promedio": 3.67, "file": "evaluaciones_uninorte_2026-07-17 - Yuleine M.json"}, {"cod": "L2-2", "nom": "Lab. Multifuncional Bioquimica", "cat": "Laboratorios", "ed": "L2", "piso": "1", "fecha": "2026-07-16", "promedio": 4.5, "file": "evaluaciones_uninorte_2026-07-17 - Yuleine M.json"}, {"cod": "L2-3", "nom": "Lab. Multifuncional Biología", "cat": "Laboratorios", "ed": "L2", "piso": "1", "fecha": "2026-07-16", "promedio": 4.75, "file": "evaluaciones_uninorte_2026-07-17 - Yuleine M.json"}, {"cod": "L2-4", "nom": "Lab. de Genética", "cat": "Laboratorios", "ed": "L2", "piso": "1", "fecha": "2026-07-16", "promedio": 4.75, "file": "evaluaciones_uninorte_2026-07-17 - Yuleine M.json"}, {"cod": "L2-5", "nom": "Laboratorio de Investigacion Biodiversidad", "cat": "Laboratorios", "ed": "L2", "piso": "1", "fecha": "2026-07-16", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-17 - Yuleine M.json"}, {"cod": "L2-6", "nom": "Laboratorio de Quimica y Bioiologia", "cat": "Laboratorios", "ed": "L2", "piso": "1", "fecha": "2026-07-16", "promedio": 4.75, "file": "evaluaciones_uninorte_2026-07-17 - Yuleine M.json"}, {"cod": "L2-7", "nom": "Laboratorio Computacional de Quimica y Biologia", "cat": "Laboratorios", "ed": "L2", "piso": "1", "fecha": "2026-07-16", "promedio": 5, "file": "evaluaciones_uninorte_2026-07-17 - Yuleine M.json"}, {"cod": "L3-1", "nom": "Laboratorio de Mercadeo", "cat": "Laboratorios", "ed": "L3", "piso": "1", "fecha": "2026-07-16", "promedio": 3.67, "file": "evaluaciones_uninorte_2026-07-17 - Yuleine M.json"}], "pending_list": [{"cat": "laboratorio", "cat_excel": "Laboratorios", "ed": "L3", "cod": "L3-2", "piso": "1", "nom": "Lab. Inm. y Biol. Molecular", "ev": "YULEINE YANIET MORENO FONTALVO"}], "extra_list": [{"cod": "Pasillo entre L2 y L3", "nom": "Pasillo entre L2 y L3", "cat": "Pasillo / Escalera / Área Común", "ed": "L2", "piso": "1", "fecha": "2026-07-16", "promedio": 3, "file": "evaluaciones_uninorte_2026-07-17 - Yuleine M.json"}]}];
+
+    let activeFilter = 'all'; // all, pending, complete
+    let searchQuery = '';
+    let currentSort = 'name_asc';
+
+    function getProgressColor(pct) {
+      if (pct >= 100) return 'var(--green)';
+      if (pct >= 50) return 'var(--yellow)';
+      return 'var(--red)';
+    }
+
+    function getProgressEmoji(pct) {
+      if (pct >= 100) return '🟢';
+      if (pct > 0) return '🟡';
+      return '🔴';
+    }
+
+    function getScoreClass(score) {
+      if (score >= 4.5) return { label: "Excelente", color: "#22c55e" };
+      if (score >= 3.5) return { label: "Bueno", color: "#3b82f6" };
+      if (score >= 2.5) return { label: "Aceptable", color: "#eab308" };
+      if (score >= 1.5) return { label: "Deficiente", color: "#f97316" };
+      return { label: "Crítico", color: "#ef4444" };
+    }
+
+    function toggleCard(idx) {
+      const card = document.getElementById(`ev-card-${idx}`);
+      if (card) card.classList.toggle('open');
+    }
+
+    function switchTab(evIdx, tabName) {
+      document.querySelectorAll(`#ev-card-${evIdx} .tab`).forEach(t => t.classList.remove('active'));
+      document.querySelectorAll(`#ev-card-${evIdx} .tab-content`).forEach(c => c.classList.remove('active'));
+
+      document.querySelector(`#ev-card-${evIdx} .tab[data-tab="${tabName}"]`).classList.add('active');
+      document.getElementById(`tab-content-${evIdx}-${tabName}`).classList.add('active');
+      
+      event.stopPropagation();
+    }
+
+    function renderEvaluators() {
+      const container = document.getElementById('evaluatorsContainer');
+      container.innerHTML = '';
+
+      const filteredData = DATA.filter(ev => {
+        const matchQuery = ev.name.toLowerCase().includes(searchQuery.toLowerCase());
+        
+        let matchFilter = true;
+        if (activeFilter === 'pending') {
+          matchFilter = ev.evaluated_count < ev.assigned_count;
+        } else if (activeFilter === 'complete') {
+          matchFilter = ev.evaluated_count >= ev.assigned_count;
+        }
+        
+        return matchQuery && matchFilter;
+      });
+
+      filteredData.sort((a, b) => {
+        if (currentSort === 'name_asc') {
+          return a.name.localeCompare(b.name);
+        } else if (currentSort === 'name_desc') {
+          return b.name.localeCompare(a.name);
+        } else if (currentSort === 'progress_desc') {
+          if (b.progress_pct !== a.progress_pct) {
+            return b.progress_pct - a.progress_pct;
+          }
+          return a.name.localeCompare(b.name);
+        } else if (currentSort === 'progress_asc') {
+          if (a.progress_pct !== b.progress_pct) {
+            return a.progress_pct - b.progress_pct;
+          }
+          return a.name.localeCompare(b.name);
+        }
+        return 0;
+      });
+
+      if (filteredData.length === 0) {
+        container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted);">No se encontraron evaluadores con los criterios seleccionados.</div>`;
+        return;
+      }
+
+      filteredData.forEach((ev, i) => {
+        const color = getProgressColor(ev.progress_pct);
+        const emoji = getProgressEmoji(ev.progress_pct);
+        
+        let pendingHtml = '';
+        if (ev.pending_list.length > 0) {
+          pendingHtml = `
+            <table>
+              <thead>
+                <tr>
+                  <th>Código</th>
+                  <th>Nombre</th>
+                  <th>Categoría</th>
+                  <th>Edificio</th>
+                  <th>Piso</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${ev.pending_list.map(p => `
+                  <tr>
+                    <td><code>${p.cod}</code></td>
+                    <td><strong>${p.nom}</strong></td>
+                    <td>${p.cat_excel}</td>
+                    <td>${p.ed}</td>
+                    <td>${p.piso || '—'}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          `;
+        } else {
+          pendingHtml = `<div class="empty-tab">🎉 ¡Todos los espacios asignados han sido evaluados!</div>`;
+        }
+
+        let doneHtml = '';
+        if (ev.done_list.length > 0) {
+          doneHtml = `
+            <table>
+              <thead>
+                <tr>
+                  <th>Código</th>
+                  <th>Nombre</th>
+                  <th>Categoría</th>
+                  <th>Edificio</th>
+                  <th>Fecha</th>
+                  <th style="text-align:center;">Puntaje</th>
+                  <th>Archivo</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${ev.done_list.map(d => {
+                  const cls = getScoreClass(d.promedio);
+                  return `
+                    <tr>
+                      <td><code>${d.cod}</code></td>
+                      <td><strong>${d.nom}</strong></td>
+                      <td>${d.cat}</td>
+                      <td>${d.ed}</td>
+                      <td>${d.fecha}</td>
+                      <td style="text-align:center;">
+                        <span class="score-badge" style="background:${cls.color}22; color:${cls.color};">${d.promedio.toFixed(2)}</span>
+                      </td>
+                      <td><span class="file-badge">${d.file}</span></td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          `;
+        } else {
+          doneHtml = `<div class="empty-tab">Ningún espacio asignado ha sido evaluado aún.</div>`;
+        }
+
+        let extraHtml = '';
+        if (ev.extra_list.length > 0) {
+          extraHtml = `
+            <table>
+              <thead>
+                <tr>
+                  <th>Código</th>
+                  <th>Nombre</th>
+                  <th>Categoría</th>
+                  <th>Edificio</th>
+                  <th>Fecha</th>
+                  <th style="text-align:center;">Puntaje</th>
+                  <th>Archivo</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${ev.extra_list.map(ex => {
+                  const cls = getScoreClass(ex.promedio);
+                  return `
+                    <tr>
+                      <td><code>${ex.cod}</code></td>
+                      <td><strong>${ex.nom}</strong></td>
+                      <td>${ex.cat}</td>
+                      <td>${ex.ed}</td>
+                      <td>${ex.fecha}</td>
+                      <td style="text-align:center;">
+                        <span class="score-badge" style="background:${cls.color}22; color:${cls.color};">${ex.promedio.toFixed(2)}</span>
+                      </td>
+                      <td><span class="file-badge">${ex.file}</span></td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          `;
+        } else {
+          extraHtml = `<div class="empty-tab">No hay evaluaciones extras (ej. Pasillos o espacios de terceros) registradas para este evaluador.</div>`;
+        }
+
+        const card = document.createElement('div');
+        card.className = 'ev-card';
+        card.id = `ev-card-${i}`;
+        card.innerHTML = `
+          <div class="ev-header" onclick="toggleCard(${i})">
+            <div class="ev-info">
+              <span class="ev-status">${emoji}</span>
+              <div>
+                <div class="ev-name">${ev.name}</div>
+                <div class="ev-stats-brief">
+                  Asignados: ${ev.assigned_count} · Evaluados: ${ev.evaluated_count} · Pendientes: ${ev.pending_count} · Extras: ${ev.extra_count}
+                </div>
+              </div>
+            </div>
+            <div class="progress-container">
+              <div class="progress-bar-bg">
+                <div class="progress-bar-fill" style="width: ${ev.progress_pct}%; background: ${color};"></div>
+              </div>
+              <div class="progress-text" style="color: ${color};">${ev.progress_pct.toFixed(0)}%</div>
+            </div>
+          </div>
+          
+          <div class="ev-details">
+            <div class="tabs">
+              <div class="tab active" data-tab="pending" onclick="switchTab(${i}, 'pending')">Pendientes (${ev.pending_count})</div>
+              <div class="tab" data-tab="done" onclick="switchTab(${i}, 'done')">Evaluados de Asignación (${ev.evaluated_count})</div>
+              <div class="tab" data-tab="extra" onclick="switchTab(${i}, 'extra')">Evaluaciones Extras (${ev.extra_count})</div>
+            </div>
+            
+            <div class="tab-content active" id="tab-content-${i}-pending">
+              ${pendingHtml}
+            </div>
+            <div class="tab-content" id="tab-content-${i}-done">
+              ${doneHtml}
+            </div>
+            <div class="tab-content" id="tab-content-${i}-extra">
+              ${extraHtml}
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function filterEvaluators() {
+      searchQuery = document.getElementById('searchInput').value;
+      renderEvaluators();
+    }
+
+    function setFilter(filterType) {
+      activeFilter = filterType;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      
+      if (filterType === 'all') document.getElementById('btnFilterAll').classList.add('active');
+      else if (filterType === 'pending') document.getElementById('btnFilterPending').classList.add('active');
+      else if (filterType === 'complete') document.getElementById('btnFilterComplete').classList.add('active');
+      
+      renderEvaluators();
+    }
+
+    function handleSortChange() {
+      currentSort = document.getElementById('sortSelect').value;
+      renderEvaluators();
+    }
+
+    renderEvaluators();
+  </script>
+</body>
+</html>

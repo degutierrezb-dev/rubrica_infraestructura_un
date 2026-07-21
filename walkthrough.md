@@ -56,15 +56,40 @@
 
 ---
 
+## Monitoreo de Avance y Reporte Avanzado (v5)
+
+### 1. Nuevo Reporte Avanzado — `reporte_avanzado.html`
+- **Toggle de Privacidad:** Permite alternar la visibilidad de los nombres de los evaluadores en todo el informe (ocultándolo de la tabla y del detalle modal para reportes confidenciales).
+- **Exclusión de Espacios Físicos:** Permite a través de checkboxes en la primera columna ("Excluir") marcar espacios específicos para que **no se incluyan** en los promedios globales, clasificaciones ni gráficos de distribución.
+- **Visualización Limpia:** Los espacios excluidos se muestran atenuados y tachados en pantalla, y se ocultan automáticamente al imprimir o generar PDF.
+
+### 2. Monitoreo de Avance en Tiempo Real — `verificar_avance.py`
+- Un script de Python que lee en tiempo real el Excel de asignaciones `Detalle de espacios físicos para rúbrica v3.0.xlsx` y los JSON/CSV guardados por los evaluadores en su OneDrive compartida.
+- **Salida 1: Dashboard de Avance (`avance_real.html`):** Un archivo HTML dinámico interactivo con estadísticas globales, porcentajes de avance por persona, buscador en tiempo real y 3 pestañas por evaluador:
+  - **Pendientes:** Listado exacto de qué códigos de espacio le faltan por evaluar.
+  - **Evaluados de Asignación:** Espacios correspondientes a sus asignaciones que ya completó.
+  - **Evaluaciones Extras:** Evaluaciones de áreas no asignadas (como Pasillos) u otros edificios.
+- **Salida 2: Reporte Resumido (`avance_real_summary.md`):** Resumen estadístico escrito en el directorio de evidencias.
+
+---
+
+## Archivos Modificados / Nuevos
+
+| Archivo | Tipo | Propósito |
+|---|---|---|
+| [reporte_avanzado.html](file:///C:/Users/degutierrez/.gemini/antigravity/scratch/rubrica-uninorte-v2/reporte_avanzado.html) | **[NEW]** | Nueva versión del reporte con filtros de privacidad y exclusión de espacios. |
+| [verificar_avance.py](file:///C:/Users/degutierrez/.gemini/antigravity/scratch/rubrica-uninorte-v2/verificar_avance.py) | **[NEW]** | Script de consolidación cruzada de OneDrive vs Excel. |
+| `avance_real.html` | **[NEW]** | Dashboard interactivo de visualización de avance. |
+| [avance_real_summary.md](file:///C:/Users/degutierrez/.gemini/antigravity/brain/5c2c2dfa-09e3-440b-a02b-868aec769669/avance_real_summary.md) | **[NEW]** | Reporte en markdown consolidado de avance. |
+
+---
+
 ## Cómo Publicar en GitHub
 
 Abre Git Bash o tu consola de comandos en la carpeta del proyecto y ejecuta:
 
 ```bash
-git add index.html data.js app.js gen_espacios.py
-git commit -m "v4: Selector de evaluadores con filtrado dinámico de asignaciones"
+git add index.html data.js app.js gen_espacios.py reporte_avanzado.html verificar_avance.py
+git commit -m "v5: Reporte avanzado y script de monitoreo de avance en tiempo real"
 git push origin main
 ```
-
-Luego recarga la página en tu celular para ver los cambios:  
-[https://degutierrezb-dev.github.io/rubrica_infraestructura_un/](https://degutierrezb-dev.github.io/rubrica_infraestructura_un/)
