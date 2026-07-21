@@ -228,11 +228,13 @@ def main():
     print(f"Se cargaron {len(evaluations)} registros de evaluación en total.")
 
     # 3. Cruzar Datos y Calcular Avances
-    # Create lookup map of evaluated spaces: { (normalized_evaluator_name, space_code): evaluation_item }
-    evaluated_map = {}
+    # Group evaluations by normalized evaluator name to avoid duplicate/code-collision issues
+    evaluations_by_ev = {}
     for ev in evaluations:
-        key = (normalize_text(ev['evaluador']), ev['codigo'])
-        evaluated_map[key] = ev
+        ev_norm = normalize_text(ev['evaluador'])
+        if ev_norm not in evaluations_by_ev:
+            evaluations_by_ev[ev_norm] = []
+        evaluations_by_ev[ev_norm].append(ev)
 
     # We will compute results for each of the 39 official evaluators
     evaluators_stats = []
@@ -246,39 +248,48 @@ def main():
         ev_norm = normalize_text(ev_name)
         ev_assigns = evaluador_assignments[ev_name]
         
+        # Get evaluations for this evaluator
+        ev_evals = evaluations_by_ev.get(ev_norm, [])
+        
         assigned_count = len(ev_assigns)
         done_list = []
         pending_list = []
         extra_list = []
         
+        # Track which evaluation indices were matched to an assigned space
+        matched_eval_indices = set()
+        
         # Check assigned spaces
         for assign in ev_assigns:
             code = assign['cod']
-            lookup_key = (ev_norm, code)
+            code_norm = normalize_text(code)
             
-            if lookup_key in evaluated_map:
-                ev_data = evaluated_map[lookup_key]
-                done_list.append({
-                    'cod': code,
-                    'nom': assign['nom'],
-                    'cat': assign['cat_excel'],
-                    'ed': assign['ed'],
-                    'piso': assign['piso'],
-                    'fecha': ev_data['fecha'],
-                    'promedio': ev_data['promedio'],
-                    'file': ev_data['file']
-                })
-                total_completed_assigned += 1
-            else:
+            match_found = False
+            for idx, ev_data in enumerate(ev_evals):
+                if normalize_text(ev_data['codigo']) == code_norm:
+                    done_list.append({
+                        'cod': code,
+                        'nom': assign['nom'],
+                        'cat': assign['cat_excel'],
+                        'ed': assign['ed'],
+                        'piso': assign['piso'],
+                        'fecha': ev_data['fecha'],
+                        'promedio': ev_data['promedio'],
+                        'file': ev_data['file']
+                    })
+                    matched_eval_indices.add(idx)
+                    total_completed_assigned += 1
+                    match_found = True
+                    break # Matches the first occurrence of this code
+            
+            if not match_found:
                 pending_list.append(assign)
                 
-        # Find extra evaluations by this evaluator (spaces they evaluated but weren't assigned to them)
-        assigned_codes_set = set(a['cod'] for a in ev_assigns)
-        for key, ev_data in evaluated_map.items():
-            ev_norm_key, code = key
-            if ev_norm_key == ev_norm and code not in assigned_codes_set:
+        # Find extra evaluations by this evaluator (evaluations not matching assignments)
+        for idx, ev_data in enumerate(ev_evals):
+            if idx not in matched_eval_indices:
                 extra_list.append({
-                    'cod': code,
+                    'cod': ev_data['codigo'],
                     'nom': ev_data['nombre'],
                     'cat': ev_data['categoriaName'] or CAT_MAP_ID_TO_NAME.get(ev_data['categoria'], ev_data['categoria']),
                     'ed': ev_data['edificio'],
