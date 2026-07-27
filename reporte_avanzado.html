@@ -274,24 +274,113 @@
       font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
     }
 
+    /* Tabs */
+    .tabs-nav {
+      display: flex; gap: 0; margin-bottom: 24px;
+      border-bottom: 2px solid var(--border); position: relative;
+    }
+    .tab-btn {
+      background: none; border: none; color: var(--muted); font-family: inherit;
+      font-size: 0.88rem; font-weight: 600; padding: 12px 24px; cursor: pointer;
+      position: relative; transition: color 0.2s;
+    }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active { color: var(--accent); }
+    .tab-btn.active::after {
+      content: ''; position: absolute; bottom: -2px; left: 0; right: 0;
+      height: 2px; background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 2px 2px 0 0;
+    }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* Insights Page */
+    .insights-filters {
+      display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px;
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 16px 20px; backdrop-filter: blur(12px); align-items: center;
+    }
+    .insights-filters label {
+      font-size: 0.78rem; font-weight: 600; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .insights-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+    .wordcloud-card {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 20px; backdrop-filter: blur(12px);
+    }
+    .wordcloud-card h3 {
+      font-size: 0.85rem; font-weight: 600; margin-bottom: 16px; color: var(--text2);
+    }
+    .wordcloud-canvas-wrap {
+      width: 100%; aspect-ratio: 16/10; position: relative;
+      border-radius: 8px; overflow: hidden;
+      background: var(--glass);
+    }
+    .wordcloud-canvas-wrap canvas {
+      width: 100%; height: 100%; display: block;
+    }
+    .wordcloud-empty {
+      position: absolute; inset: 0; display: flex; align-items: center;
+      justify-content: center; color: var(--muted); font-size: 0.85rem;
+    }
+    .dim-ranking-card {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 20px; backdrop-filter: blur(12px); margin-bottom: 24px;
+    }
+    .dim-ranking-card h3 {
+      font-size: 0.95rem; font-weight: 600; margin-bottom: 16px; color: var(--text2);
+    }
+    .dim-bar-row {
+      display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
+    }
+    .dim-bar-label {
+      min-width: 180px; font-size: 0.78rem; color: var(--text2);
+      text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .dim-bar-track {
+      flex: 1; height: 22px; background: var(--glass); border-radius: 6px;
+      overflow: hidden; position: relative;
+    }
+    .dim-bar-fill {
+      height: 100%; border-radius: 6px;
+      transition: width 0.6s cubic-bezier(.4,0,.2,1);
+      display: flex; align-items: center; justify-content: flex-end;
+      padding-right: 8px;
+    }
+    .dim-bar-value {
+      font-size: 0.72rem; font-weight: 700; color: white;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    }
+    .dim-bar-count {
+      font-size: 0.68rem; color: var(--muted); min-width: 50px;
+    }
+    .insights-summary-cards {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px; margin-bottom: 24px;
+    }
+
     /* Print */
     @media print {
-      .header, .drop-zone, .btn, .modal-overlay, .lightbox, .table-filters, .no-print, .control-panel, .exclude-cb { display: none !important; }
+      .header, .drop-zone, .btn, .modal-overlay, .lightbox, .table-filters, .no-print, .control-panel, .exclude-cb, .tabs-nav, .insights-filters { display: none !important; }
       body { background: white; color: #1a1a1a; }
-      .card, .chart-card, .table-section { background: white; border: 1px solid #ddd; }
+      .card, .chart-card, .table-section, .wordcloud-card, .dim-ranking-card { background: white; border: 1px solid #ddd; }
       .card-label, .chart-card h3, thead th { color: #666; }
       .card-value { color: #1a1a1a; }
       td, .detail-dim-name { color: #333; }
       .excluded-row { display: none !important; }
+      .tab-panel { display: block !important; }
     }
 
     /* Responsive */
     @media (max-width: 768px) {
-      .charts-row { grid-template-columns: 1fr; }
+      .charts-row, .insights-grid { grid-template-columns: 1fr; }
       .detail-grid { grid-template-columns: 1fr; }
       table { font-size: 0.75rem; }
       td, thead th { padding: 8px 6px; }
       .control-panel { flex-direction: column; align-items: flex-start; }
+      .dim-bar-label { min-width: 120px; font-size: 0.7rem; }
+      .tab-btn { padding: 10px 14px; font-size: 0.8rem; }
     }
   </style>
 </head>
@@ -334,97 +423,154 @@
     <!-- Report Content (hidden until data loaded) -->
     <div id="reportContent" style="display:none;">
 
-      <!-- Control Panel -->
-      <div class="control-panel no-print" id="controlPanel">
-        <h3>⚙️ Controles del Reporte</h3>
-        <div class="control-group">
-          <div class="control-item">
-            <span>👤 Mostrar evaluadores</span>
-            <label class="toggle">
-              <input type="checkbox" id="toggleEvaluator" checked onchange="toggleEvaluatorVisibility()">
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-          <div class="control-item">
-            <span class="exclusion-badge hidden" id="exclusionBadge">
-              🚫 <span id="excludedCount">0</span> excluido(s)
-            </span>
-            <button class="btn-clear-exclusions" id="btnClearExclusions" style="display:none;" onclick="clearAllExclusions()">Restaurar todos</button>
-          </div>
-        </div>
+      <!-- Tab Navigation -->
+      <div class="tabs-nav no-print" id="tabsNav">
+        <button class="tab-btn active" data-tab="tab-report" onclick="switchTab('tab-report')">📊 Reporte Cuantitativo</button>
+        <button class="tab-btn" data-tab="tab-insights" onclick="switchTab('tab-insights')">💡 Análisis Cualitativo</button>
       </div>
 
-      <!-- Summary Cards -->
-      <div class="cards" id="summaryCards"></div>
+      <!-- TAB 1: Reporte Cuantitativo (existing content) -->
+      <div class="tab-panel active" id="tab-report">
 
-      <!-- Charts -->
-      <div class="charts-row">
-        <div class="chart-card">
-          <h3>Distribución por Clasificación</h3>
-          <canvas id="chartClassification"></canvas>
-        </div>
-        <div class="chart-card">
-          <h3>Promedio por Categoría de Espacio</h3>
-          <canvas id="chartCategory"></canvas>
-        </div>
-      </div>
-
-      <div class="charts-row">
-        <div class="chart-card">
-          <h3>Evaluaciones por Edificio / Bloque</h3>
-          <canvas id="chartBuilding"></canvas>
-        </div>
-        <div class="chart-card">
-          <h3>Distribución de Puntajes</h3>
-          <canvas id="chartScores"></canvas>
-        </div>
-      </div>
-
-      <div class="charts-row">
-        <div class="chart-card" style="grid-column: 1 / -1;">
-          <h3>✨ Brecha Perceptual: Puntaje Técnico vs Percepción de Atractividad</h3>
-          <canvas id="chartPerception"></canvas>
-        </div>
-      </div>
-
-      <!-- Table -->
-      <div class="table-section" id="tableSection">
-        <div class="table-header">
-          <h3>📋 Detalle de Evaluaciones (<span id="tableCount">0</span>)</h3>
-          <div class="table-filters no-print">
-            <select class="filter-select" id="filterCategory" onchange="renderTable()">
-              <option value="">Todas las categorías</option>
-            </select>
-            <select class="filter-select" id="filterClassification" onchange="renderTable()">
-              <option value="">Todas las clasificaciones</option>
-              <option value="Crítico">🔴 Crítico</option>
-              <option value="Deficiente">🟠 Deficiente</option>
-              <option value="Aceptable">🟡 Aceptable</option>
-              <option value="Bueno">🔵 Bueno</option>
-              <option value="Excelente">🟢 Excelente</option>
-            </select>
+        <!-- Control Panel -->
+        <div class="control-panel no-print" id="controlPanel">
+          <h3>⚙️ Controles del Reporte</h3>
+          <div class="control-group">
+            <div class="control-item">
+              <span>👤 Mostrar evaluadores</span>
+              <label class="toggle">
+                <input type="checkbox" id="toggleEvaluator" checked onchange="toggleEvaluatorVisibility()">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="control-item">
+              <span class="exclusion-badge hidden" id="exclusionBadge">
+                🚫 <span id="excludedCount">0</span> excluido(s)
+              </span>
+              <button class="btn-clear-exclusions" id="btnClearExclusions" style="display:none;" onclick="clearAllExclusions()">Restaurar todos</button>
+            </div>
           </div>
         </div>
-        <div style="overflow-x:auto;">
-          <table>
-            <thead>
-              <tr>
-                <th class="no-print" style="cursor:default;">Excluir</th>
-                <th onclick="sortTable('nombre')">Espacio</th>
-                <th onclick="sortTable('categoriaName')">Categoría</th>
-                <th onclick="sortTable('edificio')">Edificio</th>
-                <th onclick="sortTable('fecha')">Fecha</th>
-                <th onclick="sortTable('evaluador')" class="col-evaluador">Evaluador</th>
-                <th onclick="sortTable('promedio')">Puntaje</th>
-                <th onclick="sortTable('clasificacion')">Estado</th>
-                <th onclick="sortTable('percepcion')">Percepción</th>
-                <th>Fotos</th>
-                <th class="no-print">Acción</th>
-              </tr>
-            </thead>
-            <tbody id="tableBody"></tbody>
-          </table>
+
+        <!-- Summary Cards -->
+        <div class="cards" id="summaryCards"></div>
+
+        <!-- Charts -->
+        <div class="charts-row">
+          <div class="chart-card">
+            <h3>Distribución por Clasificación</h3>
+            <canvas id="chartClassification"></canvas>
+          </div>
+          <div class="chart-card">
+            <h3>Promedio por Categoría de Espacio</h3>
+            <canvas id="chartCategory"></canvas>
+          </div>
         </div>
+
+        <div class="charts-row">
+          <div class="chart-card">
+            <h3>Evaluaciones por Edificio / Bloque</h3>
+            <canvas id="chartBuilding"></canvas>
+          </div>
+          <div class="chart-card">
+            <h3>Distribución de Puntajes</h3>
+            <canvas id="chartScores"></canvas>
+          </div>
+        </div>
+
+        <div class="charts-row">
+          <div class="chart-card" style="grid-column: 1 / -1;">
+            <h3>✨ Brecha Perceptual: Puntaje Técnico vs Percepción de Atractividad</h3>
+            <canvas id="chartPerception"></canvas>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-section" id="tableSection">
+          <div class="table-header">
+            <h3>📋 Detalle de Evaluaciones (<span id="tableCount">0</span>)</h3>
+            <div class="table-filters no-print">
+              <select class="filter-select" id="filterCategory" onchange="renderTable()">
+                <option value="">Todas las categorías</option>
+              </select>
+              <select class="filter-select" id="filterClassification" onchange="renderTable()">
+                <option value="">Todas las clasificaciones</option>
+                <option value="Crítico">🔴 Crítico</option>
+                <option value="Deficiente">🟠 Deficiente</option>
+                <option value="Aceptable">🟡 Aceptable</option>
+                <option value="Bueno">🔵 Bueno</option>
+                <option value="Excelente">🟢 Excelente</option>
+              </select>
+            </div>
+          </div>
+          <div style="overflow-x:auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th class="no-print" style="cursor:default;">Excluir</th>
+                  <th onclick="sortTable('nombre')">Espacio</th>
+                  <th onclick="sortTable('categoriaName')">Categoría</th>
+                  <th onclick="sortTable('edificio')">Edificio</th>
+                  <th onclick="sortTable('fecha')">Fecha</th>
+                  <th onclick="sortTable('evaluador')" class="col-evaluador">Evaluador</th>
+                  <th onclick="sortTable('promedio')">Puntaje</th>
+                  <th onclick="sortTable('clasificacion')">Estado</th>
+                  <th onclick="sortTable('percepcion')">Percepción</th>
+                  <th>Fotos</th>
+                  <th class="no-print">Acción</th>
+                </tr>
+              </thead>
+              <tbody id="tableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: Análisis Cualitativo -->
+      <div class="tab-panel" id="tab-insights">
+
+        <!-- Insights Filters -->
+        <div class="insights-filters no-print">
+          <label>🔍 Filtrar por:</label>
+          <select class="filter-select" id="insightFilterEdificio" onchange="renderInsights()">
+            <option value="">Todos los edificios</option>
+          </select>
+          <select class="filter-select" id="insightFilterCategoria" onchange="renderInsights()">
+            <option value="">Todas las categorías</option>
+          </select>
+          <span id="insightFilterInfo" style="font-size:0.75rem; color:var(--muted); margin-left:auto;"></span>
+        </div>
+
+        <!-- Insight Summary Cards -->
+        <div class="insights-summary-cards" id="insightsSummaryCards"></div>
+
+        <!-- Dimension Ranking -->
+        <div class="dim-ranking-card">
+          <h3>📉 Dimensiones con Mayor Oportunidad de Mejora</h3>
+          <p style="font-size:0.78rem; color:var(--muted); margin-bottom:16px;">Dimensiones ordenadas de menor a mayor puntaje promedio. Las barras más cortas indican las áreas que requieren mayor atención.</p>
+          <div id="dimRankingContainer"></div>
+        </div>
+
+        <!-- Word Clouds -->
+        <div class="insights-grid">
+          <div class="wordcloud-card">
+            <h3>💬 Nube de Palabras — Observaciones Generales</h3>
+            <div class="wordcloud-canvas-wrap">
+              <canvas id="wcObservaciones"></canvas>
+              <div class="wordcloud-empty" id="wcObsEmpty" style="display:none;">Sin observaciones disponibles para el filtro seleccionado</div>
+            </div>
+            <div id="wcObsTopWords" style="margin-top:12px;"></div>
+          </div>
+          <div class="wordcloud-card">
+            <h3>💡 Nube de Palabras — ¿Qué Mejoraría?</h3>
+            <div class="wordcloud-canvas-wrap">
+              <canvas id="wcMejoraria"></canvas>
+              <div class="wordcloud-empty" id="wcMejEmpty" style="display:none;">Sin sugerencias de mejora disponibles para el filtro seleccionado</div>
+            </div>
+            <div id="wcMejTopWords" style="margin-top:12px;"></div>
+          </div>
+        </div>
+
       </div>
     </div>
   </main>
@@ -611,6 +757,17 @@
       });
     }
 
+    // ===== Tab Switching =====
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add('active');
+      document.getElementById(tabId).classList.add('active');
+      if (tabId === 'tab-insights' && allEvaluations.length > 0) {
+        renderInsights();
+      }
+    }
+
     // ===== Render Report =====
     function renderReport() {
       if (allEvaluations.length === 0) return;
@@ -623,6 +780,7 @@
       renderSummaryCards();
       renderCharts();
       populateFilters();
+      populateInsightFilters();
       renderTable();
     }
 
@@ -994,6 +1152,317 @@
       if (score >= 2.5) return { label: "Aceptable", color: "#eab308", emoji: "🟡" };
       if (score >= 1.5) return { label: "Deficiente", color: "#f97316", emoji: "🟠" };
       return { label: "Crítico", color: "#ef4444", emoji: "🔴" };
+    }
+
+    // ===== INSIGHTS TAB =====
+
+    // Readable dimension labels
+    const DIM_LABELS = {
+      accesibilidad: 'Accesibilidad', ambiente: 'Ambiente', aparatos: 'Aparatos',
+      ascensores: 'Ascensores', aspecto: 'Aspecto General', audiovisual: 'Equipos Audiovisuales',
+      clima_ilum: 'Clima e Iluminación', clima_servicios: 'Clima y Servicios',
+      control_acceso: 'Control de Acceso', equipamiento: 'Equipamiento', equipos: 'Equipos',
+      equipos_computo: 'Equipos de Cómputo', estado_fisico: 'Estado Físico',
+      estructura: 'Estructura', estructura_asientos: 'Estructura y Asientos',
+      higiene: 'Higiene', ilum_drenaje: 'Iluminación y Drenaje',
+      ilum_seg: 'Iluminación y Seguridad', ilum_vent: 'Iluminación y Ventilación',
+      iluminacion: 'Iluminación', infraestructura: 'Infraestructura',
+      integridad: 'Integridad', limpieza: 'Limpieza', limpieza_hig: 'Limpieza e Higiene',
+      limpieza_riego: 'Limpieza y Riego', limpieza_senal: 'Limpieza y Señalización',
+      mobiliario: 'Mobiliario', mobiliario_ext: 'Mobiliario Exterior',
+      pintura: 'Pintura', pisos: 'Pisos', seguridad: 'Seguridad',
+      seguridad_cerr: 'Seguridad y Cerramientos', senal_circ: 'Señalización y Circulación',
+      senal_emerg: 'Señalización de Emergencia', senalizacion: 'Señalización',
+      senalizacion_flujo: 'Señalización y Flujo', superficie: 'Superficie',
+      superficie_dem: 'Superficie y Demarcación', tecnologia: 'Tecnología',
+      vegetacion: 'Vegetación', ventaneria: 'Ventanería', ventilacion: 'Ventilación',
+      ventilacion_plagas: 'Ventilación y Control de Plagas'
+    };
+
+    // Spanish stopwords for word cloud filtering
+    const STOPWORDS = new Set([
+      'a','al','algo','algunas','algunos','ante','antes','como','con','contra','cual',
+      'cuando','de','del','desde','donde','durante','e','el','ella','ellas','ellos',
+      'en','entre','era','esa','esas','ese','eso','esos','esta','estaba','estado',
+      'estas','este','esto','estos','fue','ha','hace','hacia','hasta','hay','la',
+      'las','le','les','lo','los','mas','me','mi','muy','na','no','nos','nosotros',
+      'nuestro','o','os','otra','otras','otro','otros','para','pero','por','porque',
+      'que','quien','se','ser','si','sin','sino','sobre','somos','son','soy','su',
+      'sus','tan','te','ti','tiene','tienen','toda','todas','todo','todos','tu',
+      'tus','u','un','una','unas','uno','unos','usted','ustedes','va','y','ya',
+      'yo','así','más','está','están','también','hay','puede','ser','fue','son',
+      'tiene','han','dos','tres','ver','foto','nota','cada','bien','mal','parte',
+      'debe','hacer','haber','sido','siendo','esto','eso','ese','esa','aquí','ahí',
+      'allí','el','la','los','las','del','al','un','una','unos','unas','que',
+      'cual','como','donde','cuando','quien','cuyo','cuya','cuanto','cuanta',
+      'se','le','les','lo','la','los','las','me','te','nos','os','mí','ti','sí',
+      'ya','aún','aun','ni','mismo','misma','mismos','mismas','etc','mejor',
+      'manera','forma','tipo','lado','zona','area','momento','vez','1','2','3',
+      '4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20',
+      '21','22','8tva','1ra','2da','3ra','n','ver'
+    ]);
+
+    function populateInsightFilters() {
+      const d = getActiveEvaluations();
+      const edificios = [...new Set(d.map(e => e.edificio || '').filter(Boolean))].sort();
+      const cats = [...new Set(d.map(e => e.categoriaName || e.categoria || '').filter(Boolean))].sort();
+
+      const selEd = document.getElementById('insightFilterEdificio');
+      selEd.innerHTML = '<option value="">Todos los edificios</option>';
+      edificios.forEach(ed => { const o = document.createElement('option'); o.value = ed; o.textContent = ed; selEd.appendChild(o); });
+
+      const selCat = document.getElementById('insightFilterCategoria');
+      selCat.innerHTML = '<option value="">Todas las categorías</option>';
+      cats.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; selCat.appendChild(o); });
+    }
+
+    function getFilteredInsightData() {
+      const edFilter = document.getElementById('insightFilterEdificio').value;
+      const catFilter = document.getElementById('insightFilterCategoria').value;
+      let d = getActiveEvaluations();
+      if (edFilter) d = d.filter(e => e.edificio === edFilter);
+      if (catFilter) d = d.filter(e => (e.categoriaName || e.categoria) === catFilter);
+      return d;
+    }
+
+    function renderInsights() {
+      const d = getFilteredInsightData();
+      const info = document.getElementById('insightFilterInfo');
+      info.textContent = `${d.length} evaluaciones seleccionadas`;
+
+      renderInsightSummaryCards(d);
+      renderDimensionRanking(d);
+      renderWordCloud('wcObservaciones', 'wcObsEmpty', 'wcObsTopWords', d, 'observaciones');
+      renderWordCloud('wcMejoraria', 'wcMejEmpty', 'wcMejTopWords', d, 'mejoraria');
+    }
+
+    function renderInsightSummaryCards(d) {
+      const container = document.getElementById('insightsSummaryCards');
+      if (d.length === 0) {
+        container.innerHTML = '<div class="card" style="grid-column:1/-1;text-align:center;"><div class="card-label">Sin datos</div><div class="card-value" style="font-size:1.1rem;margin-top:10px;">No hay evaluaciones para los filtros seleccionados</div></div>';
+        return;
+      }
+
+      const obsCount = d.filter(e => e.observaciones && e.observaciones.trim()).length;
+      const mejCount = d.filter(e => e.mejoraria && e.mejoraria.trim()).length;
+      // Find worst dimension
+      const dimStats = {};
+      d.forEach(e => {
+        if (e.scores) {
+          Object.entries(e.scores).forEach(([k, v]) => {
+            if (typeof v === 'number') {
+              if (!dimStats[k]) dimStats[k] = { sum: 0, count: 0 };
+              dimStats[k].sum += v;
+              dimStats[k].count++;
+            }
+          });
+        }
+      });
+      const dimEntries = Object.entries(dimStats).map(([k, v]) => ({ key: k, avg: v.sum / v.count, count: v.count }));
+      const worstDim = dimEntries.sort((a, b) => a.avg - b.avg)[0];
+      const bestDim = dimEntries[dimEntries.length - 1];
+
+      container.innerHTML = `
+        <div class="card">
+          <div class="card-label">Evaluaciones Analizadas</div>
+          <div class="card-value">${d.length}</div>
+          <div class="card-sub">${dimEntries.length} dimensiones con datos</div>
+          <div class="card-accent" style="background:var(--accent);"></div>
+        </div>
+        <div class="card">
+          <div class="card-label">Con Observaciones</div>
+          <div class="card-value">${obsCount}</div>
+          <div class="card-sub">${d.length > 0 ? ((obsCount/d.length)*100).toFixed(0) : 0}% de las evaluaciones</div>
+          <div class="card-accent" style="background:var(--yellow);"></div>
+        </div>
+        <div class="card">
+          <div class="card-label">Con Sugerencias de Mejora</div>
+          <div class="card-value">${mejCount}</div>
+          <div class="card-sub">${d.length > 0 ? ((mejCount/d.length)*100).toFixed(0) : 0}% de las evaluaciones</div>
+          <div class="card-accent" style="background:#a855f7;"></div>
+        </div>
+        <div class="card">
+          <div class="card-label">🔴 Dimensión Más Débil</div>
+          <div class="card-value" style="font-size:1.3rem;color:var(--red)">${worstDim ? (DIM_LABELS[worstDim.key] || worstDim.key) : '—'}</div>
+          <div class="card-sub">${worstDim ? `Promedio: ${worstDim.avg.toFixed(2)} (${worstDim.count} evaluaciones)` : ''}</div>
+          <div class="card-accent" style="background:var(--red);"></div>
+        </div>
+        <div class="card">
+          <div class="card-label">🟢 Dimensión Más Fuerte</div>
+          <div class="card-value" style="font-size:1.3rem;color:var(--green)">${bestDim ? (DIM_LABELS[bestDim.key] || bestDim.key) : '—'}</div>
+          <div class="card-sub">${bestDim ? `Promedio: ${bestDim.avg.toFixed(2)} (${bestDim.count} evaluaciones)` : ''}</div>
+          <div class="card-accent" style="background:var(--green);"></div>
+        </div>
+      `;
+    }
+
+    function renderDimensionRanking(d) {
+      const container = document.getElementById('dimRankingContainer');
+      const dimStats = {};
+      d.forEach(e => {
+        if (e.scores) {
+          Object.entries(e.scores).forEach(([k, v]) => {
+            if (typeof v === 'number') {
+              if (!dimStats[k]) dimStats[k] = { sum: 0, count: 0 };
+              dimStats[k].sum += v;
+              dimStats[k].count++;
+            }
+          });
+        }
+      });
+
+      const entries = Object.entries(dimStats)
+        .map(([k, v]) => ({ key: k, label: DIM_LABELS[k] || k, avg: v.sum / v.count, count: v.count }))
+        .sort((a, b) => a.avg - b.avg);
+
+      if (entries.length === 0) {
+        container.innerHTML = '<p style="color:var(--muted);font-size:0.85rem;">No hay datos de dimensiones para los filtros seleccionados.</p>';
+        return;
+      }
+
+      container.innerHTML = entries.map(dim => {
+        const pct = (dim.avg / 5) * 100;
+        const cls = getClass(dim.avg);
+        return `
+          <div class="dim-bar-row">
+            <div class="dim-bar-label" title="${dim.label}">${dim.label}</div>
+            <div class="dim-bar-track">
+              <div class="dim-bar-fill" style="width:${pct}%;background:${cls.color}88;">
+                <span class="dim-bar-value">${dim.avg.toFixed(2)}</span>
+              </div>
+            </div>
+            <div class="dim-bar-count">(n=${dim.count})</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ===== Word Cloud Engine =====
+    function tokenizeText(text) {
+      if (!text) return [];
+      return text
+        .toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9áéíóúüñ\s]/g, ' ')
+        .split(/\s+/)
+        .map(w => w.trim())
+        .filter(w => w.length > 2 && !STOPWORDS.has(w));
+    }
+
+    function computeWordFrequencies(dataArr, field) {
+      const freq = {};
+      dataArr.forEach(e => {
+        const text = e[field];
+        if (!text) return;
+        const words = tokenizeText(text);
+        const seen = new Set();
+        words.forEach(w => {
+          if (!seen.has(w)) {
+            freq[w] = (freq[w] || 0) + 1;
+            seen.add(w);
+          }
+        });
+      });
+      return Object.entries(freq)
+        .map(([word, count]) => ({ word, count }))
+        .sort((a, b) => b.count - a.count);
+    }
+
+    function renderWordCloud(canvasId, emptyId, topWordsId, dataArr, field) {
+      const canvas = document.getElementById(canvasId);
+      const emptyEl = document.getElementById(emptyId);
+      const topWordsEl = document.getElementById(topWordsId);
+      const ctx = canvas.getContext('2d');
+
+      // Set canvas resolution
+      const rect = canvas.parentElement.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.scale(dpr, dpr);
+      const W = rect.width;
+      const H = rect.height;
+
+      ctx.clearRect(0, 0, W, H);
+
+      const wordFreqs = computeWordFrequencies(dataArr, field);
+      const top = wordFreqs.slice(0, 80);
+
+      if (top.length === 0) {
+        emptyEl.style.display = 'flex';
+        topWordsEl.innerHTML = '';
+        return;
+      }
+      emptyEl.style.display = 'none';
+
+      // Color palette
+      const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+      const palette = [
+        '#0ea5e9', '#06b6d4', '#22c55e', '#a855f7', '#f97316',
+        '#ec4899', '#eab308', '#3b82f6', '#14b8a6', '#f43f5e',
+        '#8b5cf6', '#10b981', '#ef4444', '#6366f1', '#84cc16'
+      ];
+
+      const maxCount = top[0].count;
+      const minFont = 11;
+      const maxFont = Math.min(42, W / 8);
+
+      // Place words using spiral algorithm
+      const placed = [];
+
+      function checkOverlap(x, y, w, h) {
+        for (const p of placed) {
+          if (!(x + w < p.x || x > p.x + p.w || y + h < p.y || y > p.y + p.h)) {
+            return true;
+          }
+        }
+        return false;
+      }
+
+      top.forEach((item, idx) => {
+        const fontSize = minFont + (maxFont - minFont) * Math.pow(item.count / maxCount, 0.6);
+        ctx.font = `${Math.round(fontSize * 10) >= 200 ? '700' : '600'} ${fontSize.toFixed(1)}px Inter, sans-serif`;
+        const metrics = ctx.measureText(item.word);
+        const tw = metrics.width + 6;
+        const th = fontSize * 1.3;
+
+        // Spiral placement
+        const cx = W / 2;
+        const cy = H / 2;
+        let angle = Math.random() * Math.PI * 2;
+        let radius = 0;
+        let placedOk = false;
+
+        for (let step = 0; step < 600; step++) {
+          const x = cx + radius * Math.cos(angle) - tw / 2;
+          const y = cy + radius * Math.sin(angle) - th / 2;
+
+          if (x >= 2 && y >= 2 && x + tw <= W - 2 && y + th <= H - 2 && !checkOverlap(x, y, tw, th)) {
+            const color = palette[idx % palette.length];
+            ctx.fillStyle = color;
+            ctx.globalAlpha = 0.85 + 0.15 * (item.count / maxCount);
+            ctx.fillText(item.word, x + 3, y + th - fontSize * 0.25);
+            ctx.globalAlpha = 1;
+            placed.push({ x, y, w: tw, h: th });
+            placedOk = true;
+            break;
+          }
+          angle += 0.35;
+          radius += 0.6;
+        }
+      });
+
+      // Top words list
+      const topList = wordFreqs.slice(0, 10);
+      topWordsEl.innerHTML = `
+        <div style="font-size:0.72rem;color:var(--muted);text-transform:uppercase;font-weight:600;margin-bottom:6px;">Top 10 palabras más frecuentes</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          ${topList.map((w, i) => `<span style="display:inline-flex;align-items:center;gap:4px;background:var(--glass);border:1px solid var(--border);border-radius:16px;padding:3px 10px;font-size:0.75rem;">
+            <strong style="color:${palette[i % palette.length]}">${w.word}</strong>
+            <span style="color:var(--muted)">(${w.count})</span>
+          </span>`).join('')}
+        </div>
+      `;
     }
   </script>
 </body>
