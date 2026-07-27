@@ -331,6 +331,10 @@ def main():
     print(f"Dashboard interactivo escrito en: {HTML_OUTPUT_PATH}")
 
 def generate_markdown_report(total_assigned, total_done, total_extra, global_pct, ev_stats, file_stats):
+    total_evaluators = len(ev_stats)
+    completed_evaluators = sum(1 for ev in ev_stats if ev['progress_pct'] >= 100)
+    pending_evaluators = total_evaluators - completed_evaluators
+
     lines = []
     lines.append("# Reporte de Monitoreo de Avance en Tiempo Real")
     lines.append(f"\n*Generado automáticamente el {datetime.now().strftime('%d/%m/%Y a las %I:%M %p')}*")
@@ -340,6 +344,8 @@ def generate_markdown_report(total_assigned, total_done, total_extra, global_pct
     lines.append(f"- **Total de Espacios Asignados:** {total_assigned}")
     lines.append(f"- **Evaluaciones de Asignación Completadas:** {total_done}")
     lines.append(f"- **Avance de Asignaciones:** `{global_pct:.1f}%`")
+    lines.append(f"- **Evaluadores con Asignación Completada (100%):** {completed_evaluators} de {total_evaluators} ({completed_evaluators/total_evaluators*100:.1f}%)")
+    lines.append(f"- **Evaluadores con Asignaciones Pendientes:** {pending_evaluators} de {total_evaluators}")
     lines.append(f"- **Espacios Extras Evaluados (ej. Pasillos/Otras áreas):** {total_extra}")
     lines.append(f"- **Total de Registros de Evaluación Consolidados:** {total_done + total_extra}")
 
@@ -365,6 +371,10 @@ def generate_markdown_report(total_assigned, total_done, total_extra, global_pct
         f.write("\n".join(lines))
 
 def generate_html_dashboard(total_assigned, total_done, total_extra, global_pct, ev_stats):
+    total_evaluators = len(ev_stats)
+    completed_evaluators = sum(1 for ev in ev_stats if ev['progress_pct'] >= 100)
+    pending_evaluators = total_evaluators - completed_evaluators
+
     stats_json_str = json.dumps(ev_stats, ensure_ascii=False)
 
     html_content = f"""<!DOCTYPE html>
@@ -378,33 +388,82 @@ def generate_html_dashboard(total_assigned, total_done, total_extra, global_pct,
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {{
-      --bg: #0a0e1a; --bg2: #111827; --bg-card: rgba(17,24,39,0.7);
-      --glass: rgba(255,255,255,0.04); --border: rgba(255,255,255,0.08);
-      --text: #f1f5f9; --text2: #94a3b8; --muted: #64748b;
-      --accent: #0ea5e9; --accent2: #06b6d4;
-      --green: #22c55e; --blue: #3b82f6; --yellow: #eab308;
-      --orange: #f97316; --red: #ef4444;
+      --bg: #0a0e1a;
+      --bg2: #111827;
+      --bg-card: rgba(17,24,39,0.75);
+      --header-bg: rgba(10,14,26,0.9);
+      --glass: rgba(255,255,255,0.04);
+      --border: rgba(255,255,255,0.08);
+      --text: #f8fafc;
+      --text2: #cbd5e1;
+      --muted: #94a3b8;
+      --accent: #0ea5e9;
+      --accent2: #06b6d4;
+      --green: #22c55e; --green-bg: rgba(34,197,94,0.15);
+      --blue: #3b82f6; --blue-bg: rgba(59,130,246,0.15);
+      --yellow: #eab308; --yellow-bg: rgba(234,179,8,0.15);
+      --orange: #f97316; --orange-bg: rgba(249,115,22,0.15);
+      --red: #ef4444; --red-bg: rgba(239,68,68,0.15);
       --radius: 12px;
+      --progress-bg: rgba(255,255,255,0.08);
+      --details-bg: rgba(10,14,26,0.6);
+      --tr-border: rgba(255,255,255,0.03);
+      --toggle-bg: rgba(255,255,255,0.08);
+      --toggle-border: rgba(255,255,255,0.15);
+      --card-hover: rgba(255,255,255,0.15);
+      --code-bg: rgba(255,255,255,0.06);
+      --code-color: #38bdf8;
+      --shadow: none;
+    }}
+
+    [data-theme="light"] {{
+      --bg: #f1f5f9;
+      --bg2: #ffffff;
+      --bg-card: #ffffff;
+      --header-bg: rgba(255,255,255,0.95);
+      --glass: #e2e8f0;
+      --border: #cbd5e1;
+      --text: #0f172a;
+      --text2: #334155;
+      --muted: #64748b;
+      --accent: #0284c7;
+      --accent2: #0891b2;
+      --green: #15803d; --green-bg: #dcfce7;
+      --blue: #1d4ed8; --blue-bg: #dbeafe;
+      --yellow: #b45309; --yellow-bg: #fef3c7;
+      --orange: #c2410c; --orange-bg: #ffedd5;
+      --red: #b91c1c; --red-bg: #fee2e2;
+      --progress-bg: #cbd5e1;
+      --details-bg: #f8fafc;
+      --tr-border: #e2e8f0;
+      --toggle-bg: #ffffff;
+      --toggle-border: #cbd5e1;
+      --card-hover: #94a3b8;
+      --code-bg: #e2e8f0;
+      --code-color: #0369a1;
+      --shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
     }}
     
     * {{ box-sizing: border-box; margin: 0; padding: 0; }}
     
     body {{
-      font-family: 'Inter', sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       background: var(--bg);
       color: var(--text);
       line-height: 1.5;
       padding-bottom: 60px;
+      transition: background-color 0.3s ease, color 0.3s ease;
     }}
 
     header {{
-      background: rgba(10,14,26,0.9);
+      background: var(--header-bg);
       backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--border);
       padding: 20px 24px;
       position: sticky;
       top: 0;
       z-index: 50;
+      transition: background-color 0.3s ease, border-color 0.3s ease;
     }}
     .header-inner {{
       max-width: 1200px;
@@ -425,6 +484,29 @@ def generate_html_dashboard(total_assigned, total_done, total_extra, global_pct,
     }}
     header p {{ font-size: 0.75rem; color: var(--muted); margin-top: 2px; }}
 
+    .theme-toggle-btn {{
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-family: inherit;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--toggle-border);
+      background: var(--toggle-bg);
+      color: var(--text);
+      transition: all 0.2s ease;
+      user-select: none;
+      box-shadow: var(--shadow);
+    }}
+    .theme-toggle-btn:hover {{
+      border-color: var(--accent);
+      color: var(--accent);
+      transform: translateY(-1px);
+    }}
+
     main {{
       max-width: 1200px;
       margin: 0 auto;
@@ -434,7 +516,7 @@ def generate_html_dashboard(total_assigned, total_done, total_extra, global_pct,
     /* Stats Grid */
     .stats-grid {{
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
       gap: 16px;
       margin-bottom: 24px;
     }}
@@ -446,6 +528,8 @@ def generate_html_dashboard(total_assigned, total_done, total_extra, global_pct,
       backdrop-filter: blur(12px);
       position: relative;
       overflow: hidden;
+      box-shadow: var(--shadow);
+      transition: background-color 0.3s ease, border-color 0.3s ease;
     }}
     .stat-label {{
       font-size: 0.72rem;
@@ -459,6 +543,7 @@ def generate_html_dashboard(total_assigned, total_done, total_extra, global_pct,
       font-weight: 800;
       margin-top: 6px;
       line-height: 1;
+      color: var(--text);
     }}
     .stat-sub {{
       font-size: 0.75rem;
@@ -493,6 +578,11 @@ def generate_html_dashboard(total_assigned, total_done, total_extra, global_pct,
       padding: 10px 16px;
       font-family: inherit;
       font-size: 0.88rem;
+      box-shadow: var(--shadow);
+      transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+    }}
+    .search-input::placeholder {{
+      color: var(--muted);
     }}
     .search-input:focus {{
       outline: none;
@@ -513,7 +603,7 @@ def generate_html_dashboard(total_assigned, total_done, total_extra, global_pct,
     .filter-btn.active {{
       background: var(--accent);
       border-color: var(--accent);
-      color: white;
+      color: #ffffff;
     }}
     .sort-select {{
       padding: 10px 16px;
@@ -524,9 +614,10 @@ def generate_html_dashboard(total_assigned, total_done, total_extra, global_pct,
       cursor: pointer;
       border: 1px solid var(--border);
       background: var(--bg-card);
-      color: var(--text2);
+      color: var(--text);
       outline: none;
       transition: all 0.2s;
+      box-shadow: var(--shadow);
     }}
     .sort-select:focus {{
       border-color: var(--accent);
@@ -543,10 +634,11 @@ def generate_html_dashboard(total_assigned, total_done, total_extra, global_pct,
       border-radius: var(--radius);
       margin-bottom: 12px;
       overflow: hidden;
-      transition: border-color 0.2s;
+      transition: border-color 0.2s, background-color 0.3s ease;
+      box-shadow: var(--shadow);
     }}
     .ev-card:hover {{
-      border-color: rgba(255,255,255,0.15);
+      border-color: var(--card-hover);
     }}
     .ev-header {{
       padding: 16px 20px;
@@ -569,6 +661,7 @@ def generate_html_dashboard(total_assigned, total_done, total_extra, global_pct,
     .ev-name {{
       font-weight: 600;
       font-size: 0.95rem;
+      color: var(--text);
     }}
     .ev-stats-brief {{
       font-size: 0.78rem;
@@ -583,7 +676,7 @@ def generate_html_dashboard(total_assigned, total_done, total_extra, global_pct,
     .progress-bar-bg {{
       flex: 1;
       height: 8px;
-      background: rgba(255,255,255,0.06);
+      background: var(--progress-bg);
       border-radius: 4px;
       overflow: hidden;
     }}
@@ -603,7 +696,7 @@ def generate_html_dashboard(total_assigned, total_done, total_extra, global_pct,
     .ev-details {{
       display: none;
       border-top: 1px solid var(--border);
-      background: rgba(10,14,26,0.5);
+      background: var(--details-bg);
       padding: 20px;
     }}
     .ev-card.open .ev-details {{
@@ -656,7 +749,7 @@ def generate_html_dashboard(total_assigned, total_done, total_extra, global_pct,
       border-bottom: 1px solid var(--border);
     }}
     tbody tr {{
-      border-bottom: 1px solid rgba(255,255,255,0.02);
+      border-bottom: 1px solid var(--tr-border);
     }}
     tbody tr:last-child {{
       border-bottom: none;
@@ -664,17 +757,27 @@ def generate_html_dashboard(total_assigned, total_done, total_extra, global_pct,
     td {{
       padding: 8px 12px;
       vertical-align: middle;
+      color: var(--text);
+    }}
+    code {{
+      font-family: monospace;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      background: var(--code-bg);
+      color: var(--code-color);
+      border: 1px solid var(--border);
     }}
     .score-badge {{
       display: inline-block;
-      padding: 2px 6px;
-      border-radius: 4px;
+      padding: 2px 8px;
+      border-radius: 6px;
       font-weight: 700;
       font-size: 0.72rem;
     }}
     .file-badge {{
       font-size: 0.65rem;
-      color: var(--muted);
+      color: var(--text2);
       background: var(--glass);
       padding: 2px 6px;
       border-radius: 4px;
@@ -697,7 +800,10 @@ def generate_html_dashboard(total_assigned, total_done, total_extra, global_pct,
         <h1>📊 Monitoreo de Avance en Tiempo Real</h1>
         <p>Rúbrica de Infraestructura — Universidad del Norte</p>
       </div>
-      <div>
+      <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+        <button id="themeToggleBtn" class="theme-toggle-btn" onclick="toggleTheme()" title="Cambiar tema claro / oscuro">
+          <span id="themeIcon">🌙</span> <span id="themeLabel">Oscuro</span>
+        </button>
         <p style="text-align: right; color: var(--text2);">Actualizado: {datetime.now().strftime('%d/%m/%Y %I:%M %p')}</p>
       </div>
     </div>
@@ -732,6 +838,12 @@ def generate_html_dashboard(total_assigned, total_done, total_extra, global_pct,
         <div class="stat-sub">Pasillos y ad-hoc fuera de planilla</div>
         <div class="stat-accent" style="background:var(--yellow);"></div>
       </div>
+      <div class="stat-card">
+        <div class="stat-label">Evaluadores (100% vs Pendientes)</div>
+        <div class="stat-value" style="color: var(--green);">{completed_evaluators} <span style="font-size: 1.1rem; color: var(--muted); font-weight: 500;">/ {total_evaluators}</span></div>
+        <div class="stat-sub"><span style="color: var(--green); font-weight: 600;">{completed_evaluators} completaron</span> · <span style="color: var(--orange); font-weight: 600;">{pending_evaluators} pendientes</span></div>
+        <div class="stat-accent" style="background:var(--orange);"></div>
+      </div>
     </div>
 
     <!-- Controls -->
@@ -759,6 +871,35 @@ def generate_html_dashboard(total_assigned, total_done, total_extra, global_pct,
     let searchQuery = '';
     let currentSort = 'name_asc';
 
+    function initTheme() {{
+      const saved = localStorage.getItem('uninorte_avance_theme');
+      if (saved) {{
+        setTheme(saved);
+      }} else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {{
+        setTheme('light');
+      }} else {{
+        setTheme('dark');
+      }}
+    }}
+
+    function setTheme(theme) {{
+      if (theme === 'light') {{
+        document.documentElement.setAttribute('data-theme', 'light');
+        document.getElementById('themeIcon').textContent = '☀️';
+        document.getElementById('themeLabel').textContent = 'Claro';
+      }} else {{
+        document.documentElement.removeAttribute('data-theme');
+        document.getElementById('themeIcon').textContent = '🌙';
+        document.getElementById('themeLabel').textContent = 'Oscuro';
+      }}
+      localStorage.setItem('uninorte_avance_theme', theme);
+    }}
+
+    function toggleTheme() {{
+      const current = document.documentElement.getAttribute('data-theme');
+      setTheme(current === 'light' ? 'dark' : 'light');
+    }}
+
     function getProgressColor(pct) {{
       if (pct >= 100) return 'var(--green)';
       if (pct >= 50) return 'var(--yellow)';
@@ -772,11 +913,11 @@ def generate_html_dashboard(total_assigned, total_done, total_extra, global_pct,
     }}
 
     function getScoreClass(score) {{
-      if (score >= 4.5) return {{ label: "Excelente", color: "#22c55e" }};
-      if (score >= 3.5) return {{ label: "Bueno", color: "#3b82f6" }};
-      if (score >= 2.5) return {{ label: "Aceptable", color: "#eab308" }};
-      if (score >= 1.5) return {{ label: "Deficiente", color: "#f97316" }};
-      return {{ label: "Crítico", color: "#ef4444" }};
+      if (score >= 4.5) return {{ label: "Excelente", color: "var(--green)", bg: "var(--green-bg)" }};
+      if (score >= 3.5) return {{ label: "Bueno", color: "var(--blue)", bg: "var(--blue-bg)" }};
+      if (score >= 2.5) return {{ label: "Aceptable", color: "var(--yellow)", bg: "var(--yellow-bg)" }};
+      if (score >= 1.5) return {{ label: "Deficiente", color: "var(--orange)", bg: "var(--orange-bg)" }};
+      return {{ label: "Crítico", color: "var(--red)", bg: "var(--red-bg)" }};
     }}
 
     function toggleCard(idx) {{
@@ -895,7 +1036,7 @@ def generate_html_dashboard(total_assigned, total_done, total_extra, global_pct,
                       <td>${{d.ed}}</td>
                       <td>${{d.fecha}}</td>
                       <td style="text-align:center;">
-                        <span class="score-badge" style="background:${{cls.color}}22; color:${{cls.color}};">${{d.promedio.toFixed(2)}}</span>
+                        <span class="score-badge" style="background:${{cls.bg}}; color:${{cls.color}};">${{d.promedio.toFixed(2)}}</span>
                       </td>
                       <td><span class="file-badge">${{d.file}}</span></td>
                     </tr>
@@ -934,7 +1075,7 @@ def generate_html_dashboard(total_assigned, total_done, total_extra, global_pct,
                       <td>${{ex.ed}}</td>
                       <td>${{ex.fecha}}</td>
                       <td style="text-align:center;">
-                        <span class="score-badge" style="background:${{cls.color}}22; color:${{cls.color}};">${{ex.promedio.toFixed(2)}}</span>
+                        <span class="score-badge" style="background:${{cls.bg}}; color:${{cls.color}};">${{ex.promedio.toFixed(2)}}</span>
                       </td>
                       <td><span class="file-badge">${{ex.file}}</span></td>
                     </tr>
@@ -1012,6 +1153,7 @@ def generate_html_dashboard(total_assigned, total_done, total_extra, global_pct,
       renderEvaluators();
     }}
 
+    initTheme();
     renderEvaluators();
   </script>
 </body>
